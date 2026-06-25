@@ -5,9 +5,11 @@ import fr.celine.suivideseries.entity.Utilisateur;
 import fr.celine.suivideseries.enums.StatutSerie;
 import fr.celine.suivideseries.exception.BusinessException;
 import fr.celine.suivideseries.repository.SerieRepository;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class SerieService {
 
     private final SerieRepository serieRepository;
@@ -53,6 +55,11 @@ public class SerieService {
         }
 
          return serieRepository.trouverSeriesParNombreLivresManquants(livreManquant);
+    }
+
+    // Afficher les séries
+    public List<Serie> afficherSeries() {
+        return serieRepository.findAll();
     }
 
 }

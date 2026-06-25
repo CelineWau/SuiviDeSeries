@@ -1,17 +1,22 @@
 package fr.celine.suivideseries.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import org.jspecify.annotations.Nullable;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
 @Entity
 @Table
-public class Utilisateur {
+public class Utilisateur implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,6 +40,7 @@ public class Utilisateur {
 
     @NotNull(message = "Le mot de passe est obligatoire")
     @Column(nullable = false)
+    @JsonIgnore
     private String mdp;
 
     @NotNull(message = "L'email est obligatoire")
@@ -43,7 +49,8 @@ public class Utilisateur {
     private String email;
 
     @Column
-    @ManyToMany
+    @ManyToMany(mappedBy = "utilisateur")
+    @JsonIgnore
     private List<Serie> serie = new ArrayList<>();
 
     public Utilisateur (){
@@ -138,5 +145,20 @@ public class Utilisateur {
                 ", email='" + email + '\'' +
                 ", serie=" + serie +
                 '}';
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of();
+    }
+
+    @Override
+    public @Nullable String getPassword() {
+        return this.mdp;
+    }
+
+    @Override
+    public String getUsername() {
+        return this.pseudo;
     }
 }
