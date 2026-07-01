@@ -1,5 +1,6 @@
 package fr.celine.suivideseries.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import fr.celine.suivideseries.enums.StatutLivre;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -31,6 +32,7 @@ public class Livre {
     @Column(nullable = false)
     private StatutLivre statutLivre;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "id_serie")
     private Serie serie;

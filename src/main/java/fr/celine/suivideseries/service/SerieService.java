@@ -62,4 +62,9 @@ public class SerieService {
         return serieRepository.findAll();
     }
 
+    // Trouver une série par Id
+    public Serie trouverSerieParId(int id) {
+        return serieRepository.findById(id).orElseThrow();
+    }
+
 }
