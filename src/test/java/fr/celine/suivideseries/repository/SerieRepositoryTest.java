@@ -39,9 +39,9 @@ public class SerieRepositoryTest {
         utilisateur = new Utilisateur("Waucheul", "Céline", "Kitsune", "monemail@email.fr");
         utilisateur.setMdp("Azerty123");
         serie = new Serie("Le Seigneur des anneaux",utilisateur, StatutSerie.EN_COURS, 3);
-        livre1 = new Livre("J. R. R. Tolken", "La fraternité de l'anneau", "1234567891234", StatutLivre.LU, serie);
-        livre2 = new Livre("J. R. R. Tolken", "Les Deux Tours", "1235467891234", StatutLivre.LU, serie);
-        livre3 = new Livre("J. R. R. Tolken", "Le Retour du Roi", "1234567819234", StatutLivre.DANS_PAL, serie);
+        livre1 = new Livre("J. R. R. Tolken", "La fraternité de l'anneau", "1234567891234", 1, StatutLivre.LU, serie);
+        livre2 = new Livre("J. R. R. Tolken", "Les Deux Tours", "1235467891234", 2, StatutLivre.LU, serie);
+        livre3 = new Livre("J. R. R. Tolken", "Le Retour du Roi", "1234567819234", 3, StatutLivre.DANS_PAL, serie);
 
         entityManager.persist(utilisateur);
         entityManager.persist(serie);

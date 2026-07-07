@@ -1,6 +1,5 @@
 package fr.celine.suivideseries.dto;
 
-import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.enums.StatutLivre;
 
 public class LivreCreationDTO {
@@ -8,6 +7,7 @@ public class LivreCreationDTO {
     String auteur;
     String titre;
     String isbn;
+    int numeroDansLaSerie;
     StatutLivre statutLivre;
     int serieId;
 
@@ -21,6 +21,10 @@ public class LivreCreationDTO {
 
     public String getIsbn() {
         return isbn;
+    }
+
+    public int getNumeroDansLaSerie() {
+        return numeroDansLaSerie;
     }
 
     public StatutLivre getStatutLivre() {

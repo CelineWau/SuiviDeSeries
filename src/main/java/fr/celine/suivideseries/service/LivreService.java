@@ -17,7 +17,7 @@ public class LivreService {
     }
 
     // Ajouter un livre
-    public Livre creerLivre (String auteur, String titre, String isbn, StatutLivre statutLivre, Serie serie) {
+    public Livre creerLivre (String auteur, String titre, String isbn, int numeroDansLaSerie, StatutLivre statutLivre, Serie serie) {
 
         // Validation métier
         if(auteur == null || auteur.isBlank()) {
@@ -32,6 +32,10 @@ public class LivreService {
             throw new BusinessException("L'ISBN est obligatoire.");
         }
 
+        if(numeroDansLaSerie <= 0) {
+            throw new BusinessException("Le numero dans la série n'est pas valide.");
+        }
+
         if(statutLivre == null) {
             throw new BusinessException("Le livre doit obligatoirement avoir un statut.");
         }
@@ -44,7 +48,11 @@ public class LivreService {
             throw new BusinessException("Un livre existe déjà avec cet ISBN.");
         }
 
-        Livre livre = new Livre(auteur, titre, isbn, statutLivre, serie);
+        if(livreRepository.findByNumeroDansLaSerieAndSerie(numeroDansLaSerie, serie).isPresent()){
+            throw new BusinessException("Un livre avec ce numéro existe déjà dans cette série.");
+        }
+
+        Livre livre = new Livre(auteur, titre, isbn, numeroDansLaSerie, statutLivre, serie);
         return livreRepository.save(livre);
     }
 }

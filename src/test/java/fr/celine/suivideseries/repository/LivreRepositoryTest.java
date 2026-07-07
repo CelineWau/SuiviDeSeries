@@ -37,7 +37,7 @@ public class LivreRepositoryTest {
         utilisateur = new Utilisateur("Waucheul", "Céline", "Kitsune", "monemail@email.fr");
         utilisateur.setMdp("Azerty123");
         serie = new Serie("Le puits des mémoires", utilisateur, StatutSerie.EN_COURS, 3);
-        livre = new Livre("Gabriel Katz", "La traque", "1234567891234", StatutLivre.LU, serie);
+        livre = new Livre("Gabriel Katz", "La traque", "1234567891234", 1, StatutLivre.LU, serie);
 
         entityManager.persist(utilisateur);
         entityManager.persist(serie);
@@ -50,10 +50,16 @@ public class LivreRepositoryTest {
     void findByIsbn_ReturnLivre(){
         Optional<Livre> resultat = livreRepository.findByIsbn("1234567891234");
 
-
         assertThat(resultat).isPresent();
         assertThat(resultat.get().getIsbn()).isEqualTo("1234567891234");
     }
 
+    @Test
+    @DisplayName("Doit retourner le livre en fonction de son numéro dans la série")
+    void findByNumeroDansLaSerie_ReturnLivre(){
+        Optional<Livre> resultat = livreRepository.findByNumeroDansLaSerieAndSerie(1, serie);
 
+        assertThat(resultat).isPresent();
+        assertThat(resultat.get().getNumeroDansLaSerie()).isEqualTo(1);
+    }
 }

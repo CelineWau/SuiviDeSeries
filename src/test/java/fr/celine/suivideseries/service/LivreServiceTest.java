@@ -40,13 +40,13 @@ public class LivreServiceTest {
         utilisateur = new Utilisateur("Waucheul", "Céline", "Kitsune", "monemail@email.fr");
         utilisateur.setMdp("Azerty123");
         serie = new Serie("Le puits des mémoires", utilisateur, StatutSerie.EN_COURS, 3);
-        livre = new Livre("Gabriel Katz", "La traque", "1234567891234", StatutLivre.LU, serie);
+        livre = new Livre("Gabriel Katz", "La traque", "1234567891234", 1, StatutLivre.LU, serie);
     }
 
     @Test
     @DisplayName("Doit lever une exception si l'auteur est nul")
     void creerLivre_auteurNull_leveBusinessException(){
-        assertThatThrownBy(() -> livreService.creerLivre(null, "Le fils de la lune", "9876543219876", StatutLivre.LU, serie))
+        assertThatThrownBy(() -> livreService.creerLivre(null, "Le fils de la lune", "9876543219876", 2, StatutLivre.LU, serie))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("L'auteur est obligatoire.");
     }
@@ -54,7 +54,7 @@ public class LivreServiceTest {
     @Test
     @DisplayName("Doit lever une exception si le titre est nul")
     void creerLivre_titreNull_leveBusinessException(){
-        assertThatThrownBy(() -> livreService.creerLivre("Gabriel Katz", null, "9876543219876", StatutLivre.LU, serie))
+        assertThatThrownBy(() -> livreService.creerLivre("Gabriel Katz", null, "9876543219876", 2, StatutLivre.LU, serie))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Le titre est obligatoire.");
     }
@@ -62,15 +62,23 @@ public class LivreServiceTest {
     @Test
     @DisplayName("Doit lever une exception si l'isbn est nul")
     void creerLivre_isbnNull_leveBusinessException(){
-        assertThatThrownBy(() -> livreService.creerLivre("Gabriel Katz", "Le fils de la lune", null, StatutLivre.LU, serie))
+        assertThatThrownBy(() -> livreService.creerLivre("Gabriel Katz", "Le fils de la lune", null, 2, StatutLivre.LU, serie))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("L'ISBN est obligatoire.");
     }
 
     @Test
+    @DisplayName("Doit lever une exception si le numéro dans la série est égal à 0")
+    void creerLivre_numeroDansLaSerieEgalZero_leveBusinessException(){
+        assertThatThrownBy(() -> livreService.creerLivre("Gabriel Katz", "Le fils de la lune", "9876543219876", 0, StatutLivre.LU, serie))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Le numero dans la série n'est pas valide.");
+    }
+
+    @Test
     @DisplayName("Doit lever une exception si le statut du livre est nul")
     void creerLivre_statutLivreNull_leveBusinessException(){
-        assertThatThrownBy(() -> livreService.creerLivre("Gabriel Katz", "Le fils de la lune", "9876543219876", null, serie))
+        assertThatThrownBy(() -> livreService.creerLivre("Gabriel Katz", "Le fils de la lune", "9876543219876", 2, null, serie))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Le livre doit obligatoirement avoir un statut.");
     }
@@ -78,7 +86,7 @@ public class LivreServiceTest {
     @Test
     @DisplayName("Doit lever une exception si la série est nulle")
     void creerLivre_serieNull_leveBusinessException(){
-        assertThatThrownBy(() -> livreService.creerLivre("Gabriel Katz", "Le fils de la lune", "9876543219876", StatutLivre.LU, null))
+        assertThatThrownBy(() -> livreService.creerLivre("Gabriel Katz", "Le fils de la lune", "9876543219876", 2, StatutLivre.LU, null))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Le livre doit être associé à une série.");
     }
@@ -87,22 +95,32 @@ public class LivreServiceTest {
     @DisplayName("Doit lever une exception si le livre ets déjà present un base de données")
     void creerLivre_dejapresentenBDD_leveBusinessException(){
         when(livreRepository.findByIsbn("9876543219876")).thenReturn(Optional.of(new Livre()));
-        assertThatThrownBy(() -> livreService.creerLivre("Gabriel Katz", "Le fils de la lune", "9876543219876", StatutLivre.LU, serie))
+        assertThatThrownBy(() -> livreService.creerLivre("Gabriel Katz", "Le fils de la lune", "9876543219876", 2, StatutLivre.LU, serie))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Un livre existe déjà avec cet ISBN.");
     }
 
     @Test
+    @DisplayName("Doit lever une exception si un livre avec ce numéro existe déjà dans cette série.")
+    void creerLivre_aDejaCeNumeroDansLaSerie_leveBusinessException(){
+        when(livreRepository.findByNumeroDansLaSerieAndSerie(2, serie)).thenReturn(Optional.of(new Livre()));
+        assertThatThrownBy(() -> livreService.creerLivre("Gabriel Katz", "Le fils de la lune", "9876543219876", 2, StatutLivre.LU, serie))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Un livre avec ce numéro existe déjà dans cette série.");
+    }
+
+    @Test
     @DisplayName("Doit créer un nouveau livre")
     void creerLivre_donneesValid_returnsLivre() {
-        when(livreRepository.save(any(Livre.class))).thenReturn(new Livre("Gabriel Katz", "Le fils de la lune", "9876543219876", StatutLivre.DANS_PAL, serie));
+        when(livreRepository.save(any(Livre.class))).thenReturn(new Livre("Gabriel Katz", "Le fils de la lune", "9876543219876", 2, StatutLivre.DANS_PAL, serie));
 
-        Livre resultat = livreService.creerLivre("Gabriel Katz", "Le fils de la lune", "9876543219876", StatutLivre.DANS_PAL, serie);
+        Livre resultat = livreService.creerLivre("Gabriel Katz", "Le fils de la lune", "9876543219876", 2, StatutLivre.DANS_PAL, serie);
 
         assertThat(resultat).isNotNull();
         assertThat(resultat.getAuteur()).isEqualTo("Gabriel Katz");
         assertThat(resultat.getTitre()).isEqualTo("Le fils de la lune");
         assertThat(resultat.getIsbn()).isEqualTo("9876543219876");
+        assertThat(resultat.getNumeroDansLaSerie()).isEqualTo(2);
         assertThat(resultat.getStatutLivre()).isEqualTo(StatutLivre.DANS_PAL);
         assertThat(resultat.getSerie()).isEqualTo(serie);
         verify(livreRepository, times(1)).save(any(Livre.class));

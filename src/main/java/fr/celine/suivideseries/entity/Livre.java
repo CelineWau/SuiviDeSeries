@@ -28,6 +28,10 @@ public class Livre {
     @Column(nullable = false, unique = true)
     private String isbn;
 
+    @NotNull(message = "Le numéro du livre dans la série est obligatoire.")
+    @Column(nullable = false)
+    private int numeroDansLaSerie;
+
     @NotNull(message = "Le statut du livre est obligatoire")
     @Column(nullable = false)
     private StatutLivre statutLivre;
@@ -39,10 +43,11 @@ public class Livre {
 
     public Livre(){}
 
-    public Livre(String auteur, String titre, String isbn, StatutLivre statutLivre, Serie serie) {
+    public Livre(String auteur, String titre, String isbn, int numeroDansLaSerie, StatutLivre statutLivre, Serie serie) {
         this.auteur = auteur;
         this.titre = titre;
         this.isbn = isbn;
+        this.numeroDansLaSerie = numeroDansLaSerie;
         this.statutLivre = statutLivre;
         this.serie = serie;
     }
@@ -79,6 +84,14 @@ public class Livre {
         this.isbn = isbn;
     }
 
+    public int getNumeroDansLaSerie() {
+        return numeroDansLaSerie;
+    }
+
+    public void setNumeroDansLaSerie(int numeroDansLaSerie) {
+        this.numeroDansLaSerie = numeroDansLaSerie;
+    }
+
     public StatutLivre getStatutLivre () {
         return statutLivre;
     }
@@ -98,12 +111,12 @@ public class Livre {
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof Livre livre)) return false;
-        return idLivre == livre.idLivre && Objects.equals(auteur, livre.auteur) && Objects.equals(titre, livre.titre) && Objects.equals(isbn, livre.isbn) && statutLivre == livre.statutLivre && Objects.equals(serie, livre.serie);
+        return idLivre == livre.idLivre && numeroDansLaSerie == livre.numeroDansLaSerie && Objects.equals(auteur, livre.auteur) && Objects.equals(titre, livre.titre) && Objects.equals(isbn, livre.isbn) && statutLivre == livre.statutLivre && Objects.equals(serie, livre.serie);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(idLivre, auteur, titre, isbn, statutLivre, serie);
+        return Objects.hash(idLivre, auteur, titre, isbn, numeroDansLaSerie, statutLivre, serie);
     }
 
     @Override
@@ -113,6 +126,7 @@ public class Livre {
                 ", auteur='" + auteur + '\'' +
                 ", titre='" + titre + '\'' +
                 ", isbn='" + isbn + '\'' +
+                ", numeroDansLaSerie=" + numeroDansLaSerie + '\'' +
                 ", statutLivre=" + statutLivre +
                 ", serie=" + serie +
                 '}';
