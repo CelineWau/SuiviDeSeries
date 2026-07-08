@@ -67,4 +67,8 @@ public class SerieService {
         return serieRepository.findById(id).orElseThrow();
     }
 
+    // Supprimer une série
+    public void supprimerSerie(int id) {
+        serieRepository.deleteById(id);
+    }
 }

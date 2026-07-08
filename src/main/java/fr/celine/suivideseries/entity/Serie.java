@@ -39,7 +39,7 @@ public class Serie {
     @Column(name = "statut_serie", nullable = false)
     private StatutSerie statutSerie;
 
-    @OneToMany(mappedBy = "serie")
+    @OneToMany(mappedBy = "serie", cascade = CascadeType.ALL)
     private List<Livre> livres = new ArrayList<>();
 
     public Serie(String nom, List<Utilisateur> utilisateur, StatutSerie statutSerie, int nombreLivreTotal) {

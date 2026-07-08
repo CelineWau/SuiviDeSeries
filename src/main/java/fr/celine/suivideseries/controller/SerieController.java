@@ -33,4 +33,10 @@ public class SerieController {
         Utilisateur utilisateur = utilisateurService.trouverUtilisateurParId(dto.getUtilisateurId());
         return ResponseEntity.ok(serieService.creerSerie(dto.getNom(), utilisateur, dto.getStatutSerie(), dto.getNombreLivreTotal()));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> supprimerSerie(@PathVariable int id) {
+        serieService.supprimerSerie(id);
+        return ResponseEntity.noContent().build();
+    }
 }
