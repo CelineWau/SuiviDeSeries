@@ -2,6 +2,7 @@ package fr.celine.suivideseries.service;
 
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.entity.Utilisateur;
+import fr.celine.suivideseries.enums.StatutPublication;
 import fr.celine.suivideseries.enums.StatutSerie;
 import fr.celine.suivideseries.exception.BusinessException;
 import fr.celine.suivideseries.repository.SerieRepository;
@@ -19,7 +20,7 @@ public class SerieService {
     }
 
     // Ajouter une série en BDD
-    public Serie creerSerie(String nom, Utilisateur utilisateur, StatutSerie statutSerie, int nombreLivreTotal) {
+    public Serie creerSerie(String nom, Utilisateur utilisateur, StatutSerie statutSerie, StatutPublication statutPublication, int nombreLivreTotal) {
 
         // Validation métier
         if(nom == null || nom.isBlank()) {
@@ -38,11 +39,15 @@ public class SerieService {
             throw new BusinessException("La série doit obligatoirement avoir un statut.");
         }
 
+        if(statutPublication == null) {
+            throw new BusinessException("La série doit obligatoirement avoir un statut de publication.");
+        }
+
         if(serieRepository.findByNom(nom).isPresent()) {
             throw new BusinessException("Une série existe déjà avec ce nom.");
         }
 
-        Serie serie = new Serie(nom, utilisateur, statutSerie, nombreLivreTotal);
+        Serie serie = new Serie(nom, utilisateur, statutSerie, statutPublication, nombreLivreTotal);
         return serieRepository.save(serie);
     }
 
@@ -70,5 +75,19 @@ public class SerieService {
     // Supprimer une série
     public void supprimerSerie(int id) {
         serieRepository.deleteById(id);
+    }
+
+    // Modifier le nombre de livres dans une série
+    public Serie modifierNombreLivreTotal(int id, int nouveauTotal) {
+        Serie serie = trouverSerieParId(id);
+        serie.setNombreLivreTotal(nouveauTotal);
+        return serieRepository.save(serie);
+    }
+
+    // Modifier le statut de publication d'une série
+    public Serie modifierStatutPublication(int id, StatutPublication nouveauStatutPublication) {
+        Serie serie = trouverSerieParId(id);
+        serie.setStatutPublication(nouveauStatutPublication);
+        return serieRepository.save(serie);
     }
 }

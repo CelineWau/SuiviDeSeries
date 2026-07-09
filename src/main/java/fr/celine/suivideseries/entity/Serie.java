@@ -1,5 +1,6 @@
 package fr.celine.suivideseries.entity;
 
+import fr.celine.suivideseries.enums.StatutPublication;
 import fr.celine.suivideseries.enums.StatutSerie;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -39,22 +40,28 @@ public class Serie {
     @Column(name = "statut_serie", nullable = false)
     private StatutSerie statutSerie;
 
+    @NotNull(message = "La série doit avoir un statut de publication")
+    @Column(name = "statut_publication",  nullable = false)
+    private StatutPublication  statutPublication;
+
     @OneToMany(mappedBy = "serie", cascade = CascadeType.ALL)
     private List<Livre> livres = new ArrayList<>();
 
-    public Serie(String nom, List<Utilisateur> utilisateur, StatutSerie statutSerie, int nombreLivreTotal) {
+    public Serie(String nom, List<Utilisateur> utilisateur, StatutSerie statutSerie, StatutPublication statutPublication, int nombreLivreTotal) {
         this.nom = nom;
         this.nombreLivreTotal = nombreLivreTotal;
         this.utilisateur = utilisateur;
         this.statutSerie = statutSerie;
+        this.statutPublication = statutPublication;
     }
 
-    public Serie(String nom, Utilisateur utilisateur, StatutSerie statutSerie, int nombreLivreTotal) {
+    public Serie(String nom, Utilisateur utilisateur, StatutSerie statutSerie, StatutPublication statutPublication, int nombreLivreTotal) {
         this.nom = nom;
         this.nombreLivreTotal = nombreLivreTotal;
         this.utilisateur = new ArrayList<>();
         this.utilisateur.add(utilisateur);
         this.statutSerie = statutSerie;
+        this.statutPublication = statutPublication;
     }
 
     public Serie() {
@@ -100,6 +107,14 @@ public class Serie {
         this.statutSerie = statutSerie;
     }
 
+    public StatutPublication getStatutPublication() {
+        return statutPublication;
+    }
+
+    public void setStatutPublication(StatutPublication statutPublication) {
+        this.statutPublication = statutPublication;
+    }
+
     public List<Livre> getLivres(){
         return livres;
     }
@@ -116,6 +131,7 @@ public class Serie {
                 ", nombreLivreTotal=" + nombreLivreTotal +
                 ", utilisateur=" + utilisateur +
                 ", statutSerie=" + statutSerie +
+                ", statutPublication=" + statutPublication +
                 ", livres" + livres +
                 '}';
     }
@@ -123,11 +139,11 @@ public class Serie {
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof Serie serie)) return false;
-        return idSerie == serie.idSerie && nombreLivreTotal == serie.nombreLivreTotal && Objects.equals(nom, serie.nom) && Objects.equals(utilisateur, serie.utilisateur) && statutSerie == serie.statutSerie;
+        return idSerie == serie.idSerie && nombreLivreTotal == serie.nombreLivreTotal && Objects.equals(nom, serie.nom) && Objects.equals(utilisateur, serie.utilisateur) && statutSerie == serie.statutSerie && statutPublication == serie.statutPublication && Objects.equals(livres, serie.livres);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(idSerie, nom, nombreLivreTotal, utilisateur, statutSerie);
+        return Objects.hash(idSerie, nom, nombreLivreTotal, utilisateur, statutSerie, statutPublication, livres);
     }
 }

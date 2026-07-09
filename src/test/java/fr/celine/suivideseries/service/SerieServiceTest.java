@@ -2,6 +2,7 @@ package fr.celine.suivideseries.service;
 
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.entity.Utilisateur;
+import fr.celine.suivideseries.enums.StatutPublication;
 import fr.celine.suivideseries.enums.StatutSerie;
 import fr.celine.suivideseries.exception.BusinessException;
 import fr.celine.suivideseries.repository.SerieRepository;
@@ -34,13 +35,13 @@ public class SerieServiceTest {
     @BeforeEach
     void setup() {
         utilisateur = new Utilisateur("Waucheul", "Céline", "Kitsune", "monemail@email.fr");
-        serie = new Serie("Le Prieuré de l'oranger", utilisateur, StatutSerie.EN_COURS, 2);
+        serie = new Serie("Le Prieuré de l'oranger", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 2);
     }
 
     @Test
     @DisplayName("Doit lever une exception si le nom est nul")
     void creerSerie_nomNull_leveBusinessException() {
-        assertThatThrownBy(() -> serieService.creerSerie(null, utilisateur, StatutSerie.EN_COURS,4))
+        assertThatThrownBy(() -> serieService.creerSerie(null, utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE,4))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Le nom de la série est obligatoire.");
     }
@@ -48,7 +49,7 @@ public class SerieServiceTest {
     @Test
     @DisplayName("Doit lever une exception si l'utilisateur est nul")
     void creerSerie_utilisateurNull_leveBusinessException() {
-        assertThatThrownBy(() -> serieService.creerSerie("Twilight", null, StatutSerie.EN_COURS,4))
+        assertThatThrownBy(() -> serieService.creerSerie("Twilight", null, StatutSerie.EN_COURS, StatutPublication.TERMINEE,4))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Un utilisateur doit être associé à une série.");
     }
@@ -56,7 +57,7 @@ public class SerieServiceTest {
     @Test
     @DisplayName("Doit lever une exception si le nombre total de livre est inférieur à zéro")
     void creerSerie_nombreLivreTotalInferieurAZero_leveBusinessException() {
-        assertThatThrownBy(() -> serieService.creerSerie("Twilight", utilisateur, StatutSerie.EN_COURS,-8))
+        assertThatThrownBy(() -> serieService.creerSerie("Twilight", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE,-8))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("La série doit avoir un nombre de livre total supérieur à zéro.");
     }
@@ -64,16 +65,24 @@ public class SerieServiceTest {
     @Test
     @DisplayName("Doit lever une exception si le statut de la série est nul")
     void creerSerie_statutSerieNull_leveBusinessException() {
-        assertThatThrownBy(() -> serieService.creerSerie("Twilight", utilisateur, null,4))
+        assertThatThrownBy(() -> serieService.creerSerie("Twilight", utilisateur, null, StatutPublication.TERMINEE,4))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("La série doit obligatoirement avoir un statut.");
+    }
+
+    @Test
+    @DisplayName("Doit lever une exception si le statut de publication de la série est nul")
+    void creerSerie_statutPublicationNull_leveBusinessException() {
+        assertThatThrownBy(() -> serieService.creerSerie("Twilight", utilisateur, StatutSerie.EN_COURS, null,4))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("La série doit obligatoirement avoir un statut de publication.");
     }
 
     @Test
     @DisplayName("Doit lever une exception si le série existe déjà en base de données")
     void creerSerie_dejaPresentEnBDD_leveBusinessException(){
         when(serieRepository.findByNom("Twilight")).thenReturn(Optional.of(new Serie()));
-        assertThatThrownBy(()-> serieService.creerSerie("Twilight", utilisateur, StatutSerie.EN_COURS, 4))
+        assertThatThrownBy(()-> serieService.creerSerie("Twilight", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE,4))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Une série existe déjà avec ce nom.");
     }
@@ -82,13 +91,14 @@ public class SerieServiceTest {
     @DisplayName("Doit créer une nouvelle série")
     void creerSerie_donneesValides_returnsSerie() {
 
-        when(serieRepository.save(any(Serie.class))).thenReturn(new Serie("Twilight", utilisateur, StatutSerie.EN_COURS, 4));
+        when(serieRepository.save(any(Serie.class))).thenReturn(new Serie("Twilight", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE,4));
 
-        Serie resultat = serieService.creerSerie("Twilight", utilisateur, StatutSerie.EN_COURS, 4);
+        Serie resultat = serieService.creerSerie("Twilight", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE,4);
 
         assertThat(resultat).isNotNull();
         assertThat(resultat.getNom()).isEqualTo("Twilight");
         assertThat(resultat.getStatutSerie()).isEqualTo(StatutSerie.EN_COURS);
+        assertThat(resultat.getStatutPublication()).isEqualTo(StatutPublication.TERMINEE);
         assertThat(resultat.getNombreLivreTotal()).isEqualTo(4);
         assertThat(resultat.getUtilisateur().getFirst()).isEqualTo(utilisateur);
         verify(serieRepository, times(1)).save(any(Serie.class));

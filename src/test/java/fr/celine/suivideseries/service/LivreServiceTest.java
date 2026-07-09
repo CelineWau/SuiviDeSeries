@@ -4,6 +4,7 @@ import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.entity.Utilisateur;
 import fr.celine.suivideseries.enums.StatutLivre;
+import fr.celine.suivideseries.enums.StatutPublication;
 import fr.celine.suivideseries.enums.StatutSerie;
 import fr.celine.suivideseries.exception.BusinessException;
 import fr.celine.suivideseries.repository.LivreRepository;
@@ -39,7 +40,7 @@ public class LivreServiceTest {
     void setup(){
         utilisateur = new Utilisateur("Waucheul", "Céline", "Kitsune", "monemail@email.fr");
         utilisateur.setMdp("Azerty123");
-        serie = new Serie("Le puits des mémoires", utilisateur, StatutSerie.EN_COURS, 3);
+        serie = new Serie("Le puits des mémoires", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 3);
         livre = new Livre("Gabriel Katz", "La traque", "1234567891234", 1, StatutLivre.LU, serie);
     }
 
