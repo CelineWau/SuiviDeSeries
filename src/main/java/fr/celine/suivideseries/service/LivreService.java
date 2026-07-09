@@ -55,4 +55,11 @@ public class LivreService {
         Livre livre = new Livre(auteur, titre, isbn, numeroDansLaSerie, statutLivre, serie);
         return livreRepository.save(livre);
     }
+
+    // Modifier le statut d'un livre
+    public Livre modifierStatutLivre(int id, StatutLivre nouveauStatut) {
+        Livre livre = livreRepository.findById(id).orElseThrow(() -> new BusinessException("Livre non trouvé."));
+        livre.setStatutLivre(nouveauStatut);
+        return livreRepository.save(livre);
+    }
 }
