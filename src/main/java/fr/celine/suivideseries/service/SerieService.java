@@ -64,7 +64,7 @@ public class SerieService {
 
     // Afficher les séries
     public List<Serie> afficherSeries() {
-        return serieRepository.findAll();
+        return serieRepository.trierParStatut();
     }
 
     // Trouver une série par Id
