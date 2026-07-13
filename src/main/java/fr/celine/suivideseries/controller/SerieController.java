@@ -3,6 +3,7 @@ package fr.celine.suivideseries.controller;
 import fr.celine.suivideseries.dto.NombreLivreTotalDTO;
 import fr.celine.suivideseries.dto.SerieCreationDTO;
 import fr.celine.suivideseries.dto.StatutPublicationDTO;
+import fr.celine.suivideseries.dto.StatutSerieDTO;
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.entity.Utilisateur;
 import fr.celine.suivideseries.service.SerieService;
@@ -50,5 +51,10 @@ public class SerieController {
     @PatchMapping("/{id}/statutPublication")
     public ResponseEntity<Serie> modifierStatutPublication(@PathVariable int id, @RequestBody StatutPublicationDTO dto){
         return ResponseEntity.ok(serieService.modifierStatutPublication(id, dto.getStatutPublication()));
+    }
+
+    @PatchMapping("/{id}/statutSerie")
+    public ResponseEntity<Serie> modifierStatutSerie(@PathVariable int id, @RequestBody StatutSerieDTO dto) {
+        return ResponseEntity.ok(serieService.modifierStatutSerie(id, dto.getStatutSerie()));
     }
 }

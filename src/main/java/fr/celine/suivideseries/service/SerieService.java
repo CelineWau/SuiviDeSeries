@@ -90,4 +90,11 @@ public class SerieService {
         serie.setStatutPublication(nouveauStatutPublication);
         return serieRepository.save(serie);
     }
+
+    // Modifier le statut de la série
+    public Serie modifierStatutSerie(int id, StatutSerie nouveauStatutSerie) {
+        Serie serie = trouverSerieParId(id);
+        serie.setStatutSerie(nouveauStatutSerie);
+        return serieRepository.save(serie);
+    }
 }
