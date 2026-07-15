@@ -9,6 +9,8 @@ import fr.celine.suivideseries.service.SerieService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/livres")
@@ -31,5 +33,10 @@ public class LivreController {
     @PatchMapping("/{id}/statut")
     public ResponseEntity<Livre> modifierStatutLivre(@PathVariable int id, @RequestBody StatutLivreDTO dto) {
         return ResponseEntity.ok(livreService.modifierStatutLivre(id, dto.getStatut()));
+    }
+
+    @GetMapping("/auteurs")
+    public ResponseEntity<List<String>> trouverAuteurs() {
+        return ResponseEntity.ok(livreService.trouverAuteurs());
     }
 }

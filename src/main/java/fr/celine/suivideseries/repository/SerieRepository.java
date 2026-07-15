@@ -1,7 +1,6 @@
 package fr.celine.suivideseries.repository;
 
 import fr.celine.suivideseries.entity.Serie;
-import fr.celine.suivideseries.enums.StatutSerie;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

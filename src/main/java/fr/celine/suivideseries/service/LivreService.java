@@ -7,6 +7,8 @@ import fr.celine.suivideseries.exception.BusinessException;
 import fr.celine.suivideseries.repository.LivreRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class LivreService {
 
@@ -61,5 +63,10 @@ public class LivreService {
         Livre livre = livreRepository.findById(id).orElseThrow(() -> new BusinessException("Livre non trouvé."));
         livre.setStatutLivre(nouveauStatut);
         return livreRepository.save(livre);
+    }
+
+    // Trouver la liste des auteurs
+    public List<String> trouverAuteurs() {
+        return livreRepository.trouverAuteurParOrdreAlphabetique();
     }
 }
