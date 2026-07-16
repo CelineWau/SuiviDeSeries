@@ -15,6 +15,11 @@ public interface SerieRepository  extends JpaRepository<Serie, Integer> {
             "THEN 1 ELSE 0 END) = ?1")
     List<Serie> trouverSeriesParNombreLivresManquants(int livreManquant);
 
+    @Query("SELECT s FROM Serie s LEFT JOIN s.livres l WHERE s.statutSerie != fr.celine.suivideseries.enums.StatutSerie.ABANDONNEE " +
+            "GROUP BY s.idSerie HAVING s.nombreLivreTotal - SUM(CASE WHEN l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.LU THEN 1 ELSE 0 END) <= ?1 " +
+            "AND SUM(CASE WHEN l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.A_ACHETER THEN 1 ELSE 0 END) = 0")
+    List<Serie> trouverSeriesPresqueFinieDansLaPal(int livreManquant);
+
     @Query(value = "SELECT * FROM serie ORDER BY CASE statut_serie WHEN 1 THEN 1 WHEN 0 THEN 2 WHEN 2 THEN 3 END, nom ASC", nativeQuery = true)
     List<Serie> trierParStatut();
 }

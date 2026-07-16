@@ -62,6 +62,17 @@ public class SerieService {
          return serieRepository.trouverSeriesParNombreLivresManquants(livreManquant);
     }
 
+    // Trouver les séries avec un nombre de livres manquants dans la PAL
+    public List<Serie> trouverSeriesPresqueFiniesDansLaPal(int livreManquant) {
+
+        // Validation métier
+        if(livreManquant <= 0) {
+            throw new BusinessException("Le nombre de livre manquant ne peut pas être négatif ou égal à zéro.");
+        }
+
+        return serieRepository.trouverSeriesPresqueFinieDansLaPal(livreManquant);
+    }
+
     // Afficher les séries
     public List<Serie> afficherSeries() {
         return serieRepository.trierParStatut();
