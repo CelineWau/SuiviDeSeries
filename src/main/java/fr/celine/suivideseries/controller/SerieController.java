@@ -31,7 +31,7 @@ public class SerieController {
         return ResponseEntity.ok(serieService.afficherSeries());
     }
 
-    @GetMapping("/presque-finies-pal")
+    @GetMapping("/presqueFiniesPal")
     public ResponseEntity<List<Serie>> trouverSeriesPresqueFiniesDansLaPal(@RequestParam int seuil) {
         return ResponseEntity.ok(serieService.trouverSeriesPresqueFiniesDansLaPal(seuil));
     }
