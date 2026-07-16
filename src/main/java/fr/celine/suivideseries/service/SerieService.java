@@ -81,6 +81,9 @@ public class SerieService {
     public Serie modifierNombreLivreTotal(int id, int nouveauTotal) {
         Serie serie = trouverSerieParId(id);
         serie.setNombreLivreTotal(nouveauTotal);
+        if (serie.getStatutSerie() != StatutSerie.ABANDONNEE) {
+            serie.setStatutSerie(StatutSerie.EN_COURS);
+        }
         return serieRepository.save(serie);
     }
 

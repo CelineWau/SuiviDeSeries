@@ -3,6 +3,7 @@ package fr.celine.suivideseries.service;
 import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.enums.StatutLivre;
+import fr.celine.suivideseries.enums.StatutSerie;
 import fr.celine.suivideseries.exception.BusinessException;
 import fr.celine.suivideseries.repository.LivreRepository;
 import org.springframework.stereotype.Service;
@@ -13,9 +14,11 @@ import java.util.List;
 public class LivreService {
 
     private final LivreRepository livreRepository;
+    private final SerieService serieService;
 
-    public LivreService(LivreRepository livreRepository) {
+    public LivreService(LivreRepository livreRepository, SerieService serieService) {
         this.livreRepository = livreRepository;
+        this.serieService = serieService;
     }
 
     // Ajouter un livre
@@ -62,6 +65,12 @@ public class LivreService {
     public Livre modifierStatutLivre(int id, StatutLivre nouveauStatut) {
         Livre livre = livreRepository.findById(id).orElseThrow(() -> new BusinessException("Livre non trouvé."));
         livre.setStatutLivre(nouveauStatut);
+        Serie serie = livre.getSerie();
+        boolean toutEstLu = serie.getLivres().stream().allMatch(l -> l.getStatutLivre() == StatutLivre.LU);
+        boolean nombreComplet = serie.getLivres().size() == serie.getNombreLivreTotal();
+        if(toutEstLu && nombreComplet) {
+            serieService.modifierStatutSerie(serie.getIdSerie(), StatutSerie.TERMINEE);
+        }
         return livreRepository.save(livre);
     }
 
