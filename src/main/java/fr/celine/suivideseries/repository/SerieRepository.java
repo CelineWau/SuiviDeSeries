@@ -1,6 +1,7 @@
 package fr.celine.suivideseries.repository;
 
 import fr.celine.suivideseries.entity.Serie;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -24,4 +25,9 @@ public interface SerieRepository  extends JpaRepository<Serie, Integer> {
 
     @Query(value = "SELECT * FROM serie ORDER BY CASE statut_serie WHEN 1 THEN 1 WHEN 0 THEN 2 WHEN 2 THEN 3 END, nom ASC", nativeQuery = true)
     List<Serie> trierParStatut();
+
+    @Query("SELECT s FROM Serie s LEFT JOIN s.livres l WHERE s.statutSerie != fr.celine.suivideseries.enums.StatutSerie.ABANDONNEE " +
+            "GROUP BY s.idSerie HAVING SUM(CASE WHEN l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.A_ACHETER THEN 1 ELSE 0 END) > 0 " +
+            "ORDER BY SUM(CASE WHEN l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.A_ACHETER THEN 1 ELSE 0 END) ASC")
+    List<Serie> trouverSeriesAvecLivresAAcheter(Pageable pageable);
 }

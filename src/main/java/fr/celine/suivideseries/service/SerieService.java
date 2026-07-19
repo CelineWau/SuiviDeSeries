@@ -1,11 +1,15 @@
 package fr.celine.suivideseries.service;
 
+import fr.celine.suivideseries.dto.SerieAvecLivresAAcheterDTO;
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.entity.Utilisateur;
+import fr.celine.suivideseries.enums.StatutLivre;
 import fr.celine.suivideseries.enums.StatutPublication;
 import fr.celine.suivideseries.enums.StatutSerie;
 import fr.celine.suivideseries.exception.BusinessException;
 import fr.celine.suivideseries.repository.SerieRepository;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -110,5 +114,24 @@ public class SerieService {
         Serie serie = trouverSerieParId(id);
         serie.setStatutSerie(nouveauStatutSerie);
         return serieRepository.save(serie);
+    }
+
+    // Trouver 10 séries avec des livres à acheter
+    public List<SerieAvecLivresAAcheterDTO> trouverSeriesAvecLivresAAcheter() {
+        Pageable pageable = PageRequest.of(0, 10);
+        List<Serie> series = serieRepository.trouverSeriesAvecLivresAAcheter(pageable);
+
+        return series.stream()
+                .map(this::convertirEnDTO)
+                .toList();
+    }
+
+    // Convertir une série en DTO avec son nombre de livres à acheter
+    private SerieAvecLivresAAcheterDTO convertirEnDTO(Serie serie) {
+        int nombreLivreAAcheter = (int) serie.getLivres().stream()
+                .filter(l -> l.getStatutLivre() == StatutLivre.A_ACHETER)
+                .count();
+
+        return new SerieAvecLivresAAcheterDTO(serie.getIdSerie(), serie.getNom(), nombreLivreAAcheter);
     }
 }

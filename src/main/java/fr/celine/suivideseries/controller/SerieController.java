@@ -1,9 +1,6 @@
 package fr.celine.suivideseries.controller;
 
-import fr.celine.suivideseries.dto.NombreLivreTotalDTO;
-import fr.celine.suivideseries.dto.SerieCreationDTO;
-import fr.celine.suivideseries.dto.StatutPublicationDTO;
-import fr.celine.suivideseries.dto.StatutSerieDTO;
+import fr.celine.suivideseries.dto.*;
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.entity.Utilisateur;
 import fr.celine.suivideseries.service.SerieService;
@@ -34,6 +31,11 @@ public class SerieController {
     @GetMapping("/presqueFiniesPal")
     public ResponseEntity<List<Serie>> trouverSeriesPresqueFiniesDansLaPal(@RequestParam int seuil) {
         return ResponseEntity.ok(serieService.trouverSeriesPresqueFiniesDansLaPal(seuil));
+    }
+
+    @GetMapping("/seriesAvecLivresAAcheter")
+    public ResponseEntity<List<SerieAvecLivresAAcheterDTO>> trouverSeriesAvecLivresAAcheter() {
+        return ResponseEntity.ok(serieService.trouverSeriesAvecLivresAAcheter());
     }
 
     @PostMapping
