@@ -1,7 +1,10 @@
 package fr.celine.suivideseries.dto;
 
+import fr.celine.suivideseries.enums.FormatLivre;
 import fr.celine.suivideseries.enums.StatutLivre;
 import fr.celine.suivideseries.enums.StatutPublication;
+
+import java.time.LocalDate;
 
 public class LivreCreationDTO {
 
@@ -11,6 +14,8 @@ public class LivreCreationDTO {
     int numeroDansLaSerie;
     StatutLivre statutLivre;
     StatutPublication statutPublication;
+    FormatLivre formatLivre;
+    LocalDate dateAcquisition;
     int serieId;
 
     public String getAuteur() {
@@ -35,6 +40,14 @@ public class LivreCreationDTO {
 
     public StatutPublication getStatutPublication() {
         return statutPublication;
+    }
+
+    public FormatLivre getFormatLivre() {
+        return formatLivre;
+    }
+
+    public LocalDate getDateAcquisition() {
+        return dateAcquisition;
     }
 
     public int getSerieId() {

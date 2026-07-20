@@ -2,12 +2,14 @@ package fr.celine.suivideseries.service;
 
 import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
+import fr.celine.suivideseries.enums.FormatLivre;
 import fr.celine.suivideseries.enums.StatutLivre;
 import fr.celine.suivideseries.enums.StatutSerie;
 import fr.celine.suivideseries.exception.BusinessException;
 import fr.celine.suivideseries.repository.LivreRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -22,7 +24,7 @@ public class LivreService {
     }
 
     // Ajouter un livre
-    public Livre creerLivre (String auteur, String titre, String isbn, int numeroDansLaSerie, StatutLivre statutLivre, Serie serie) {
+    public Livre creerLivre (String auteur, String titre, String isbn, int numeroDansLaSerie, StatutLivre statutLivre, FormatLivre formatLivre, LocalDate dateAcquisition, Serie serie) {
 
         // Validation métier
         if(auteur == null || auteur.isBlank()) {
@@ -45,6 +47,10 @@ public class LivreService {
             throw new BusinessException("Le livre doit obligatoirement avoir un statut.");
         }
 
+        if(formatLivre == null) {
+            throw new BusinessException("Le format du livre est obligatoire.");
+        }
+
         if(serie == null) {
             throw new BusinessException("Le livre doit être associé à une série.");
         }
@@ -57,7 +63,7 @@ public class LivreService {
             throw new BusinessException("Un livre avec ce numéro existe déjà dans cette série.");
         }
 
-        Livre livre = new Livre(auteur, titre, isbn, numeroDansLaSerie, statutLivre, serie);
+        Livre livre = new Livre(auteur, titre, isbn, numeroDansLaSerie, statutLivre, formatLivre, dateAcquisition, serie);
         return livreRepository.save(livre);
     }
 

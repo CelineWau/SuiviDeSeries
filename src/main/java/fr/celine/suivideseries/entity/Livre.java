@@ -1,10 +1,12 @@
 package fr.celine.suivideseries.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import fr.celine.suivideseries.enums.FormatLivre;
 import fr.celine.suivideseries.enums.StatutLivre;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
+import java.time.LocalDate;
 import java.util.Objects;
 
 @Entity
@@ -32,9 +34,20 @@ public class Livre {
     @Column(nullable = false)
     private int numeroDansLaSerie;
 
-    @NotNull(message = "Le statut du livre est obligatoire")
+    @NotNull(message = "Le statut du livre est obligatoire.")
     @Column(nullable = false)
     private StatutLivre statutLivre;
+
+    @Enumerated(EnumType.STRING)
+    @NotNull(message = "Le format du livre est obligatoire.")
+    @Column(nullable = false)
+    private FormatLivre formatLivre;
+
+    @Column
+    private LocalDate dateAcquisition;
+
+    @Column
+    private LocalDate dateLecture;
 
     @JsonIgnore
     @ManyToOne
@@ -43,12 +56,14 @@ public class Livre {
 
     public Livre(){}
 
-    public Livre(String auteur, String titre, String isbn, int numeroDansLaSerie, StatutLivre statutLivre, Serie serie) {
+    public Livre(String auteur, String titre, String isbn, int numeroDansLaSerie, StatutLivre statutLivre, FormatLivre formatLivre, LocalDate dateAcquisition, Serie serie) {
         this.auteur = auteur;
         this.titre = titre;
         this.isbn = isbn;
         this.numeroDansLaSerie = numeroDansLaSerie;
         this.statutLivre = statutLivre;
+        this.formatLivre = formatLivre;
+        this.dateAcquisition = dateAcquisition;
         this.serie = serie;
     }
 
@@ -100,6 +115,30 @@ public class Livre {
         this.statutLivre = statutLivre;
     }
 
+    public FormatLivre getFormatLivre () {
+        return formatLivre;
+    }
+
+    public void setFormatLivre (FormatLivre formatLivre) {
+        this.formatLivre = formatLivre;
+    }
+
+    public LocalDate getDateAcquisition() {
+        return dateAcquisition;
+    }
+
+    public void setDateAcquisition(LocalDate dateAcquisition) {
+        this.dateAcquisition = dateAcquisition;
+    }
+
+    public LocalDate getDateLecture() {
+        return dateLecture;
+    }
+
+    public void setDateLecture(LocalDate dateLecture) {
+        this.dateLecture = dateLecture;
+    }
+
     public Serie getSerie() {
         return serie;
     }
@@ -111,12 +150,12 @@ public class Livre {
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof Livre livre)) return false;
-        return idLivre == livre.idLivre && numeroDansLaSerie == livre.numeroDansLaSerie && Objects.equals(auteur, livre.auteur) && Objects.equals(titre, livre.titre) && Objects.equals(isbn, livre.isbn) && statutLivre == livre.statutLivre && Objects.equals(serie, livre.serie);
+        return idLivre == livre.idLivre && numeroDansLaSerie == livre.numeroDansLaSerie && Objects.equals(auteur, livre.auteur) && Objects.equals(titre, livre.titre) && Objects.equals(isbn, livre.isbn) && statutLivre == livre.statutLivre && formatLivre == livre.formatLivre && Objects.equals(dateAcquisition, livre.dateAcquisition) && Objects.equals(dateLecture, livre.dateLecture) && Objects.equals(serie, livre.serie);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(idLivre, auteur, titre, isbn, numeroDansLaSerie, statutLivre, serie);
+        return Objects.hash(idLivre, auteur, titre, isbn, numeroDansLaSerie, statutLivre, formatLivre, dateAcquisition, dateLecture, serie);
     }
 
     @Override
@@ -128,6 +167,9 @@ public class Livre {
                 ", isbn='" + isbn + '\'' +
                 ", numeroDansLaSerie=" + numeroDansLaSerie + '\'' +
                 ", statutLivre=" + statutLivre +
+                ", formatLivre=" + formatLivre +
+                ", dateAcquisition=" + dateAcquisition +
+                ", dateLecture=" + dateLecture +
                 ", serie=" + serie +
                 '}';
     }
