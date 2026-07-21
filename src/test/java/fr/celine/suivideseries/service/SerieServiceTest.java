@@ -1,7 +1,11 @@
 package fr.celine.suivideseries.service;
 
+import fr.celine.suivideseries.dto.SerieAvecLivresAAcheterDTO;
+import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.entity.Utilisateur;
+import fr.celine.suivideseries.enums.FormatLivre;
+import fr.celine.suivideseries.enums.StatutLivre;
 import fr.celine.suivideseries.enums.StatutPublication;
 import fr.celine.suivideseries.enums.StatutSerie;
 import fr.celine.suivideseries.exception.BusinessException;
@@ -13,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -123,4 +128,72 @@ public class SerieServiceTest {
         assertThat(resultat).hasSize(1);
         verify(serieRepository, times(1)).trouverSeriesParNombreLivresManquants(1);
     }
+
+    @Test
+    @DisplayName("Doit lever une exception si le nombre de livres manquants pour la PAL est inférieur ou égal à 0")
+    void trouverSeriesPresqueFiniesDansLaPal_livreManquantInferieurOuEgalZero_leveBusinessException(){
+        assertThatThrownBy(() -> serieService.trouverSeriesPresqueFiniesDansLaPal(0))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Le nombre de livre manquant ne peut pas être négatif ou égal à zéro.");
+    }
+
+    @Test
+    @DisplayName("Doit retourner les séries presque finies dans la PAL")
+    void trouverSeriesPresqueFiniesDansLaPal_donneesValides_returnsSeries(){
+        when(serieRepository.trouverSeriesPresqueFinieDansLaPal(2)).thenReturn(List.of(serie));
+
+        List<Serie> resultat = serieService.trouverSeriesPresqueFiniesDansLaPal(2);
+
+        assertThat(resultat).isNotNull();
+        assertThat(resultat).hasSize(1);
+        verify(serieRepository, times(1)).trouverSeriesPresqueFinieDansLaPal(2);
+    }
+
+    @Test
+    @DisplayName("Doit modifier le nombre de livres total et repasser la série en EN_COURS si elle n'est pas abandonnée")
+    void modifierNombreLivreTotal_serieNonAbandonnee_repasseEnCours(){
+        serie.setStatutSerie(StatutSerie.TERMINEE);
+        when(serieRepository.findById(1)).thenReturn(Optional.of(serie));
+        when(serieRepository.save(any(Serie.class))).thenReturn(serie);
+
+        Serie resultat = serieService.modifierNombreLivreTotal(1, 5);
+
+        assertThat(resultat.getNombreLivreTotal()).isEqualTo(5);
+        assertThat(resultat.getStatutSerie()).isEqualTo(StatutSerie.EN_COURS);
+    }
+
+    @Test
+    @DisplayName("Ne doit pas repasser une série abandonnée en EN_COURS lors de la modification du nombre de livres")
+    void modifierNombreLivreTotal_serieAbandonnee_resteAbandonnee(){
+        serie.setStatutSerie(StatutSerie.ABANDONNEE);
+        when(serieRepository.findById(1)).thenReturn(Optional.of(serie));
+        when(serieRepository.save(any(Serie.class))).thenReturn(serie);
+
+        Serie resultat = serieService.modifierNombreLivreTotal(1, 5);
+
+        assertThat(resultat.getNombreLivreTotal()).isEqualTo(5);
+        assertThat(resultat.getStatutSerie()).isEqualTo(StatutSerie.ABANDONNEE);
+    }
+
+    @Test
+    @DisplayName("Doit convertir les séries en DTO avec leur nombre de livres à acheter")
+    void trouverSeriesAvecLivresAAcheter_returnListeDeDTO(){
+        Livre livreLu = new Livre("Tolkien", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null, serie);
+        Livre livreAAcheter1 = new Livre("Tolkien", "Tome 2", "2222222222222", 2, StatutLivre.A_ACHETER, FormatLivre.EBOOK, null, serie);
+        Livre livreAAcheter2 = new Livre("Tolkien", "Tome 3", "3333333333333", 3, StatutLivre.A_ACHETER, FormatLivre.EBOOK, null, serie);
+        serie.getLivres().add(livreLu);
+        serie.getLivres().add(livreAAcheter1);
+        serie.getLivres().add(livreAAcheter2);
+
+        when(serieRepository.trouverSeriesAvecLivresAAcheter(any(Pageable.class))).thenReturn(List.of(serie));
+
+        List<SerieAvecLivresAAcheterDTO> resultat = serieService.trouverSeriesAvecLivresAAcheter();
+
+        assertThat(resultat).isNotNull();
+        assertThat(resultat).hasSize(1);
+        assertThat(resultat.getFirst().getNom()).isEqualTo(serie.getNom());
+        assertThat(resultat.getFirst().getNombreLivreAAcheter()).isEqualTo(2);
+        verify(serieRepository, times(1)).trouverSeriesAvecLivresAAcheter(any(Pageable.class));
+    }
+
 }
