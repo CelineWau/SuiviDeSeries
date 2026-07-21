@@ -1,5 +1,6 @@
 package fr.celine.suivideseries.controller;
 
+import fr.celine.suivideseries.dto.FormatLivreDTO;
 import fr.celine.suivideseries.dto.LivreCreationDTO;
 import fr.celine.suivideseries.dto.StatutLivreDTO;
 import fr.celine.suivideseries.entity.Livre;
@@ -33,6 +34,11 @@ public class LivreController {
     @PatchMapping("/{id}/statut")
     public ResponseEntity<Livre> modifierStatutLivre(@PathVariable int id, @RequestBody StatutLivreDTO dto) {
         return ResponseEntity.ok(livreService.modifierStatutLivre(id, dto.getStatut()));
+    }
+
+    @PatchMapping("/{id}/formatLivre")
+    public ResponseEntity<Livre> modifierFormatLivre(@PathVariable int id, @RequestBody FormatLivreDTO dto) {
+        return ResponseEntity.ok(livreService.modifierFormatLivre(id, dto.getFormatLivre()));
     }
 
     @GetMapping("/auteurs")

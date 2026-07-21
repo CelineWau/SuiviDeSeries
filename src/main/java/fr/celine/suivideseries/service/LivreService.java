@@ -80,6 +80,13 @@ public class LivreService {
         return livreRepository.save(livre);
     }
 
+    //Modifier le format du livre
+    public Livre modifierFormatLivre(int id, FormatLivre nouveauFormat) {
+        Livre livre = livreRepository.findById(id).orElseThrow(() -> new BusinessException("Livre non trouvé"));
+        livre.setFormatLivre(nouveauFormat);
+        return livreRepository.save(livre);
+    }
+
     // Trouver la liste des auteurs
     public List<String> trouverAuteurs() {
         return livreRepository.trouverAuteurParOrdreAlphabetique();
