@@ -34,6 +34,7 @@ public class Livre {
     @Column(nullable = false)
     private int numeroDansLaSerie;
 
+    @Enumerated(EnumType.STRING)
     @NotNull(message = "Le statut du livre est obligatoire.")
     @Column(nullable = false)
     private StatutLivre statutLivre;

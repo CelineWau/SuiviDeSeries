@@ -36,10 +36,12 @@ public class Serie {
     )
     private List<Utilisateur> utilisateur = new ArrayList<>();
 
+    @Enumerated(EnumType.STRING)
     @NotNull(message = "La série doit avoir un statut.")
     @Column(name = "statut_serie", nullable = false)
     private StatutSerie statutSerie;
 
+    @Enumerated(EnumType.STRING)
     @NotNull(message = "La série doit avoir un statut de publication")
     @Column(name = "statut_publication",  nullable = false)
     private StatutPublication  statutPublication;
