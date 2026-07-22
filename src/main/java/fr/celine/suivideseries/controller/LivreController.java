@@ -2,6 +2,7 @@ package fr.celine.suivideseries.controller;
 
 import fr.celine.suivideseries.dto.FormatLivreDTO;
 import fr.celine.suivideseries.dto.LivreCreationDTO;
+import fr.celine.suivideseries.dto.RepartitionFormatDTO;
 import fr.celine.suivideseries.dto.StatutLivreDTO;
 import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
@@ -44,5 +45,10 @@ public class LivreController {
     @GetMapping("/auteurs")
     public ResponseEntity<List<String>> trouverAuteurs() {
         return ResponseEntity.ok(livreService.trouverAuteurs());
+    }
+
+    @GetMapping("/repartitionFormat")
+    public ResponseEntity<RepartitionFormatDTO> calculerRepartitionFormatDansPalEtLu() {
+        return ResponseEntity.ok(livreService.calculerRepartionFormatDansPalEtLu());
     }
 }

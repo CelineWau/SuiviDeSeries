@@ -1,5 +1,6 @@
 package fr.celine.suivideseries.service;
 
+import fr.celine.suivideseries.dto.RepartitionFormatDTO;
 import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.enums.FormatLivre;
@@ -80,7 +81,7 @@ public class LivreService {
         return livreRepository.save(livre);
     }
 
-    //Modifier le format du livre
+    // Modifier le format du livre
     public Livre modifierFormatLivre(int id, FormatLivre nouveauFormat) {
         Livre livre = livreRepository.findById(id).orElseThrow(() -> new BusinessException("Livre non trouvé"));
         livre.setFormatLivre(nouveauFormat);
@@ -90,5 +91,15 @@ public class LivreService {
     // Trouver la liste des auteurs
     public List<String> trouverAuteurs() {
         return livreRepository.trouverAuteurParOrdreAlphabetique();
+    }
+
+    // Calculer la répartition entre les Ebooks et les livres papier dans la PAL et LU
+    public RepartitionFormatDTO calculerRepartionFormatDansPalEtLu() {
+        long luEbook = livreRepository.countByStatutLivreAndFormatLivre(StatutLivre.LU, FormatLivre.EBOOK);
+        long luPapier = livreRepository.countByStatutLivreAndFormatLivre(StatutLivre.LU, FormatLivre.PAPIER);
+        long palEbook = livreRepository.countByStatutLivreAndFormatLivre(StatutLivre.DANS_PAL, FormatLivre.EBOOK);
+        long palPapier = livreRepository.countByStatutLivreAndFormatLivre(StatutLivre.DANS_PAL, FormatLivre.PAPIER);
+
+        return  new RepartitionFormatDTO(luEbook, luPapier, palEbook, palPapier);
     }
 }

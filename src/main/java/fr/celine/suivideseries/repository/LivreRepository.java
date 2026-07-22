@@ -2,6 +2,8 @@ package fr.celine.suivideseries.repository;
 
 import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
+import fr.celine.suivideseries.enums.FormatLivre;
+import fr.celine.suivideseries.enums.StatutLivre;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -16,4 +18,6 @@ public interface LivreRepository extends JpaRepository<Livre, Integer> {
 
     @Query("SELECT DISTINCT l.auteur FROM Livre l ORDER BY l.auteur ASC")
     List<String> trouverAuteurParOrdreAlphabetique();
+
+    long countByStatutLivreAndFormatLivre(StatutLivre statutLivre, FormatLivre formatLivre);
 }
