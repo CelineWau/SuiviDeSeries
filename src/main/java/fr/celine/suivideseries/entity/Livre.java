@@ -57,7 +57,8 @@ public class Livre {
 
     public Livre(){}
 
-    public Livre(String auteur, String titre, String isbn, int numeroDansLaSerie, StatutLivre statutLivre, FormatLivre formatLivre, LocalDate dateAcquisition, Serie serie) {
+    public Livre(String auteur, String titre, String isbn, int numeroDansLaSerie, StatutLivre statutLivre, FormatLivre formatLivre, LocalDate dateAcquisition, LocalDate dateLecture,
+                 Serie serie) {
         this.auteur = auteur;
         this.titre = titre;
         this.isbn = isbn;
@@ -65,6 +66,7 @@ public class Livre {
         this.statutLivre = statutLivre;
         this.formatLivre = formatLivre;
         this.dateAcquisition = dateAcquisition;
+        this.dateLecture = dateLecture;
         this.serie = serie;
     }
 

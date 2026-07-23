@@ -44,9 +44,11 @@ public class SerieRepositoryTest {
         utilisateur.setMdp("Azerty123");
         // Série avec 2 livres LU et 1 en PAL : correspond au cas "presque finie dans la PAL"
         serie = new Serie("Le Seigneur des anneaux", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 3);
-        livre1 = new Livre("J. R. R. Tolkien", "La fraternité de l'anneau", "1234567891234", 1, StatutLivre.LU, FormatLivre.EBOOK, null, serie);
-        livre2 = new Livre("J. R. R. Tolkien", "Les Deux Tours", "1235467891234", 2, StatutLivre.LU, FormatLivre.EBOOK, null, serie);
-        livre3 = new Livre("J. R. R. Tolkien", "Le Retour du Roi", "1234567819234", 3, StatutLivre.DANS_PAL, FormatLivre.EBOOK, null, serie);
+        livre1 = new Livre("J. R. R. Tolkien", "La fraternité de l'anneau", "1234567891234", 1, StatutLivre.LU, FormatLivre.EBOOK, null,
+                null, serie);
+        livre2 = new Livre("J. R. R. Tolkien", "Les Deux Tours", "1235467891234", 2, StatutLivre.LU, FormatLivre.EBOOK, null, null, serie);
+        livre3 = new Livre("J. R. R. Tolkien", "Le Retour du Roi", "1234567819234", 3, StatutLivre.DANS_PAL, FormatLivre.EBOOK, null, null,
+                serie);
 
         entityManager.persist(utilisateur);
         entityManager.persist(serie);
@@ -94,8 +96,9 @@ public class SerieRepositoryTest {
         Utilisateur autreUtilisateur = new Utilisateur("Rowling", "Joanne", "JoJo", "jo@email.fr");
         autreUtilisateur.setMdp("Azerty123");
         Serie autreSerie = new Serie("Harry Potter", autreUtilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 2);
-        Livre livre4 = new Livre("J. K. Rowling", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null, autreSerie);
-        Livre livre5 = new Livre("J. K. Rowling", "Tome 2", "2222222222222", 2, StatutLivre.A_ACHETER, FormatLivre.EBOOK, null, autreSerie);
+        Livre livre4 = new Livre("J. K. Rowling", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null, null, autreSerie);
+        Livre livre5 = new Livre("J. K. Rowling", "Tome 2", "2222222222222", 2, StatutLivre.A_ACHETER, FormatLivre.EBOOK, null, null,
+                autreSerie);
 
         entityManager.persist(autreUtilisateur);
         entityManager.persist(autreSerie);
@@ -127,11 +130,14 @@ public class SerieRepositoryTest {
         autreUtilisateur.setMdp("Azerty123");
 
         Serie serieDeuxAAcheter = new Serie("Harry Potter", autreUtilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 2);
-        Livre livre4 = new Livre("J. K. Rowling", "Tome 1", "1111111111111", 1, StatutLivre.A_ACHETER, FormatLivre.EBOOK, null, serieDeuxAAcheter);
-        Livre livre5 = new Livre("J. K. Rowling", "Tome 2", "2222222222222", 2, StatutLivre.A_ACHETER, FormatLivre.EBOOK, null, serieDeuxAAcheter);
+        Livre livre4 = new Livre("J. K. Rowling", "Tome 1", "1111111111111", 1, StatutLivre.A_ACHETER, FormatLivre.EBOOK, null, null,
+                serieDeuxAAcheter);
+        Livre livre5 = new Livre("J. K. Rowling", "Tome 2", "2222222222222", 2, StatutLivre.A_ACHETER, FormatLivre.EBOOK, null, null,
+                serieDeuxAAcheter);
 
         Serie serieUnAAcheter = new Serie("Percy Jackson", autreUtilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 1);
-        Livre livre6 = new Livre("Rick Riordan", "Tome 1", "3333333333333", 1, StatutLivre.A_ACHETER, FormatLivre.EBOOK, null, serieUnAAcheter);
+        Livre livre6 = new Livre("Rick Riordan", "Tome 1", "3333333333333", 1, StatutLivre.A_ACHETER, FormatLivre.EBOOK, null, null,
+                serieUnAAcheter);
 
         entityManager.persist(autreUtilisateur);
         entityManager.persist(serieDeuxAAcheter);
@@ -157,8 +163,8 @@ public class SerieRepositoryTest {
         autreUtilisateur.setMdp("Azerty123");
         Serie serieA = new Serie("Percy Jackson", autreUtilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 1);
         Serie serieB = new Serie("Harry Potter", autreUtilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 1);
-        Livre livre4 = new Livre("Rick Riordan", "Tome 1", "3333333333333", 1, StatutLivre.A_ACHETER, FormatLivre.EBOOK, null, serieA);
-        Livre livre5 = new Livre("J. K. Rowling", "Tome 1", "4444444444444", 1, StatutLivre.A_ACHETER, FormatLivre.EBOOK, null, serieB);
+        Livre livre4 = new Livre("Rick Riordan", "Tome 1", "3333333333333", 1, StatutLivre.A_ACHETER, FormatLivre.EBOOK, null, null, serieA);
+        Livre livre5 = new Livre("J. K. Rowling", "Tome 1", "4444444444444", 1, StatutLivre.A_ACHETER, FormatLivre.EBOOK, null, null, serieB);
 
         entityManager.persist(autreUtilisateur);
         entityManager.persist(serieA);

@@ -29,7 +29,8 @@ public class LivreController {
     @PostMapping
     public ResponseEntity<Livre> creerLivre(@RequestBody LivreCreationDTO dto){
         Serie serie =  serieService.trouverSerieParId(dto.getSerieId());
-        return ResponseEntity.ok(livreService.creerLivre(dto.getAuteur(), dto.getTitre(), dto.getIsbn(), dto.getNumeroDansLaSerie(), dto.getStatutLivre(), dto.getFormatLivre(), dto.getDateAcquisition(), serie));
+        return ResponseEntity.ok(livreService.creerLivre(dto.getAuteur(), dto.getTitre(), dto.getIsbn(), dto.getNumeroDansLaSerie(), dto.getStatutLivre(), dto.getFormatLivre(), dto.getDateAcquisition(),
+                dto.getDateLecture(), serie));
     }
 
     @PatchMapping("/{id}/statut")

@@ -178,9 +178,9 @@ public class SerieServiceTest {
     @Test
     @DisplayName("Doit convertir les séries en DTO avec leur nombre de livres à acheter")
     void trouverSeriesAvecLivresAAcheter_returnListeDeDTO(){
-        Livre livreLu = new Livre("Tolkien", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null, serie);
-        Livre livreAAcheter1 = new Livre("Tolkien", "Tome 2", "2222222222222", 2, StatutLivre.A_ACHETER, FormatLivre.EBOOK, null, serie);
-        Livre livreAAcheter2 = new Livre("Tolkien", "Tome 3", "3333333333333", 3, StatutLivre.A_ACHETER, FormatLivre.EBOOK, null, serie);
+        Livre livreLu = new Livre("Tolkien", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null, null, serie);
+        Livre livreAAcheter1 = new Livre("Tolkien", "Tome 2", "2222222222222", 2, StatutLivre.A_ACHETER, FormatLivre.EBOOK, null, null, serie);
+        Livre livreAAcheter2 = new Livre("Tolkien", "Tome 3", "3333333333333", 3, StatutLivre.A_ACHETER, FormatLivre.EBOOK, null, null, serie);
         serie.getLivres().add(livreLu);
         serie.getLivres().add(livreAAcheter1);
         serie.getLivres().add(livreAAcheter2);

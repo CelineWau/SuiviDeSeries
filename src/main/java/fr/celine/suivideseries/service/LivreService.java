@@ -25,7 +25,8 @@ public class LivreService {
     }
 
     // Ajouter un livre
-    public Livre creerLivre (String auteur, String titre, String isbn, int numeroDansLaSerie, StatutLivre statutLivre, FormatLivre formatLivre, LocalDate dateAcquisition, Serie serie) {
+    public Livre creerLivre (String auteur, String titre, String isbn, int numeroDansLaSerie, StatutLivre statutLivre, FormatLivre formatLivre, LocalDate dateAcquisition, LocalDate dateLecture,
+                             Serie serie) {
 
         // Validation métier
         if(auteur == null || auteur.isBlank()) {
@@ -64,14 +65,18 @@ public class LivreService {
             throw new BusinessException("Un livre avec ce numéro existe déjà dans cette série.");
         }
 
-        Livre livre = new Livre(auteur, titre, isbn, numeroDansLaSerie, statutLivre, formatLivre, dateAcquisition, serie);
+        Livre livre = new Livre(auteur, titre, isbn, numeroDansLaSerie, statutLivre, formatLivre, dateAcquisition, dateLecture, serie);
         return livreRepository.save(livre);
     }
 
     // Modifier le statut d'un livre
     public Livre modifierStatutLivre(int id, StatutLivre nouveauStatut) {
         Livre livre = livreRepository.findById(id).orElseThrow(() -> new BusinessException("Livre non trouvé."));
+        StatutLivre ancienStatut = livre.getStatutLivre();
         livre.setStatutLivre(nouveauStatut);
+
+        automatiserDatesLivre(livre, ancienStatut, nouveauStatut);
+
         Serie serie = livre.getSerie();
         boolean toutEstLu = serie.getLivres().stream().allMatch(l -> l.getStatutLivre() == StatutLivre.LU);
         boolean nombreComplet = serie.getLivres().size() == serie.getNombreLivreTotal();
@@ -101,5 +106,15 @@ public class LivreService {
         long palPapier = livreRepository.countByStatutLivreAndFormatLivre(StatutLivre.DANS_PAL, FormatLivre.PAPIER);
 
         return  new RepartitionFormatDTO(luEbook, luPapier, palEbook, palPapier);
+    }
+
+    // Remplit automatiquement les dates du livre selon la transition de statut
+    private void automatiserDatesLivre(Livre livre, StatutLivre ancienStatut, StatutLivre nouveauStatut) {
+        if (ancienStatut == StatutLivre.A_ACHETER && nouveauStatut == StatutLivre.DANS_PAL) {
+            livre.setDateAcquisition(LocalDate.now());
+        }
+        if (ancienStatut == StatutLivre.DANS_PAL && nouveauStatut == StatutLivre.LU) {
+            livre.setDateLecture(LocalDate.now());
+        }
     }
 }

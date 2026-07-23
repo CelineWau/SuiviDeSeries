@@ -16,6 +16,7 @@ public class LivreCreationDTO {
     StatutPublication statutPublication;
     FormatLivre formatLivre;
     LocalDate dateAcquisition;
+    LocalDate dateLecture;
     int serieId;
 
     public String getAuteur() {
@@ -48,6 +49,10 @@ public class LivreCreationDTO {
 
     public LocalDate getDateAcquisition() {
         return dateAcquisition;
+    }
+
+    public LocalDate getDateLecture() {
+        return dateLecture;
     }
 
     public int getSerieId() {

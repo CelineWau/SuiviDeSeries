@@ -40,7 +40,7 @@ public class LivreRepositoryTest {
         utilisateur = new Utilisateur("Waucheul", "Céline", "Kitsune", "monemail@email.fr");
         utilisateur.setMdp("Azerty123");
         serie = new Serie("Le puits des mémoires", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 3);
-        livre = new Livre("Gabriel Katz", "La traque", "1234567891234", 1, StatutLivre.LU, FormatLivre.PAPIER, null, serie);
+        livre = new Livre("Gabriel Katz", "La traque", "1234567891234", 1, StatutLivre.LU, FormatLivre.PAPIER, null, null, serie);
 
         entityManager.persist(utilisateur);
         entityManager.persist(serie);
@@ -70,8 +70,10 @@ public class LivreRepositoryTest {
     @DisplayName("Doit retourner la liste des auteurs triée par ordre alphabétique, sans doublon")
     void trouverAuteurParOrdreAlphabetique_returnAuteursTriesSansDoublon(){
         // Deuxième livre du même auteur (pour vérifier le DISTINCT) + un auteur qui doit passer avant dans le tri
-        Livre livre2 = new Livre("Gabriel Katz", "Le fils de la lune", "9876543219876", 2, StatutLivre.DANS_PAL, FormatLivre.PAPIER, null, serie);
-        Livre livre3 = new Livre("Alison Germain", "Le Souffle de Midas", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null, serie);
+        Livre livre2 = new Livre("Gabriel Katz", "Le fils de la lune", "9876543219876", 2, StatutLivre.DANS_PAL, FormatLivre.PAPIER, null,
+                null,serie);
+        Livre livre3 = new Livre("Alison Germain", "Le Souffle de Midas", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null, null,
+                serie);
         entityManager.persist(livre2);
         entityManager.persist(livre3);
         entityManager.flush();
@@ -85,8 +87,8 @@ public class LivreRepositoryTest {
     @Test
     @DisplayName("Doit compter les livres selon leur statut et leur format")
     void countByStatutLivreAndFormatLivre_returnsBonCompte(){
-        Livre livre2 = new Livre("Gabriel Katz", "Le fils de la lune", "9876543219876", 2, StatutLivre.LU, FormatLivre.EBOOK, null, serie);
-        Livre livre3 = new Livre("Gabriel Katz", "La traque 3", "9876543219877", 3, StatutLivre.LU, FormatLivre.EBOOK, null, serie);
+        Livre livre2 = new Livre("Gabriel Katz", "Le fils de la lune", "9876543219876", 2, StatutLivre.LU, FormatLivre.EBOOK, null, null,serie);
+        Livre livre3 = new Livre("Gabriel Katz", "La traque 3", "9876543219877", 3, StatutLivre.LU, FormatLivre.EBOOK, null, null, serie);
         entityManager.persist(livre2);
         entityManager.persist(livre3);
         entityManager.flush();
