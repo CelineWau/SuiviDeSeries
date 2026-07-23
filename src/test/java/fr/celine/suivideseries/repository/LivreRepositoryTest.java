@@ -81,4 +81,18 @@ public class LivreRepositoryTest {
         assertThat(resultat).isNotNull();
         assertThat(resultat).containsExactly("Alison Germain", "Gabriel Katz");
     }
+
+    @Test
+    @DisplayName("Doit compter les livres selon leur statut et leur format")
+    void countByStatutLivreAndFormatLivre_returnsBonCompte(){
+        Livre livre2 = new Livre("Gabriel Katz", "Le fils de la lune", "9876543219876", 2, StatutLivre.LU, FormatLivre.EBOOK, null, serie);
+        Livre livre3 = new Livre("Gabriel Katz", "La traque 3", "9876543219877", 3, StatutLivre.LU, FormatLivre.EBOOK, null, serie);
+        entityManager.persist(livre2);
+        entityManager.persist(livre3);
+        entityManager.flush();
+
+        long resultat = livreRepository.countByStatutLivreAndFormatLivre(StatutLivre.LU, FormatLivre.EBOOK);
+
+        assertThat(resultat).isEqualTo(2);
+    }
 }

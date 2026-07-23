@@ -83,7 +83,7 @@ public class LivreService {
 
     // Modifier le format du livre
     public Livre modifierFormatLivre(int id, FormatLivre nouveauFormat) {
-        Livre livre = livreRepository.findById(id).orElseThrow(() -> new BusinessException("Livre non trouvé"));
+        Livre livre = livreRepository.findById(id).orElseThrow(() -> new BusinessException("Livre non trouvé."));
         livre.setFormatLivre(nouveauFormat);
         return livreRepository.save(livre);
     }

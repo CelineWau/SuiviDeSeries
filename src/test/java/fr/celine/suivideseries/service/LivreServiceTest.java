@@ -1,5 +1,6 @@
 package fr.celine.suivideseries.service;
 
+import fr.celine.suivideseries.dto.RepartitionFormatDTO;
 import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.entity.Utilisateur;
@@ -196,4 +197,41 @@ public class LivreServiceTest {
         verify(serieService, times(1)).modifierStatutSerie(serie.getIdSerie(), StatutSerie.TERMINEE);
     }
 
+    @Test
+    @DisplayName("Doit lever une exception si le livre à modifier le format n'existe pas")
+    void modifierFormatLivre_livreNonTrouve_leveBusinessException(){
+        when(livreRepository.findById(99)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> livreService.modifierFormatLivre(99, FormatLivre.EBOOK))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Livre non trouvé.");
+    }
+
+    @Test
+    @DisplayName("Doit modifier le format du livre")
+    void modifierFormatLivre_donneesValides_returnsLivreAvecNouveauFormat(){
+        when(livreRepository.findById(1)).thenReturn(Optional.of(livre));
+        when(livreRepository.save(any(Livre.class))).thenReturn(livre);
+
+        Livre resultat = livreService.modifierFormatLivre(1, FormatLivre.EBOOK);
+
+        assertThat(resultat.getFormatLivre()).isEqualTo(FormatLivre.EBOOK);
+        verify(livreRepository, times(1)).save(livre);
+    }
+
+    @Test
+    @DisplayName("Doit calculer la répartition ebook/papier pour les livres LU et DANS_PAL")
+    void calculerRepartionFormatDansPalEtLu_returnsRepartitionCorrecte(){
+        when(livreRepository.countByStatutLivreAndFormatLivre(StatutLivre.LU, FormatLivre.EBOOK)).thenReturn(10L);
+        when(livreRepository.countByStatutLivreAndFormatLivre(StatutLivre.LU, FormatLivre.PAPIER)).thenReturn(5L);
+        when(livreRepository.countByStatutLivreAndFormatLivre(StatutLivre.DANS_PAL, FormatLivre.EBOOK)).thenReturn(3L);
+        when(livreRepository.countByStatutLivreAndFormatLivre(StatutLivre.DANS_PAL, FormatLivre.PAPIER)).thenReturn(2L);
+
+        RepartitionFormatDTO resultat = livreService.calculerRepartionFormatDansPalEtLu();
+
+        assertThat(resultat.getLuEbook()).isEqualTo(10L);
+        assertThat(resultat.getLuPapier()).isEqualTo(5L);
+        assertThat(resultat.getPalEbook()).isEqualTo(3L);
+        assertThat(resultat.getPalPapier()).isEqualTo(2L);
+    }
 }
