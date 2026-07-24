@@ -17,6 +17,7 @@ import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -177,5 +178,27 @@ public class SerieRepositoryTest {
         List<Serie> resultat = serieRepository.trouverSeriesAvecLivresAAcheter(pageable);
 
         assertThat(resultat).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("Doit compter les séries dont la date de fin est comprise dans la plage donnée")
+    void countByDateFinBetween_returnsBonCompte() {
+        serie.setDateFin(LocalDate.of(2026, 3, 15));
+        entityManager.flush();
+
+        long resultat = serieRepository.countByDateFinBetween(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31));
+
+        assertThat(resultat).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("Ne doit pas compter une série dont la date de fin est hors de la plage donnée")
+    void countByDateFinBetween_excludesSerieHorsPlage() {
+        serie.setDateFin(LocalDate.of(2025, 3, 15));
+        entityManager.flush();
+
+        long resultat = serieRepository.countByDateFinBetween(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31));
+
+        assertThat(resultat).isEqualTo(0);
     }
 }

@@ -19,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -196,4 +197,27 @@ public class SerieServiceTest {
         verify(serieRepository, times(1)).trouverSeriesAvecLivresAAcheter(any(Pageable.class));
     }
 
+    @Test
+    @DisplayName("Doit remplir la date de fin automatiquement lors du passage de EN_COURS à TERMINEE")
+    void modifierStatutSerie_transitionEnCoursVersTerminee_remplitDateFin(){
+        serie.setStatutSerie(StatutSerie.EN_COURS);
+        when(serieRepository.findById(1)).thenReturn(Optional.of(serie));
+        when(serieRepository.save(any(Serie.class))).thenReturn(serie);
+
+        Serie resultat = serieService.modifierStatutSerie(1, StatutSerie.TERMINEE);
+
+        assertThat(resultat.getDateFin()).isEqualTo(LocalDate.now());
+    }
+
+    @Test
+    @DisplayName("Ne doit pas remplir la date de fin si la transition n'est pas EN_COURS vers TERMINEE")
+    void modifierStatutSerie_transitionAutre_neRemplitPasDateFin(){
+        serie.setStatutSerie(StatutSerie.EN_COURS);
+        when(serieRepository.findById(1)).thenReturn(Optional.of(serie));
+        when(serieRepository.save(any(Serie.class))).thenReturn(serie);
+
+        Serie resultat = serieService.modifierStatutSerie(1, StatutSerie.ABANDONNEE);
+
+        assertThat(resultat.getDateFin()).isNull();
+    }
 }
