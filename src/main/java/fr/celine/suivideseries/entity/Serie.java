@@ -5,6 +5,7 @@ import fr.celine.suivideseries.enums.StatutSerie;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -25,6 +26,9 @@ public class Serie {
     @NotNull(message = "Le nombre de livre total d'une série est obligatoire")
     @Column(nullable = false)
     private int nombreLivreTotal;
+
+    @Column
+    private LocalDate dateFin;
 
     @NotNull(message = "La série doit être attribuée à un utilisateur")
     @Column(nullable = false)
@@ -93,6 +97,14 @@ public class Serie {
         this.nombreLivreTotal = nombreLivreTotal;
     }
 
+    public LocalDate getDateFin() {
+        return dateFin;
+    }
+
+    public void setDateFin(LocalDate dateFin) {
+        this.dateFin = dateFin;
+    }
+
     public List<Utilisateur> getUtilisateur() {
         return utilisateur;
     }
@@ -131,6 +143,7 @@ public class Serie {
                 "idSerie=" + idSerie +
                 ", nom='" + nom + '\'' +
                 ", nombreLivreTotal=" + nombreLivreTotal +
+                ", dateFin=" + dateFin +
                 ", utilisateur=" + utilisateur +
                 ", statutSerie=" + statutSerie +
                 ", statutPublication=" + statutPublication +
@@ -141,11 +154,11 @@ public class Serie {
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof Serie serie)) return false;
-        return idSerie == serie.idSerie && nombreLivreTotal == serie.nombreLivreTotal && Objects.equals(nom, serie.nom) && Objects.equals(utilisateur, serie.utilisateur) && statutSerie == serie.statutSerie && statutPublication == serie.statutPublication && Objects.equals(livres, serie.livres);
+        return idSerie == serie.idSerie && nombreLivreTotal == serie.nombreLivreTotal && Objects.equals(nom, serie.nom) && Objects.equals(dateFin, serie.dateFin) && Objects.equals(utilisateur, serie.utilisateur) && statutSerie == serie.statutSerie && statutPublication == serie.statutPublication && Objects.equals(livres, serie.livres);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(idSerie, nom, nombreLivreTotal, utilisateur, statutSerie, statutPublication, livres);
+        return Objects.hash(idSerie, nom, nombreLivreTotal, dateFin, utilisateur, statutSerie, statutPublication, livres);
     }
 }

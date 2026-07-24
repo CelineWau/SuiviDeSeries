@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -112,7 +113,11 @@ public class SerieService {
     // Modifier le statut de la série
     public Serie modifierStatutSerie(int id, StatutSerie nouveauStatutSerie) {
         Serie serie = trouverSerieParId(id);
+        StatutSerie ancienStatut = serie.getStatutSerie();
         serie.setStatutSerie(nouveauStatutSerie);
+        if (ancienStatut == StatutSerie.EN_COURS && nouveauStatutSerie == StatutSerie.TERMINEE) {
+            serie.setDateFin(LocalDate.now());
+        }
         return serieRepository.save(serie);
     }
 
@@ -124,6 +129,15 @@ public class SerieService {
         return series.stream()
                 .map(this::convertirEnDTO)
                 .toList();
+    }
+
+    // Compter les séries entre le 1er janvier et le 31 décembre
+    public long compterSeriesPourAnnee(){
+        int annee = LocalDate.now().getYear();
+        LocalDate dateDebut = LocalDate.of(annee, 1, 1);
+        LocalDate dateFin = LocalDate.of(annee, 12, 31);
+
+        return serieRepository.countByDateFinBetween(dateDebut, dateFin);
     }
 
     // Convertir une série en DTO avec son nombre de livres à acheter
