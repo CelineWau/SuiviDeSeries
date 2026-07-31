@@ -153,4 +153,11 @@ public class SerieService {
     public List<Serie> trouverSerieAJour() {
         return serieRepository.trouverSeriesAJour();
     }
+
+    // Trouver les séries délaissées depuis plus d'un an
+    public List<Serie> trouverSerieDelaissees() {
+        LocalDate date = LocalDate.now();
+        LocalDate dateSeuil = date.minusYears(1);
+        return serieRepository.trouverSeriesDelaissees(dateSeuil);
+    }
 }

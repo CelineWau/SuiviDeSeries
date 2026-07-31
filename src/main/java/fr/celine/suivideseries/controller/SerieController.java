@@ -48,6 +48,11 @@ public class SerieController {
         return ResponseEntity.ok(serieService.trouverSerieAJour());
     }
 
+    @GetMapping("/seriesDelaissees")
+    public ResponseEntity<List<Serie>> trouverSeriesDelaissees() {
+        return ResponseEntity.ok(serieService.trouverSerieDelaissees());
+    }
+
     @PostMapping
     public ResponseEntity<Serie> creerSerie(@RequestBody SerieCreationDTO dto) {
         Utilisateur utilisateur = utilisateurService.trouverUtilisateurParId(dto.getUtilisateurId());

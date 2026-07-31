@@ -34,10 +34,11 @@ public interface SerieRepository  extends JpaRepository<Serie, Integer> {
 
     long countByDateFinBetween(LocalDate dateDebut, LocalDate dateFin);
 
-    @Query("SELECT s FROM Serie s LEFT JOIN s.livres l " +
-            "WHERE s.statutSerie = fr.celine.suivideseries.enums.StatutSerie.EN_COURS " +
-            "AND s.statutPublication != fr.celine.suivideseries.enums.StatutPublication.TERMINEE " +
-            "GROUP BY s.idSerie " +
+    @Query("SELECT s FROM Serie s LEFT JOIN s.livres l WHERE s.statutSerie = fr.celine.suivideseries.enums.StatutSerie.EN_COURS " +
+            "AND s.statutPublication != fr.celine.suivideseries.enums.StatutPublication.TERMINEE GROUP BY s.idSerie " +
             "HAVING SUM(CASE WHEN l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.LU THEN 1 ELSE 0 END) = COUNT(l)")
     List<Serie> trouverSeriesAJour();
+
+    @Query("SELECT s FROM Serie s LEFT JOIN s.livres l WHERE s.statutSerie = fr.celine.suivideseries.enums.StatutSerie.EN_COURS GROUP BY s.idSerie HAVING MAX(l.dateLecture) < ?1")
+    List<Serie> trouverSeriesDelaissees (LocalDate dateSeuil);
 }
