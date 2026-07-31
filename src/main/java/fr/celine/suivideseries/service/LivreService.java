@@ -5,6 +5,7 @@ import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.enums.FormatLivre;
 import fr.celine.suivideseries.enums.StatutLivre;
+import fr.celine.suivideseries.enums.StatutPublication;
 import fr.celine.suivideseries.enums.StatutSerie;
 import fr.celine.suivideseries.exception.BusinessException;
 import fr.celine.suivideseries.repository.LivreRepository;
@@ -80,7 +81,7 @@ public class LivreService {
         Serie serie = livre.getSerie();
         boolean toutEstLu = serie.getLivres().stream().allMatch(l -> l.getStatutLivre() == StatutLivre.LU);
         boolean nombreComplet = serie.getLivres().size() == serie.getNombreLivreTotal();
-        if(toutEstLu && nombreComplet) {
+        if(toutEstLu && nombreComplet && serie.getStatutPublication() == StatutPublication.TERMINEE) {
             serieService.modifierStatutSerie(serie.getIdSerie(), StatutSerie.TERMINEE);
         }
         return livreRepository.save(livre);
