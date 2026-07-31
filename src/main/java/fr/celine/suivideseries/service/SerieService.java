@@ -148,4 +148,9 @@ public class SerieService {
 
         return new SerieAvecLivresAAcheterDTO(serie.getIdSerie(), serie.getNom(), nombreLivreAAcheter);
     }
+
+    // Trouver les séries à jour
+    public List<Serie> trouverSerieAJour() {
+        return serieRepository.trouverSeriesAJour();
+    }
 }
