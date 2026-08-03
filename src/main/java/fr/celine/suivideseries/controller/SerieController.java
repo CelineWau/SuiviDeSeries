@@ -5,6 +5,7 @@ import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.entity.Utilisateur;
 import fr.celine.suivideseries.service.SerieService;
 import fr.celine.suivideseries.service.UtilisateurService;
+import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,6 +52,11 @@ public class SerieController {
     @GetMapping("/seriesDelaissees")
     public ResponseEntity<List<Serie>> trouverSeriesDelaissees() {
         return ResponseEntity.ok(serieService.trouverSerieDelaissees());
+    }
+
+    @GetMapping("/ratioSeries")
+    public ResponseEntity<Double> afficherRatioSeries() {
+        return ResponseEntity.ok(serieService.calculerRatioSeries());
     }
 
     @PostMapping

@@ -160,4 +160,16 @@ public class SerieService {
         LocalDate dateSeuil = date.minusYears(1);
         return serieRepository.trouverSeriesDelaissees(dateSeuil);
     }
+
+    // Calculer le ratio de séries finies vs commencées
+    public double calculerRatioSeries(){
+        long seriesTerminees = serieRepository.countByStatutSerie(StatutSerie.TERMINEE);
+        long seriesEnCours = serieRepository.countByStatutSerie(StatutSerie.EN_COURS);
+        long seriesCommencees = seriesTerminees + seriesEnCours;
+        if (seriesCommencees == 0){
+            return 0;
+        } else {
+            return (double) seriesTerminees / seriesCommencees;
+        }
+    }
 }

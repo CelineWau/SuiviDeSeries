@@ -1,6 +1,7 @@
 package fr.celine.suivideseries.repository;
 
 import fr.celine.suivideseries.entity.Serie;
+import fr.celine.suivideseries.enums.StatutSerie;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -41,4 +42,6 @@ public interface SerieRepository  extends JpaRepository<Serie, Integer> {
 
     @Query("SELECT s FROM Serie s LEFT JOIN s.livres l WHERE s.statutSerie = fr.celine.suivideseries.enums.StatutSerie.EN_COURS GROUP BY s.idSerie HAVING MAX(l.dateLecture) < ?1")
     List<Serie> trouverSeriesDelaissees (LocalDate dateSeuil);
+
+    long countByStatutSerie(StatutSerie statutSerie);
 }
