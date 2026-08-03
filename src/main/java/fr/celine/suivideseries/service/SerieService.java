@@ -1,5 +1,6 @@
 package fr.celine.suivideseries.service;
 
+import fr.celine.suivideseries.dto.RepartitionStatutSerieDTO;
 import fr.celine.suivideseries.dto.SerieAvecLivresAAcheterDTO;
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.entity.Utilisateur;
@@ -162,7 +163,7 @@ public class SerieService {
     }
 
     // Calculer le ratio de séries finies vs commencées
-    public double calculerRatioSeries(){
+    public double calculerRatioSeries() {
         long seriesTerminees = serieRepository.countByStatutSerie(StatutSerie.TERMINEE);
         long seriesEnCours = serieRepository.countByStatutSerie(StatutSerie.EN_COURS);
         long seriesCommencees = seriesTerminees + seriesEnCours;
@@ -171,5 +172,13 @@ public class SerieService {
         } else {
             return (double) seriesTerminees / seriesCommencees;
         }
+    }
+
+    // Calculer la répartition entre les séries en cours, terminées et abandonnées
+    public RepartitionStatutSerieDTO calculerRepartitionStatutSeries() {
+        long seriesTerminees = serieRepository.countByStatutSerie(StatutSerie.TERMINEE);
+        long seriesEnCours = serieRepository.countByStatutSerie(StatutSerie.EN_COURS);
+        long seriesAbandonnees = serieRepository.countByStatutSerie(StatutSerie.ABANDONNEE);
+        return new RepartitionStatutSerieDTO(seriesEnCours, seriesTerminees, seriesAbandonnees);
     }
 }
