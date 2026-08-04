@@ -47,4 +47,6 @@ public interface SerieRepository  extends JpaRepository<Serie, Integer> {
     long countByStatutSerie(StatutSerie statutSerie);
 
     Optional<Serie> findFirstByStatutSerieOrderByNombreLivreTotalDesc(StatutSerie statutSerie);
+
+    List<Serie> findByStatutSerieNot(StatutSerie statutSerie);
 }

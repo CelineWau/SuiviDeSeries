@@ -1,9 +1,6 @@
 package fr.celine.suivideseries.service;
 
-import fr.celine.suivideseries.dto.RepartitionStatutSerieDTO;
-import fr.celine.suivideseries.dto.SerieAvecLivresAAcheterDTO;
-import fr.celine.suivideseries.dto.SeriesDelaisseesDTO;
-import fr.celine.suivideseries.dto.SeriesLesPlusLonguesDTO;
+import fr.celine.suivideseries.dto.*;
 import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.entity.Utilisateur;
@@ -207,5 +204,24 @@ public class SerieService {
         Serie seriePlusLongueEnCours = serieRepository.findFirstByStatutSerieOrderByNombreLivreTotalDesc(StatutSerie.EN_COURS).orElse(null);
         Serie seriePlusLongueTerminee = serieRepository.findFirstByStatutSerieOrderByNombreLivreTotalDesc(StatutSerie.TERMINEE).orElse(null);
         return new SeriesLesPlusLonguesDTO(seriePlusLongueEnCours, seriePlusLongueTerminee);
+    }
+
+    // Calculer la répartition des séries par taille (petites/moyenne/sagas)
+    public TailleSerieDTO calculerRepartitionTailleSeries(){
+        List<Serie> series = serieRepository.findByStatutSerieNot(StatutSerie.ABANDONNEE);
+
+        long petites = series.stream()
+                .filter(s -> s.getNombreLivreTotal() >= 1 && s.getNombreLivreTotal() <= 3)
+                .count();
+
+        long moyennes = series.stream()
+                .filter(s -> s.getNombreLivreTotal() >= 4 && s.getNombreLivreTotal() <= 7)
+                .count();
+
+        long sagas = series.stream()
+                .filter(s -> s.getNombreLivreTotal() >= 8)
+                .count();
+
+        return new TailleSerieDTO(petites, moyennes, sagas);
     }
 }
