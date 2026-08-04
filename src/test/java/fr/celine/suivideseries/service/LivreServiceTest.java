@@ -240,7 +240,7 @@ public class LivreServiceTest {
         when(livreRepository.countByStatutLivreAndFormatLivre(StatutLivre.DANS_PAL, FormatLivre.EBOOK)).thenReturn(3L);
         when(livreRepository.countByStatutLivreAndFormatLivre(StatutLivre.DANS_PAL, FormatLivre.PAPIER)).thenReturn(2L);
 
-        RepartitionFormatDTO resultat = livreService.calculerRepartionFormatDansPalEtLu();
+        RepartitionFormatDTO resultat = livreService.calculerRepartitionFormatDansPalEtLu();
 
         assertThat(resultat.getLuEbook()).isEqualTo(10L);
         assertThat(resultat.getLuPapier()).isEqualTo(5L);

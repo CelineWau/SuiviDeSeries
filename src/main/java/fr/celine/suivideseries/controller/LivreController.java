@@ -50,6 +50,6 @@ public class LivreController {
 
     @GetMapping("/repartitionFormat")
     public ResponseEntity<RepartitionFormatDTO> calculerRepartitionFormatDansPalEtLu() {
-        return ResponseEntity.ok(livreService.calculerRepartionFormatDansPalEtLu());
+        return ResponseEntity.ok(livreService.calculerRepartitionFormatDansPalEtLu());
     }
 }

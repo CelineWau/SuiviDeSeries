@@ -63,6 +63,11 @@ public class SerieController {
         return ResponseEntity.ok(serieService.calculerRepartitionStatutSeries());
     }
 
+    @GetMapping("/seriesLesPlusLongues")
+    public ResponseEntity<SeriesLesPlusLonguesDTO> afficherLesSeriesPlusLongues() {
+        return ResponseEntity.ok(serieService.trouverSeriePlusLongueEnCoursEtTerminee());
+    }
+
     @PostMapping
     public ResponseEntity<Serie> creerSerie(@RequestBody SerieCreationDTO dto) {
         Utilisateur utilisateur = utilisateurService.trouverUtilisateurParId(dto.getUtilisateurId());

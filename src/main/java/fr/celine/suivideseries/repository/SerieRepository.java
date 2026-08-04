@@ -44,4 +44,6 @@ public interface SerieRepository  extends JpaRepository<Serie, Integer> {
     List<Serie> trouverSeriesDelaissees (LocalDate dateSeuil);
 
     long countByStatutSerie(StatutSerie statutSerie);
+
+    Optional<Serie> findFirstByStatutSerieOrderByNombreLivreTotalDesc(StatutSerie statutSerie);
 }

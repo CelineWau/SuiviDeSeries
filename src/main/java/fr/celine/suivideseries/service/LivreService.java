@@ -100,7 +100,7 @@ public class LivreService {
     }
 
     // Calculer la répartition entre les Ebooks et les livres papier dans la PAL et LU
-    public RepartitionFormatDTO calculerRepartionFormatDansPalEtLu() {
+    public RepartitionFormatDTO calculerRepartitionFormatDansPalEtLu() {
         long luEbook = livreRepository.countByStatutLivreAndFormatLivre(StatutLivre.LU, FormatLivre.EBOOK);
         long luPapier = livreRepository.countByStatutLivreAndFormatLivre(StatutLivre.LU, FormatLivre.PAPIER);
         long palEbook = livreRepository.countByStatutLivreAndFormatLivre(StatutLivre.DANS_PAL, FormatLivre.EBOOK);

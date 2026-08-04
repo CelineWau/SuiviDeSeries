@@ -2,6 +2,7 @@ package fr.celine.suivideseries.service;
 
 import fr.celine.suivideseries.dto.RepartitionStatutSerieDTO;
 import fr.celine.suivideseries.dto.SerieAvecLivresAAcheterDTO;
+import fr.celine.suivideseries.dto.SeriesLesPlusLonguesDTO;
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.entity.Utilisateur;
 import fr.celine.suivideseries.enums.StatutLivre;
@@ -180,5 +181,12 @@ public class SerieService {
         long seriesEnCours = serieRepository.countByStatutSerie(StatutSerie.EN_COURS);
         long seriesAbandonnees = serieRepository.countByStatutSerie(StatutSerie.ABANDONNEE);
         return new RepartitionStatutSerieDTO(seriesEnCours, seriesTerminees, seriesAbandonnees);
+    }
+
+    // Trouver les séries les plus longues dans En cours et Terminées
+    public SeriesLesPlusLonguesDTO trouverSeriePlusLongueEnCoursEtTerminee() {
+        Serie seriePlusLongueEnCours = serieRepository.findFirstByStatutSerieOrderByNombreLivreTotalDesc(StatutSerie.EN_COURS).orElse(null);
+        Serie seriePlusLongueTerminee = serieRepository.findFirstByStatutSerieOrderByNombreLivreTotalDesc(StatutSerie.TERMINEE).orElse(null);
+        return new SeriesLesPlusLonguesDTO(seriePlusLongueEnCours, seriePlusLongueTerminee);
     }
 }
