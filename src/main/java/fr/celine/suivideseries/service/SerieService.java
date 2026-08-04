@@ -2,7 +2,9 @@ package fr.celine.suivideseries.service;
 
 import fr.celine.suivideseries.dto.RepartitionStatutSerieDTO;
 import fr.celine.suivideseries.dto.SerieAvecLivresAAcheterDTO;
+import fr.celine.suivideseries.dto.SeriesDelaisseesDTO;
 import fr.celine.suivideseries.dto.SeriesLesPlusLonguesDTO;
+import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.entity.Utilisateur;
 import fr.celine.suivideseries.enums.StatutLivre;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class SerieService {
@@ -157,10 +160,26 @@ public class SerieService {
     }
 
     // Trouver les séries délaissées depuis plus d'un an
-    public List<Serie> trouverSerieDelaissees() {
+    public List<SeriesDelaisseesDTO> trouverSerieDelaissees() {
         LocalDate date = LocalDate.now();
         LocalDate dateSeuil = date.minusYears(1);
-        return serieRepository.trouverSeriesDelaissees(dateSeuil);
+        Pageable pageable = PageRequest.of(0, 15);
+        List<Serie> series = serieRepository.trouverSeriesDelaissees(dateSeuil, pageable);
+
+        return series.stream()
+                .map(this::convertirEnDTODelaisses)
+                .toList();
+    }
+
+    // Convertir une série en DTO avec la date de la dernière lecture
+    private SeriesDelaisseesDTO convertirEnDTODelaisses(Serie serie) {
+        LocalDate derniereLecture = serie.getLivres().stream()
+                .map(Livre::getDateLecture)
+                .filter(Objects::nonNull)
+                .max(LocalDate::compareTo)
+                .orElse(null);
+
+        return new SeriesDelaisseesDTO(serie.getNom(), derniereLecture);
     }
 
     // Calculer le ratio de séries finies vs commencées

@@ -49,7 +49,7 @@ public class SerieController {
     }
 
     @GetMapping("/seriesDelaissees")
-    public ResponseEntity<List<Serie>> trouverSeriesDelaissees() {
+    public ResponseEntity<List<SeriesDelaisseesDTO>> trouverSeriesDelaissees() {
         return ResponseEntity.ok(serieService.trouverSerieDelaissees());
     }
 
