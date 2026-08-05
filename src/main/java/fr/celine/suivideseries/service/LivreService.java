@@ -9,6 +9,8 @@ import fr.celine.suivideseries.enums.StatutPublication;
 import fr.celine.suivideseries.enums.StatutSerie;
 import fr.celine.suivideseries.exception.BusinessException;
 import fr.celine.suivideseries.repository.LivreRepository;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -117,5 +119,11 @@ public class LivreService {
         if (ancienStatut == StatutLivre.DANS_PAL && nouveauStatut == StatutLivre.LU) {
             livre.setDateLecture(LocalDate.now());
         }
+    }
+
+    // Trouver les 5 auteurs avec le plus de séries en cours
+    public List<String> trouverAuteursAvecSerieEnCours() {
+        Pageable pageable = PageRequest.of(0, 5);
+        return livreRepository.trouverAuteursParNombreSerieEnCours(pageable);
     }
 }

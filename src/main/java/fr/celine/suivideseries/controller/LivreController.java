@@ -52,4 +52,9 @@ public class LivreController {
     public ResponseEntity<RepartitionFormatDTO> calculerRepartitionFormatDansPalEtLu() {
         return ResponseEntity.ok(livreService.calculerRepartitionFormatDansPalEtLu());
     }
+
+    @GetMapping("/auteursSeriesEnCours")
+    public ResponseEntity<List<String>> afficherAuteursSeriesEnCours() {
+        return ResponseEntity.ok(livreService.trouverAuteursAvecSerieEnCours());
+    }
 }
