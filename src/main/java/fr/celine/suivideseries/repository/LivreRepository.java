@@ -1,5 +1,6 @@
 package fr.celine.suivideseries.repository;
 
+import fr.celine.suivideseries.dto.AuteursSeriesEnCoursDTO;
 import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.enums.FormatLivre;
@@ -22,7 +23,7 @@ public interface LivreRepository extends JpaRepository<Livre, Integer> {
 
     long countByStatutLivreAndFormatLivre(StatutLivre statutLivre, FormatLivre formatLivre);
 
-    @Query("SELECT l.auteur FROM Livre l WHERE l.serie.statutSerie = fr.celine.suivideseries.enums.StatutSerie.EN_COURS GROUP BY l.auteur ORDER BY COUNT(DISTINCT l.serie) DESC, " +
-            "l.auteur ASC" )
-    List<String> trouverAuteursParNombreSerieEnCours(Pageable pageable);
+    @Query("SELECT new fr.celine.suivideseries.dto.AuteursSeriesEnCoursDTO(l.auteur, COUNT(DISTINCT l.serie)) FROM Livre l WHERE l.serie.statutSerie = fr.celine.suivideseries.enums.StatutSerie.EN_COURS " +
+            "GROUP BY l.auteur ORDER BY COUNT(DISTINCT l.serie) DESC, l.auteur ASC" )
+    List<AuteursSeriesEnCoursDTO> trouverAuteursParNombreSerieEnCours(Pageable pageable);
 }

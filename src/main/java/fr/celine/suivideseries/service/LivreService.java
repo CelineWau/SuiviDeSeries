@@ -1,5 +1,6 @@
 package fr.celine.suivideseries.service;
 
+import fr.celine.suivideseries.dto.AuteursSeriesEnCoursDTO;
 import fr.celine.suivideseries.dto.RepartitionFormatDTO;
 import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
@@ -122,7 +123,7 @@ public class LivreService {
     }
 
     // Trouver les 5 auteurs avec le plus de séries en cours
-    public List<String> trouverAuteursAvecSerieEnCours() {
+    public List<AuteursSeriesEnCoursDTO> trouverAuteursAvecSerieEnCours() {
         Pageable pageable = PageRequest.of(0, 5);
         return livreRepository.trouverAuteursParNombreSerieEnCours(pageable);
     }

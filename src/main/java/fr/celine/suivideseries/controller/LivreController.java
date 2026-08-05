@@ -1,9 +1,6 @@
 package fr.celine.suivideseries.controller;
 
-import fr.celine.suivideseries.dto.FormatLivreDTO;
-import fr.celine.suivideseries.dto.LivreCreationDTO;
-import fr.celine.suivideseries.dto.RepartitionFormatDTO;
-import fr.celine.suivideseries.dto.StatutLivreDTO;
+import fr.celine.suivideseries.dto.*;
 import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.service.LivreService;
@@ -54,7 +51,7 @@ public class LivreController {
     }
 
     @GetMapping("/auteursSeriesEnCours")
-    public ResponseEntity<List<String>> afficherAuteursSeriesEnCours() {
+    public ResponseEntity<List<AuteursSeriesEnCoursDTO>> afficherAuteursSeriesEnCours() {
         return ResponseEntity.ok(livreService.trouverAuteursAvecSerieEnCours());
     }
 }
