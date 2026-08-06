@@ -278,13 +278,15 @@ public class SerieService {
     }
 
     // Proposer un ebook à lire au hasard parmi les ebooks d'une série en cours dans la PAL
-    public Livre proposerLivreAleatoire() {
+    public EbookAleatoireDTO proposerLivreAleatoire() {
         Serie serie = trouverSerieAleatoireDansSerieEbook();
         int numeroProchainTome = trouverTomePlusPetitDansSerie(serie);
 
-        return serie.getLivres().stream()
+        Livre livre = serie.getLivres().stream()
                 .filter(l -> l.getNumeroDansLaSerie() == numeroProchainTome)
                 .findFirst()
                 .orElseThrow(() -> new BusinessException("Livre non trouvé."));
+
+        return new EbookAleatoireDTO(livre.getTitre(), livre.getAuteur(), serie.getNom());
     }
 }

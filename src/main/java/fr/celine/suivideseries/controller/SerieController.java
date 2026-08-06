@@ -80,7 +80,7 @@ public class SerieController {
     }
 
     @GetMapping("/ebookAleatoire")
-    public ResponseEntity<Livre> afficherEbookAleatoire() {
+    public ResponseEntity<EbookAleatoireDTO> afficherEbookAleatoire() {
         return ResponseEntity.ok(serieService.proposerLivreAleatoire());
     }
 
