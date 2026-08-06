@@ -1,6 +1,7 @@
 package fr.celine.suivideseries.controller;
 
 import fr.celine.suivideseries.dto.*;
+import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.entity.Utilisateur;
 import fr.celine.suivideseries.service.SerieService;
@@ -76,6 +77,11 @@ public class SerieController {
     @GetMapping("/dureeMoyenneLectureSerie")
     public ResponseEntity<Double> afficherDureeMoyenneLectureSerie() {
         return ResponseEntity.ok(serieService.calculerDureeMoyenneLecture());
+    }
+
+    @GetMapping("/ebookAleatoire")
+    public ResponseEntity<Livre> afficherEbookAleatoire() {
+        return ResponseEntity.ok(serieService.proposerLivreAleatoire());
     }
 
     @PostMapping

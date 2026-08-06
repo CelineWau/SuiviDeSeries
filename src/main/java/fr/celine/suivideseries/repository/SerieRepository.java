@@ -51,4 +51,8 @@ public interface SerieRepository  extends JpaRepository<Serie, Integer> {
     List<Serie> findByStatutSerieNot(StatutSerie statutSerie);
 
     List<Serie> findByStatutSerie(StatutSerie statutSerie);
+
+    @Query("SELECT s FROM Serie s WHERE s.statutSerie = fr.celine.suivideseries.enums.StatutSerie.EN_COURS AND EXISTS (SELECT l FROM Livre l WHERE l.serie = s " +
+            "AND l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.DANS_PAL AND l.formatLivre = fr.celine.suivideseries.enums.FormatLivre.EBOOK)")
+    List<Serie> trouverSeriesAvecEbooksDansLaPal();
 }

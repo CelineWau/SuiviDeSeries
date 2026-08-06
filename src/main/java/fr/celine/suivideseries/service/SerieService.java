@@ -4,6 +4,7 @@ import fr.celine.suivideseries.dto.*;
 import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.entity.Utilisateur;
+import fr.celine.suivideseries.enums.FormatLivre;
 import fr.celine.suivideseries.enums.StatutLivre;
 import fr.celine.suivideseries.enums.StatutPublication;
 import fr.celine.suivideseries.enums.StatutSerie;
@@ -255,5 +256,35 @@ public class SerieService {
                 .mapToDouble(this::calculerDifferenceDatePremiereEtDerniereLecture)
                 .average()
                 .orElse(0);
+    }
+
+    // Trouver une série au hasard dans les séries ebook en cours
+    public Serie trouverSerieAleatoireDansSerieEbook() {
+        List<Serie> series = serieRepository.trouverSeriesAvecEbooksDansLaPal();
+        if (series.isEmpty()) {
+            throw new BusinessException("Il n'y a pas d'ebooks dans la pile à lire qui correspond à demande.");
+        }
+        int indexAleatoire = (int) (Math.random() * series.size());
+        return series.get(indexAleatoire);
+    }
+
+    // Trouver le tome le plus petit dans une série
+    public int trouverTomePlusPetitDansSerie(Serie serie){
+        return serie.getLivres().stream()
+                .filter(l -> l.getStatutLivre() == StatutLivre.DANS_PAL && l.getFormatLivre() == FormatLivre.EBOOK)
+                .mapToInt(Livre::getNumeroDansLaSerie)
+                .min()
+                .orElse(0);
+    }
+
+    // Proposer un ebook à lire au hasard parmi les ebooks d'une série en cours dans la PAL
+    public Livre proposerLivreAleatoire() {
+        Serie serie = trouverSerieAleatoireDansSerieEbook();
+        int numeroProchainTome = trouverTomePlusPetitDansSerie(serie);
+
+        return serie.getLivres().stream()
+                .filter(l -> l.getNumeroDansLaSerie() == numeroProchainTome)
+                .findFirst()
+                .orElseThrow(() -> new BusinessException("Livre non trouvé."));
     }
 }
