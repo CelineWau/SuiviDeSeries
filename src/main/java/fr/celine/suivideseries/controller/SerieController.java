@@ -73,6 +73,11 @@ public class SerieController {
         return ResponseEntity.ok(serieService.calculerRepartitionTailleSeries());
     }
 
+    @GetMapping("/dureeMoyenneLectureSerie")
+    public ResponseEntity<Double> afficherDureeMoyenneLectureSerie() {
+        return ResponseEntity.ok(serieService.calculerDureeMoyenneLecture());
+    }
+
     @PostMapping
     public ResponseEntity<Serie> creerSerie(@RequestBody SerieCreationDTO dto) {
         Utilisateur utilisateur = utilisateurService.trouverUtilisateurParId(dto.getUtilisateurId());

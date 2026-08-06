@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 
@@ -223,5 +224,36 @@ public class SerieService {
                 .count();
 
         return new TailleSerieDTO(petites, moyennes, sagas);
+    }
+
+    // Calculer la différence entre la date de la première lecture et la date de la dernière lecture
+    public double calculerDifferenceDatePremiereEtDerniereLecture(Serie serie){
+        LocalDate derniereLecture = serie.getLivres().stream()
+                .map(Livre::getDateLecture)
+                .filter(Objects::nonNull)
+                .max(LocalDate::compareTo)
+                .orElse(null);
+
+        LocalDate premiereLecture = serie.getLivres().stream()
+                .map(Livre::getDateLecture)
+                .filter(Objects::nonNull)
+                .min(LocalDate::compareTo)
+                .orElse(null);
+
+        if(premiereLecture != null && derniereLecture != null){
+            return ChronoUnit.DAYS.between(premiereLecture, derniereLecture);
+        } else {
+            return 0;
+        }
+    }
+
+    // Calculer la durée moyenne des lectures TERMINEE
+    public double calculerDureeMoyenneLecture() {
+        List<Serie> series = serieRepository.findByStatutSerie(StatutSerie.TERMINEE);
+
+        return series.stream()
+                .mapToDouble(this::calculerDifferenceDatePremiereEtDerniereLecture)
+                .average()
+                .orElse(0);
     }
 }
