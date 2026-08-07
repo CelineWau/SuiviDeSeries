@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -282,11 +283,37 @@ public class SerieService {
         Serie serie = trouverSerieAleatoireDansSerieEbook();
         int numeroProchainTome = trouverTomePlusPetitDansSerie(serie);
 
-        Livre livre = serie.getLivres().stream()
-                .filter(l -> l.getNumeroDansLaSerie() == numeroProchainTome)
+        Livre livre = trouverLivreParNumero(serie, numeroProchainTome);
+
+        return new EbookAleatoireDTO(livre.getTitre(), livre.getAuteur(), serie.getNom(), livre.getNumeroDansLaSerie());
+    }
+
+    // Trouver un livre par rapport à son numéro de tome
+    private Livre trouverLivreParNumero(Serie serie, int numero){
+        return serie.getLivres().stream()
+                .filter(l -> l.getNumeroDansLaSerie() == numero)
                 .findFirst()
                 .orElseThrow(() -> new BusinessException("Livre non trouvé."));
+    }
 
-        return new EbookAleatoireDTO(livre.getTitre(), livre.getAuteur(), serie.getNom());
+    // Trouver les 5 livres les plus anciens en PAL (défi PAL vieillissante)
+    public List<LivrePalVieillissantDTO> trouverLivresPalVieillissante() {
+        List<Serie> series = serieRepository.trouverSeriesAvecEbooksDansLaPal();
+
+        List<Livre> livres = series.stream()
+                .map(serie -> trouverLivreParNumero(serie, trouverTomePlusPetitDansSerie(serie)))
+                .sorted(Comparator.comparing(Livre::getDateAcquisition, Comparator.nullsFirst(Comparator.naturalOrder())))
+                .limit(5)
+                .toList();
+
+        return livres.stream()
+                .map(this::convertirEnDTOPalVieillissante)
+                .toList();
+    }
+
+    // Convertir un livre en DTO pour le défi PAL vieillissante
+    private LivrePalVieillissantDTO convertirEnDTOPalVieillissante(Livre livre){
+        String nomSerie = livre.getSerie().getNom();
+        return new LivrePalVieillissantDTO(livre.getTitre(), livre.getAuteur(), nomSerie, livre.getNumeroDansLaSerie(), livre.getDateAcquisition());
     }
 }

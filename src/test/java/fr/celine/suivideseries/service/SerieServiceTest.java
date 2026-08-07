@@ -1,6 +1,7 @@
 package fr.celine.suivideseries.service;
 
 import fr.celine.suivideseries.dto.EbookAleatoireDTO;
+import fr.celine.suivideseries.dto.LivrePalVieillissantDTO;
 import fr.celine.suivideseries.dto.SerieAvecLivresAAcheterDTO;
 import fr.celine.suivideseries.dto.TailleSerieDTO;
 import fr.celine.suivideseries.entity.Livre;
@@ -356,6 +357,7 @@ public class SerieServiceTest {
         assertThat(resultat.getTitre()).isEqualTo("Le retour du roi");
         assertThat(resultat.getAuteur()).isEqualTo("Tolkien");
         assertThat(resultat.getNomSerie()).isEqualTo(serie.getNom());
+        assertThat(resultat.getNumeroDansLaSerie()).isEqualTo(1);
     }
 
     @Test
@@ -367,5 +369,88 @@ public class SerieServiceTest {
         assertThatThrownBy(() -> serieService.proposerLivreAleatoire())
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Livre non trouvé.");
+    }
+
+    @Test
+    @DisplayName("Doit retourner les livres triés par date d'acquisition croissante")
+    void trouverLivresPalVieillissante_livresAvecDate_returnTriesParDateCroissante(){
+        Utilisateur autreUtilisateur = new Utilisateur("Rowling", "Joanne", "JoJo", "jo@email.fr");
+        autreUtilisateur.setMdp("Azerty123");
+
+        Serie serieRecente = new Serie("Harry Potter", autreUtilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 1);
+        Livre livreRecent = new Livre("J. K. Rowling", "Tome 1", "1111111111111", 1, StatutLivre.DANS_PAL, FormatLivre.EBOOK,
+                LocalDate.of(2026, 5, 10), null, serieRecente);
+
+        Serie serieAncienne = new Serie("Alpha & Omega", autreUtilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 1);
+        Livre livreAncien = new Livre("Patricia Briggs", "Tome 1", "2222222222222", 1, StatutLivre.DANS_PAL, FormatLivre.EBOOK,
+                LocalDate.of(2023, 5, 2), null, serieAncienne);
+
+        serieRecente.getLivres().add(livreRecent);
+        serieAncienne.getLivres().add(livreAncien);
+
+        when(serieRepository.trouverSeriesAvecEbooksDansLaPal()).thenReturn(List.of(serieRecente, serieAncienne));
+
+        List<LivrePalVieillissantDTO> resultat = serieService.trouverLivresPalVieillissante();
+
+        assertThat(resultat).hasSize(2);
+        assertThat(resultat.get(0).getTitre()).isEqualTo(livreAncien.getTitre());
+        assertThat(resultat.get(1).getTitre()).isEqualTo(livreRecent.getTitre());
+    }
+
+    @Test
+    @DisplayName("Doit placer les livres sans date d'acquisition en premier")
+    void trouverLivresPalVieillissante_livreSansDate_returnEnPremier(){
+        Utilisateur autreUtilisateur = new Utilisateur("Rowling", "Joanne", "JoJo", "jo@email.fr");
+        autreUtilisateur.setMdp("Azerty123");
+
+        Serie serieAvecDate = new Serie("Alpha & Omega", autreUtilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 1);
+        Livre livreAvecDate = new Livre("Patricia Briggs", "Tome 1", "1111111111111", 1, StatutLivre.DANS_PAL, FormatLivre.EBOOK,
+                LocalDate.of(2023, 5, 2), null, serieAvecDate);
+
+        Serie serieSansDate = new Serie("Les Rougon-Macquart", autreUtilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 1);
+        Livre livreSansDate = new Livre("Emile Zola", "Nana", "2222222222222", 1, StatutLivre.DANS_PAL, FormatLivre.EBOOK, null, null,
+                serieSansDate);
+
+        serieAvecDate.getLivres().add(livreAvecDate);
+        serieSansDate.getLivres().add(livreSansDate);
+
+        when(serieRepository.trouverSeriesAvecEbooksDansLaPal()).thenReturn(List.of(serieAvecDate, serieSansDate));
+
+        List<LivrePalVieillissantDTO> resultat = serieService.trouverLivresPalVieillissante();
+
+        assertThat(resultat).hasSize(2);
+        assertThat(resultat.get(0).getTitre()).isEqualTo("Nana");
+        assertThat(resultat.get(0).getDateAcquisition()).isNull();
+        assertThat(resultat.get(1).getTitre()).isEqualTo(livreAvecDate.getTitre());
+    }
+
+    @Test
+    @DisplayName("Doit limiter le résultat à 5 livres")
+    void trouverLivresPalVieillissante_plusDeCinqSeries_returnLimiteACinq(){
+        List<Serie> series = new java.util.ArrayList<>();
+        for (int i = 1; i <= 6; i++) {
+            Utilisateur utilisateurBoucle = new Utilisateur("Nom" + i, "Prenom" + i, "Pseudo" + i, "email" + i + "@email.fr");
+            utilisateurBoucle.setMdp("Azerty123");
+            Serie serieBoucle = new Serie("Serie " + i, utilisateurBoucle, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 1);
+            Livre livreBoucle = new Livre("Auteur " + i, "Titre " + i, "000000000000" + i, 1, StatutLivre.DANS_PAL, FormatLivre.EBOOK,
+                    LocalDate.of(2024, 1, i), null, serieBoucle);
+            serieBoucle.getLivres().add(livreBoucle);
+            series.add(serieBoucle);
+        }
+        when(serieRepository.trouverSeriesAvecEbooksDansLaPal()).thenReturn(series);
+
+        List<LivrePalVieillissantDTO> resultat = serieService.trouverLivresPalVieillissante();
+
+        assertThat(resultat).hasSize(5);
+    }
+
+    @Test
+    @DisplayName("Doit retourner une liste vide si aucune série candidate n'est trouvée")
+    void trouverLivresPalVieillissante_aucuneSerie_returnListeVide(){
+        when(serieRepository.trouverSeriesAvecEbooksDansLaPal()).thenReturn(List.of());
+
+        List<LivrePalVieillissantDTO> resultat = serieService.trouverLivresPalVieillissante();
+
+        assertThat(resultat).isEmpty();
     }
 }

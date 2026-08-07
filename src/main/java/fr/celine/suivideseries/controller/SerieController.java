@@ -84,6 +84,11 @@ public class SerieController {
         return ResponseEntity.ok(serieService.proposerLivreAleatoire());
     }
 
+    @GetMapping("/palVieillissante")
+    public ResponseEntity<List<LivrePalVieillissantDTO>> afficherPalVieillissante() {
+        return ResponseEntity.ok(serieService.trouverLivresPalVieillissante());
+    }
+
     @PostMapping
     public ResponseEntity<Serie> creerSerie(@RequestBody SerieCreationDTO dto) {
         Utilisateur utilisateur = utilisateurService.trouverUtilisateurParId(dto.getUtilisateurId());
