@@ -1,5 +1,6 @@
 package fr.celine.suivideseries.repository;
 
+import fr.celine.suivideseries.dto.AuteursSeriesEnCoursDTO;
 import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.entity.Utilisateur;
@@ -14,6 +15,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -96,5 +99,70 @@ public class LivreRepositoryTest {
         long resultat = livreRepository.countByStatutLivreAndFormatLivre(StatutLivre.LU, FormatLivre.EBOOK);
 
         assertThat(resultat).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("Doit retourner les auteurs triés par nombre de séries en cours décroissant, puis par ordre alphabétique")
+    void trouverAuteursParNombreSerieEnCours_returnAuteursTriesParNombreDecroissant(){
+        // "Gabriel Katz" a déjà 1 série EN_COURS via le setup (livre + serie).
+        // On lui ajoute une deuxième série EN_COURS pour qu'il passe devant "Alison Germain".
+        Serie serieBis = new Serie("Le fils de la lune", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 1);
+        Livre livreGabrielBis = new Livre("Gabriel Katz", "Tome unique", "9999999999999", 1, StatutLivre.LU, FormatLivre.PAPIER, null, null,
+                serieBis);
+
+        Serie serieAlison = new Serie("Le Souffle de Midas", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 1);
+        Livre livreAlison = new Livre("Alison Germain", "Tome 1", "8888888888888", 1, StatutLivre.LU, FormatLivre.EBOOK, null, null, serieAlison);
+
+        entityManager.persist(serieBis);
+        entityManager.persist(livreGabrielBis);
+        entityManager.persist(serieAlison);
+        entityManager.persist(livreAlison);
+        entityManager.flush();
+
+        Pageable pageable = PageRequest.of(0, 5);
+        List<AuteursSeriesEnCoursDTO> resultat = livreRepository.trouverAuteursParNombreSerieEnCours(pageable);
+
+        assertThat(resultat).isNotNull();
+        assertThat(resultat).hasSize(2);
+        assertThat(resultat.get(0).getAuteur()).isEqualTo("Gabriel Katz");
+        assertThat(resultat.get(0).getNombreSeries()).isEqualTo(2);
+        assertThat(resultat.get(1).getAuteur()).isEqualTo("Alison Germain");
+        assertThat(resultat.get(1).getNombreSeries()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("Ne doit pas compter une série qui n'est pas EN_COURS")
+    void trouverAuteursParNombreSerieEnCours_excludesSerieNonEnCours(){
+        // Deuxième série du même auteur mais TERMINEE : ne doit pas augmenter son compte.
+        Serie serieTerminee = new Serie("Le fils de la lune", utilisateur, StatutSerie.TERMINEE, StatutPublication.TERMINEE, 1);
+        Livre livreTermine = new Livre("Gabriel Katz", "Tome unique", "9999999999999", 1, StatutLivre.LU, FormatLivre.PAPIER, null, null,
+                serieTerminee);
+
+        entityManager.persist(serieTerminee);
+        entityManager.persist(livreTermine);
+        entityManager.flush();
+
+        Pageable pageable = PageRequest.of(0, 5);
+        List<AuteursSeriesEnCoursDTO> resultat = livreRepository.trouverAuteursParNombreSerieEnCours(pageable);
+
+        assertThat(resultat).hasSize(1);
+        assertThat(resultat.getFirst().getAuteur()).isEqualTo("Gabriel Katz");
+        assertThat(resultat.getFirst().getNombreSeries()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("Doit respecter la limite imposée par le Pageable")
+    void trouverAuteursParNombreSerieEnCours_respectePageableLimit(){
+        Serie serieAlison = new Serie("Le Souffle de Midas", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 1);
+        Livre livreAlison = new Livre("Alison Germain", "Tome 1", "8888888888888", 1, StatutLivre.LU, FormatLivre.EBOOK, null, null, serieAlison);
+
+        entityManager.persist(serieAlison);
+        entityManager.persist(livreAlison);
+        entityManager.flush();
+
+        Pageable pageable = PageRequest.of(0, 1);
+        List<AuteursSeriesEnCoursDTO> resultat = livreRepository.trouverAuteursParNombreSerieEnCours(pageable);
+
+        assertThat(resultat).hasSize(1);
     }
 }

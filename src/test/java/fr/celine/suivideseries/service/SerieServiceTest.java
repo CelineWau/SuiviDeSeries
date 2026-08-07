@@ -1,6 +1,8 @@
 package fr.celine.suivideseries.service;
 
+import fr.celine.suivideseries.dto.EbookAleatoireDTO;
 import fr.celine.suivideseries.dto.SerieAvecLivresAAcheterDTO;
+import fr.celine.suivideseries.dto.TailleSerieDTO;
 import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.entity.Utilisateur;
@@ -219,5 +221,151 @@ public class SerieServiceTest {
         Serie resultat = serieService.modifierStatutSerie(1, StatutSerie.ABANDONNEE);
 
         assertThat(resultat.getDateFin()).isNull();
+    }
+
+    @Test
+    @DisplayName("Doit répartir les séries en petites, moyennes et sagas selon leur nombre de livres")
+    void calculerRepartitionTailleSeries_donneesValides_returnsRepartitionCorrecte(){
+        Serie petite = new Serie("Petite série", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 2);
+        Serie moyenne = new Serie("Série moyenne", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 5);
+        Serie saga = new Serie("Grande saga", utilisateur, StatutSerie.TERMINEE, StatutPublication.TERMINEE, 12);
+        when(serieRepository.findByStatutSerieNot(StatutSerie.ABANDONNEE)).thenReturn(List.of(petite, moyenne, saga));
+
+        TailleSerieDTO resultat = serieService.calculerRepartitionTailleSeries();
+
+        assertThat(resultat.getPetites()).isEqualTo(1);
+        assertThat(resultat.getMoyennes()).isEqualTo(1);
+        assertThat(resultat.getSagas()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("Doit retourner une répartition à zéro si aucune série n'est présente")
+    void calculerRepartitionTailleSeries_aucuneSerie_returnsRepartitionAZero(){
+        when(serieRepository.findByStatutSerieNot(StatutSerie.ABANDONNEE)).thenReturn(List.of());
+
+        TailleSerieDTO resultat = serieService.calculerRepartitionTailleSeries();
+
+        assertThat(resultat.getPetites()).isEqualTo(0);
+        assertThat(resultat.getMoyennes()).isEqualTo(0);
+        assertThat(resultat.getSagas()).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("Doit calculer la différence en jours entre la première et la dernière lecture")
+    void calculerDifferenceDatePremiereEtDerniereLecture_datesPresentes_returnsDifferenceEnJours(){
+        Livre livre1 = new Livre("Tolkien", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null, LocalDate.of(2026, 1, 1), serie);
+        Livre livre2 = new Livre("Tolkien", "Tome 2", "2222222222222", 2, StatutLivre.LU, FormatLivre.EBOOK, null, LocalDate.of(2026, 1, 11), serie);
+        serie.getLivres().add(livre1);
+        serie.getLivres().add(livre2);
+
+        double resultat = serieService.calculerDifferenceDatePremiereEtDerniereLecture(serie);
+
+        assertThat(resultat).isEqualTo(10.0);
+    }
+
+    @Test
+    @DisplayName("Doit retourner zéro si aucun livre n'a de date de lecture")
+    void calculerDifferenceDatePremiereEtDerniereLecture_aucuneDateLecture_returnsZero(){
+        Livre livre1 = new Livre("Tolkien", "Tome 1", "1111111111111", 1, StatutLivre.DANS_PAL, FormatLivre.EBOOK, null, null, serie);
+        serie.getLivres().add(livre1);
+
+        double resultat = serieService.calculerDifferenceDatePremiereEtDerniereLecture(serie);
+
+        assertThat(resultat).isEqualTo(0.0);
+    }
+
+    @Test
+    @DisplayName("Doit calculer la durée moyenne de lecture des séries terminées")
+    void calculerDureeMoyenneLecture_seriesTerminees_returnsMoyenneCorrecte(){
+        Serie serieA = new Serie("Série A", utilisateur, StatutSerie.TERMINEE, StatutPublication.TERMINEE, 2);
+        serieA.getLivres().add(new Livre("Auteur A", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null, LocalDate.of(2026, 1, 1), serieA));
+        serieA.getLivres().add(new Livre("Auteur A", "Tome 2", "2222222222222", 2, StatutLivre.LU, FormatLivre.EBOOK, null, LocalDate.of(2026, 1, 11), serieA));
+
+        Serie serieB = new Serie("Série B", utilisateur, StatutSerie.TERMINEE, StatutPublication.TERMINEE, 2);
+        serieB.getLivres().add(new Livre("Auteur B", "Tome 1", "3333333333333", 1, StatutLivre.LU, FormatLivre.EBOOK, null, LocalDate.of(2026, 2, 1), serieB));
+        serieB.getLivres().add(new Livre("Auteur B", "Tome 2", "4444444444444", 2, StatutLivre.LU, FormatLivre.EBOOK, null, LocalDate.of(2026, 2, 21), serieB));
+
+        when(serieRepository.findByStatutSerie(StatutSerie.TERMINEE)).thenReturn(List.of(serieA, serieB));
+
+        double resultat = serieService.calculerDureeMoyenneLecture();
+
+        assertThat(resultat).isEqualTo(15.0);
+    }
+
+    @Test
+    @DisplayName("Doit retourner zéro si aucune série terminée n'est présente")
+    void calculerDureeMoyenneLecture_aucuneSerieTerminee_returnsZero(){
+        when(serieRepository.findByStatutSerie(StatutSerie.TERMINEE)).thenReturn(List.of());
+
+        double resultat = serieService.calculerDureeMoyenneLecture();
+
+        assertThat(resultat).isEqualTo(0.0);
+    }
+
+    @Test
+    @DisplayName("Doit lever une exception si aucune série avec ebook dans la PAL n'est trouvée")
+    void trouverSerieAleatoireDansSerieEbook_aucuneSerie_leveBusinessException(){
+        when(serieRepository.trouverSeriesAvecEbooksDansLaPal()).thenReturn(List.of());
+
+        assertThatThrownBy(() -> serieService.trouverSerieAleatoireDansSerieEbook())
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Il n'y a pas d'ebooks dans la pile à lire qui correspond à demande.");
+    }
+
+    @Test
+    @DisplayName("Doit retourner l'unique série disponible avec ebook dans la PAL")
+    void trouverSerieAleatoireDansSerieEbook_uneSerieDisponible_returnsCetteSerie(){
+        when(serieRepository.trouverSeriesAvecEbooksDansLaPal()).thenReturn(List.of(serie));
+
+        Serie resultat = serieService.trouverSerieAleatoireDansSerieEbook();
+
+        assertThat(resultat).isEqualTo(serie);
+    }
+
+    @Test
+    @DisplayName("Doit trouver le numéro de tome le plus petit parmi les ebooks en PAL")
+    void trouverTomePlusPetitDansSerie_ebooksDansPal_returnsNumeroLePlusPetit(){
+        serie.getLivres().add(new Livre("Tolkien", "Tome 3", "1111111111111", 3, StatutLivre.DANS_PAL, FormatLivre.EBOOK, null, null, serie));
+        serie.getLivres().add(new Livre("Tolkien", "Tome 1", "2222222222222", 1, StatutLivre.DANS_PAL, FormatLivre.EBOOK, null, null, serie));
+        serie.getLivres().add(new Livre("Tolkien", "Tome 2", "3333333333333", 2, StatutLivre.LU, FormatLivre.EBOOK, null, null, serie));
+
+        int resultat = serieService.trouverTomePlusPetitDansSerie(serie);
+
+        assertThat(resultat).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("Doit retourner zéro si aucun ebook n'est en PAL dans la série")
+    void trouverTomePlusPetitDansSerie_aucunEbookEnPal_returnsZero(){
+        serie.getLivres().add(new Livre("Tolkien", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.PAPIER, null, null, serie));
+
+        int resultat = serieService.trouverTomePlusPetitDansSerie(serie);
+
+        assertThat(resultat).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("Doit proposer un ebook aléatoire à lire parmi les séries en cours dans la PAL")
+    void proposerLivreAleatoire_livreDisponible_returnsEbookAleatoireDTO(){
+        Livre livre = new Livre("Tolkien", "Le retour du roi", "1111111111111", 1, StatutLivre.DANS_PAL, FormatLivre.EBOOK, null, null, serie);
+        serie.getLivres().add(livre);
+        when(serieRepository.trouverSeriesAvecEbooksDansLaPal()).thenReturn(List.of(serie));
+
+        EbookAleatoireDTO resultat = serieService.proposerLivreAleatoire();
+
+        assertThat(resultat.getTitre()).isEqualTo("Le retour du roi");
+        assertThat(resultat.getAuteur()).isEqualTo("Tolkien");
+        assertThat(resultat.getNomSerie()).isEqualTo(serie.getNom());
+    }
+
+    @Test
+    @DisplayName("Doit lever une exception si aucun livre ne correspond au tome le plus petit trouvé")
+    void proposerLivreAleatoire_aucunLivreCorrespondant_leveBusinessException(){
+        serie.getLivres().add(new Livre("Tolkien", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.PAPIER, null, null, serie));
+        when(serieRepository.trouverSeriesAvecEbooksDansLaPal()).thenReturn(List.of(serie));
+
+        assertThatThrownBy(() -> serieService.proposerLivreAleatoire())
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Livre non trouvé.");
     }
 }

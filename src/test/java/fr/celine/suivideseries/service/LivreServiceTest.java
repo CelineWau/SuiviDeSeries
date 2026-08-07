@@ -1,5 +1,6 @@
 package fr.celine.suivideseries.service;
 
+import fr.celine.suivideseries.dto.AuteursSeriesEnCoursDTO;
 import fr.celine.suivideseries.dto.RepartitionFormatDTO;
 import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -294,5 +296,31 @@ public class LivreServiceTest {
         Livre resultat = livreService.modifierStatutLivre(1, StatutLivre.DANS_PAL);
 
         assertThat(resultat.getDateLecture()).isNull();
+    }
+
+    @Test
+    @DisplayName("Doit retourner les auteurs avec le plus de séries en cours")
+    void trouverAuteursAvecSerieEnCours_donneesValides_returnsListeDeDTO(){
+        AuteursSeriesEnCoursDTO dto = new AuteursSeriesEnCoursDTO("Tolkien", 3);
+        when(livreRepository.trouverAuteursParNombreSerieEnCours(any(Pageable.class))).thenReturn(List.of(dto));
+
+        List<AuteursSeriesEnCoursDTO> resultat = livreService.trouverAuteursAvecSerieEnCours();
+
+        assertThat(resultat).isNotNull();
+        assertThat(resultat).hasSize(1);
+        assertThat(resultat.getFirst().getAuteur()).isEqualTo("Tolkien");
+        assertThat(resultat.getFirst().getNombreSeries()).isEqualTo(3);
+        verify(livreRepository, times(1)).trouverAuteursParNombreSerieEnCours(any(Pageable.class));
+    }
+
+    @Test
+    @DisplayName("Doit retourner une liste vide si aucun auteur n'a de série en cours")
+    void trouverAuteursAvecSerieEnCours_aucunAuteur_returnsListeVide(){
+        when(livreRepository.trouverAuteursParNombreSerieEnCours(any(Pageable.class))).thenReturn(List.of());
+
+        List<AuteursSeriesEnCoursDTO> resultat = livreService.trouverAuteursAvecSerieEnCours();
+
+        assertThat(resultat).isNotNull();
+        assertThat(resultat).isEmpty();
     }
 }

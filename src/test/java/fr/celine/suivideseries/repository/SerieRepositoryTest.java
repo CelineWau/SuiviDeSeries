@@ -201,4 +201,81 @@ public class SerieRepositoryTest {
 
         assertThat(resultat).isEqualTo(0);
     }
+
+    @Test
+    @DisplayName("Doit retourner les séries selon le statut donné")
+    void findByStatutSerie_returnSeriesAvecCeStatut(){
+        Serie serieTerminee = new Serie("Harry Potter", utilisateur, StatutSerie.TERMINEE, StatutPublication.TERMINEE, 1);
+        entityManager.persist(serieTerminee);
+        entityManager.flush();
+
+        List<Serie> resultat = serieRepository.findByStatutSerie(StatutSerie.TERMINEE);
+
+        assertThat(resultat).hasSize(1);
+        assertThat(resultat).containsOnly(serieTerminee);
+    }
+
+    @Test
+    @DisplayName("Doit retourner une liste vide si aucune série n'a le statut donné")
+    void findByStatutSerie_aucuneSerieAvecCeStatut_returnListeVide(){
+        List<Serie> resultat = serieRepository.findByStatutSerie(StatutSerie.ABANDONNEE);
+
+        assertThat(resultat).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Doit retourner les séries qui n'ont pas le statut exclu")
+    void findByStatutSerieNot_excludesSerieAvecStatutDonne(){
+        Serie serieAbandonnee = new Serie("Harry Potter", utilisateur, StatutSerie.ABANDONNEE, StatutPublication.TERMINEE, 1);
+        entityManager.persist(serieAbandonnee);
+        entityManager.flush();
+
+        List<Serie> resultat = serieRepository.findByStatutSerieNot(StatutSerie.ABANDONNEE);
+
+        assertThat(resultat).hasSize(1);
+        assertThat(resultat).containsOnly(serie);
+    }
+
+    @Test
+    @DisplayName("Doit retourner les séries en cours avec au moins un ebook dans la PAL")
+    void trouverSeriesAvecEbooksDansLaPal_returnSeriesAvecEbookEnPal(){
+        // La série du setup est EN_COURS avec livre3 en DANS_PAL/EBOOK : elle doit ressortir telle quelle.
+        List<Serie> resultat = serieRepository.trouverSeriesAvecEbooksDansLaPal();
+
+        assertThat(resultat).isNotNull();
+        assertThat(resultat).hasSize(1);
+        assertThat(resultat).containsOnly(serie);
+    }
+
+    @Test
+    @DisplayName("Ne doit pas retourner une série dont la PAL ne contient que des livres papier")
+    void trouverSeriesAvecEbooksDansLaPal_excludesSerieAvecSeulementDuPapierEnPal(){
+        Serie serieSansEbook = new Serie("Harry Potter", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 1);
+        Livre livrePapier = new Livre("J. K. Rowling", "Tome 1", "5555555555555", 1, StatutLivre.DANS_PAL, FormatLivre.PAPIER, null, null,
+                serieSansEbook);
+
+        entityManager.persist(serieSansEbook);
+        entityManager.persist(livrePapier);
+        entityManager.flush();
+
+        List<Serie> resultat = serieRepository.trouverSeriesAvecEbooksDansLaPal();
+
+        assertThat(resultat).doesNotContain(serieSansEbook);
+    }
+
+    @Test
+    @DisplayName("Ne doit pas retourner une série qui n'est pas EN_COURS même si elle a un ebook en PAL")
+    void trouverSeriesAvecEbooksDansLaPal_excludesSerieNonEnCours(){
+        Serie serieTerminee = new Serie("Harry Potter", utilisateur, StatutSerie.TERMINEE, StatutPublication.TERMINEE, 1);
+        Livre livreEbook = new Livre("J. K. Rowling", "Tome 1", "5555555555555", 1, StatutLivre.DANS_PAL, FormatLivre.EBOOK, null, null,
+                serieTerminee);
+
+        entityManager.persist(serieTerminee);
+        entityManager.persist(livreEbook);
+        entityManager.flush();
+
+        List<Serie> resultat = serieRepository.trouverSeriesAvecEbooksDansLaPal();
+
+        assertThat(resultat).doesNotContain(serieTerminee);
+    }
 }
