@@ -19,6 +19,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class SerieService {
@@ -325,5 +326,28 @@ public class SerieService {
                 .count();
 
         return nombreTomesLu == numeroCandidat - 1;
+    }
+
+    // Trouver les séries à surveiller
+    public List<SerieASurveillerDTO> trouverSeriesASurveiller() {
+        List<Serie> series = serieRepository.findByStatutSerieAndStatutPublication(StatutSerie.EN_COURS, StatutPublication.EN_COURS);
+
+        return series.stream()
+                .map(this::convertirEnDTOASurveiller)
+                .toList();
+    }
+
+    // Convertir une série en DTO pour la liste des séries à surveiller
+    private SerieASurveillerDTO convertirEnDTOASurveiller(Serie serie) {
+        Optional<Livre> tome1 = serie.getLivres().stream()
+                .filter(l -> l.getNumeroDansLaSerie() == 1)
+                .findFirst();
+        String auteur =  tome1
+                .map(Livre::getAuteur)
+                .orElseGet(() -> serie.getLivres().stream()
+                        .findFirst()
+                        .map(Livre::getAuteur)
+                        .orElse("Auteur inconnu."));
+        return new SerieASurveillerDTO(serie.getIdSerie(), serie.getNom(), auteur);
     }
 }

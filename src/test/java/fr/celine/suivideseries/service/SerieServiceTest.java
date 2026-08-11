@@ -1,9 +1,6 @@
 package fr.celine.suivideseries.service;
 
-import fr.celine.suivideseries.dto.EbookAleatoireDTO;
-import fr.celine.suivideseries.dto.LivrePalVieillissantDTO;
-import fr.celine.suivideseries.dto.SerieAvecLivresAAcheterDTO;
-import fr.celine.suivideseries.dto.TailleSerieDTO;
+import fr.celine.suivideseries.dto.*;
 import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.entity.Utilisateur;
@@ -500,5 +497,59 @@ public class SerieServiceTest {
         assertThat(resultat).hasSize(1);
         assertThat(resultat.getFirst().getTitre()).isEqualTo("Tome 3");
         assertThat(resultat.getFirst().getNumeroDansLaSerie()).isEqualTo(3);
+    }
+
+    @Test
+    @DisplayName("Doit retourner les séries à surveiller avec l'auteur du tome 1")
+    void trouverSeriesASurveiller_tome1Present_returnAuteurDuTome1(){
+        Serie serieCosmere = new Serie("Cosmere", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 20);
+        Livre tome2 = new Livre("Brandon Sanderson", "Tome 2", "1111111111111", 2, StatutLivre.LU, FormatLivre.EBOOK, null, null, serieCosmere);
+        Livre tome1 = new Livre("Brandon Sanderson", "Tome 1", "2222222222222", 1, StatutLivre.LU, FormatLivre.EBOOK, null, null, serieCosmere);
+        serieCosmere.getLivres().add(tome2);
+        serieCosmere.getLivres().add(tome1);
+
+        when(serieRepository.findByStatutSerieAndStatutPublication(StatutSerie.EN_COURS, StatutPublication.EN_COURS)).thenReturn(List.of(serieCosmere));
+
+        List<SerieASurveillerDTO> resultat = serieService.trouverSeriesASurveiller();
+
+        assertThat(resultat).hasSize(1);
+        assertThat(resultat.getFirst().getNom()).isEqualTo("Cosmere");
+        assertThat(resultat.getFirst().getAuteur()).isEqualTo("Brandon Sanderson");
+    }
+
+    @Test
+    @DisplayName("Doit utiliser l'auteur d'un autre tome si le tome 1 n'est pas enregistré")
+    void trouverSeriesASurveiller_tome1Absent_returnAuteurAutreTome(){
+        Serie serieSansTome1 = new Serie("Kate Daniels", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 10);
+        Livre tome3 = new Livre("Ilona Andrews", "Tome 3", "3333333333333", 3, StatutLivre.LU, FormatLivre.EBOOK, null, null, serieSansTome1);
+        serieSansTome1.getLivres().add(tome3);
+
+        when(serieRepository.findByStatutSerieAndStatutPublication(StatutSerie.EN_COURS, StatutPublication.EN_COURS)).thenReturn(List.of(serieSansTome1));
+
+        List<SerieASurveillerDTO> resultat = serieService.trouverSeriesASurveiller();
+
+        assertThat(resultat.getFirst().getAuteur()).isEqualTo("Ilona Andrews");
+    }
+
+    @Test
+    @DisplayName("Doit retourner 'Auteur inconnu' si la série n'a aucun livre enregistré")
+    void trouverSeriesASurveiller_aucunLivre_returnAuteurInconnu(){
+        Serie serieVide = new Serie("Nouvelle série", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 5);
+
+        when(serieRepository.findByStatutSerieAndStatutPublication(StatutSerie.EN_COURS, StatutPublication.EN_COURS)).thenReturn(List.of(serieVide));
+
+        List<SerieASurveillerDTO> resultat = serieService.trouverSeriesASurveiller();
+
+        assertThat(resultat.getFirst().getAuteur()).isEqualTo("Auteur inconnu.");
+    }
+
+    @Test
+    @DisplayName("Doit retourner une liste vide si aucune série n'est à surveiller")
+    void trouverSeriesASurveiller_aucuneSerie_returnListeVide(){
+        when(serieRepository.findByStatutSerieAndStatutPublication(StatutSerie.EN_COURS, StatutPublication.EN_COURS)).thenReturn(List.of());
+
+        List<SerieASurveillerDTO> resultat = serieService.trouverSeriesASurveiller();
+
+        assertThat(resultat).isEmpty();
     }
 }

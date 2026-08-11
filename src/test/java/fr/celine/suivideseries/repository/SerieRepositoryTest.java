@@ -278,4 +278,38 @@ public class SerieRepositoryTest {
 
         assertThat(resultat).doesNotContain(serieTerminee);
     }
+
+    @Test
+    @DisplayName("Doit retourner les séries en cours dont la publication n'est pas terminée")
+    void findByStatutSerieAndStatutPublication_returnSeriesASurveiller(){
+        Serie serieASurveiller = new Serie("Cosmere", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 20);
+        entityManager.persist(serieASurveiller);
+        entityManager.flush();
+
+        List<Serie> resultat = serieRepository.findByStatutSerieAndStatutPublication(StatutSerie.EN_COURS, StatutPublication.EN_COURS);
+
+        assertThat(resultat).hasSize(1);
+        assertThat(resultat).containsOnly(serieASurveiller);
+    }
+
+    @Test
+    @DisplayName("Ne doit pas retourner une série dont la publication est déjà terminée")
+    void findByStatutSerieAndStatutPublication_excludesPublicationTerminee(){
+        // La série du setup a déjà statutPublication = TERMINEE, donc elle ne doit pas ressortir.
+        List<Serie> resultat = serieRepository.findByStatutSerieAndStatutPublication(StatutSerie.EN_COURS, StatutPublication.EN_COURS);
+
+        assertThat(resultat).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Ne doit pas retourner une série abandonnée même si sa publication est en cours")
+    void findByStatutSerieAndStatutPublication_excludesSerieAbandonnee(){
+        Serie serieAbandonnee = new Serie("Cosmere", utilisateur, StatutSerie.ABANDONNEE, StatutPublication.EN_COURS, 20);
+        entityManager.persist(serieAbandonnee);
+        entityManager.flush();
+
+        List<Serie> resultat = serieRepository.findByStatutSerieAndStatutPublication(StatutSerie.EN_COURS, StatutPublication.EN_COURS);
+
+        assertThat(resultat).isEmpty();
+    }
 }

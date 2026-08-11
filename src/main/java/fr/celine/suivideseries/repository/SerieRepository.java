@@ -1,6 +1,7 @@
 package fr.celine.suivideseries.repository;
 
 import fr.celine.suivideseries.entity.Serie;
+import fr.celine.suivideseries.enums.StatutPublication;
 import fr.celine.suivideseries.enums.StatutSerie;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -55,4 +56,6 @@ public interface SerieRepository  extends JpaRepository<Serie, Integer> {
     @Query("SELECT s FROM Serie s WHERE s.statutSerie = fr.celine.suivideseries.enums.StatutSerie.EN_COURS AND EXISTS (SELECT l FROM Livre l WHERE l.serie = s " +
             "AND l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.DANS_PAL AND l.formatLivre = fr.celine.suivideseries.enums.FormatLivre.EBOOK)")
     List<Serie> trouverSeriesAvecEbooksDansLaPal();
+
+    List<Serie> findByStatutSerieAndStatutPublication(StatutSerie statutSerie, StatutPublication statutPublication);
 }

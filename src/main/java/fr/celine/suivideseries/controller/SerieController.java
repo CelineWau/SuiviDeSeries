@@ -6,6 +6,7 @@ import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.entity.Utilisateur;
 import fr.celine.suivideseries.service.SerieService;
 import fr.celine.suivideseries.service.UtilisateurService;
+import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -87,6 +88,11 @@ public class SerieController {
     @GetMapping("/palVieillissante")
     public ResponseEntity<List<LivrePalVieillissantDTO>> afficherPalVieillissante() {
         return ResponseEntity.ok(serieService.trouverLivresPalVieillissante());
+    }
+
+    @GetMapping("/aSurveiller")
+    public ResponseEntity<List<SerieASurveillerDTO>> afficherSerieASurveiller() {
+        return ResponseEntity.ok(serieService.trouverSeriesASurveiller());
     }
 
     @PostMapping
