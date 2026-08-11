@@ -302,6 +302,7 @@ public class SerieService {
 
         List<Livre> livres = series.stream()
                 .map(serie -> trouverLivreParNumero(serie, trouverTomePlusPetitDansSerie(serie)))
+                .filter(livre -> tomesPrecedentsTousLus(livre.getSerie(), livre.getNumeroDansLaSerie()))
                 .sorted(Comparator.comparing(Livre::getDateAcquisition, Comparator.nullsFirst(Comparator.naturalOrder())))
                 .limit(5)
                 .toList();
@@ -315,5 +316,14 @@ public class SerieService {
     private LivrePalVieillissantDTO convertirEnDTOPalVieillissante(Livre livre){
         String nomSerie = livre.getSerie().getNom();
         return new LivrePalVieillissantDTO(livre.getTitre(), livre.getAuteur(), nomSerie, livre.getNumeroDansLaSerie(), livre.getDateAcquisition());
+    }
+
+    // Trouver les tomes précédents qui sont lus
+    private boolean tomesPrecedentsTousLus(Serie serie, int numeroCandidat) {
+        long nombreTomesLu = serie.getLivres().stream()
+                .filter(l -> l.getNumeroDansLaSerie() < numeroCandidat && l.getStatutLivre() == StatutLivre.LU)
+                .count();
+
+        return nombreTomesLu == numeroCandidat - 1;
     }
 }

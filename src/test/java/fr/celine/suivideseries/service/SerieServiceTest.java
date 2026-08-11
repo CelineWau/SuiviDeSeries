@@ -453,4 +453,52 @@ public class SerieServiceTest {
 
         assertThat(resultat).isEmpty();
     }
+
+    @Test
+    @DisplayName("Ne doit pas proposer un livre s'il manque un tome non lu avant lui dans la série")
+    void trouverLivresPalVieillissante_tomeIntermediaireManquant_excludesSerie(){
+        Utilisateur autreUtilisateur = new Utilisateur("Feist", "Raymond", "RayF", "ray@email.fr");
+        autreUtilisateur.setMdp("Azerty123");
+
+        Serie serieAvecTrou = new Serie("Les Chroniques du Kondor", autreUtilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 10);
+        Livre tome1Lu = new Livre("Raymond E. Feist", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK,
+                LocalDate.of(2022, 1, 1), LocalDate.of(2022, 2, 1), serieAvecTrou);
+        Livre tome10EnPal = new Livre("Raymond E. Feist", "L'ombre d'une reine noire", "2222222222222", 10, StatutLivre.DANS_PAL, FormatLivre.EBOOK,
+                LocalDate.of(2022, 12, 1), null, serieAvecTrou);
+        // Les tomes 2 à 9 ne sont pas enregistrés du tout : trou dans la série.
+        serieAvecTrou.getLivres().add(tome1Lu);
+        serieAvecTrou.getLivres().add(tome10EnPal);
+
+        when(serieRepository.trouverSeriesAvecEbooksDansLaPal()).thenReturn(List.of(serieAvecTrou));
+
+        List<LivrePalVieillissantDTO> resultat = serieService.trouverLivresPalVieillissante();
+
+        assertThat(resultat).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Doit proposer un livre si tous les tomes précédents sont bien lus")
+    void trouverLivresPalVieillissante_tomesPrecedentsTousLus_includesSerie(){
+        Utilisateur autreUtilisateur = new Utilisateur("Briggs", "Patricia", "PatB", "pat@email.fr");
+        autreUtilisateur.setMdp("Azerty123");
+
+        Serie serieSansTrou = new Serie("Alpha & Omega", autreUtilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 3);
+        Livre tome1Lu = new Livre("Patricia Briggs", "Tome 1", "3333333333333", 1, StatutLivre.LU, FormatLivre.EBOOK,
+                LocalDate.of(2022, 1, 1), LocalDate.of(2022, 2, 1), serieSansTrou);
+        Livre tome2Lu = new Livre("Patricia Briggs", "Tome 2", "4444444444444", 2, StatutLivre.LU, FormatLivre.EBOOK,
+                LocalDate.of(2022, 3, 1), LocalDate.of(2022, 4, 1), serieSansTrou);
+        Livre tome3EnPal = new Livre("Patricia Briggs", "Tome 3", "5555555555555", 3, StatutLivre.DANS_PAL, FormatLivre.EBOOK,
+                LocalDate.of(2023, 5, 2), null, serieSansTrou);
+        serieSansTrou.getLivres().add(tome1Lu);
+        serieSansTrou.getLivres().add(tome2Lu);
+        serieSansTrou.getLivres().add(tome3EnPal);
+
+        when(serieRepository.trouverSeriesAvecEbooksDansLaPal()).thenReturn(List.of(serieSansTrou));
+
+        List<LivrePalVieillissantDTO> resultat = serieService.trouverLivresPalVieillissante();
+
+        assertThat(resultat).hasSize(1);
+        assertThat(resultat.getFirst().getTitre()).isEqualTo("Tome 3");
+        assertThat(resultat.getFirst().getNumeroDansLaSerie()).isEqualTo(3);
+    }
 }
