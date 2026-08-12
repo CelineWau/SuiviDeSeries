@@ -358,14 +358,29 @@ public class SerieServiceTest {
     }
 
     @Test
-    @DisplayName("Doit lever une exception si aucun livre ne correspond au tome le plus petit trouvé")
+    @DisplayName("Doit lever une exception si aucun tome de la série n'est en PAL/ebook")
     void proposerLivreAleatoire_aucunLivreCorrespondant_leveBusinessException(){
         serie.getLivres().add(new Livre("Tolkien", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.PAPIER, null, null, serie));
         when(serieRepository.trouverSeriesAvecEbooksDansLaPal()).thenReturn(List.of(serie));
 
         assertThatThrownBy(() -> serieService.proposerLivreAleatoire())
                 .isInstanceOf(BusinessException.class)
-                .hasMessage("Livre non trouvé.");
+                .hasMessage("Il manque un tome dans cette série avant de pouvoir en proposer un.");
+    }
+
+    @Test
+    @DisplayName("Ne doit pas proposer un livre s'il manque un tome non lu avant lui dans la série")
+    void proposerLivreAleatoire_tomeIntermediaireManquant_leveBusinessException(){
+        Livre tome1Lu = new Livre("Raymond E. Feist", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null, null, serie);
+        Livre tome10EnPal = new Livre("Raymond E. Feist", "Tome 10", "2222222222222", 10, StatutLivre.DANS_PAL, FormatLivre.EBOOK, null, null, serie);
+        serie.getLivres().add(tome1Lu);
+        serie.getLivres().add(tome10EnPal);
+
+        when(serieRepository.trouverSeriesAvecEbooksDansLaPal()).thenReturn(List.of(serie));
+
+        assertThatThrownBy(() -> serieService.proposerLivreAleatoire())
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Il manque un tome dans cette série avant de pouvoir en proposer un.");
     }
 
     @Test
@@ -549,6 +564,94 @@ public class SerieServiceTest {
         when(serieRepository.findByStatutSerieAndStatutPublication(StatutSerie.EN_COURS, StatutPublication.EN_COURS)).thenReturn(List.of());
 
         List<SerieASurveillerDTO> resultat = serieService.trouverSeriesASurveiller();
+
+        assertThat(resultat).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Doit retourner uniquement les livres papier dans la liste de courses papier")
+    void trouverListeCoursesPapier_seriesCandidates_returnUniquementPapier(){
+        Serie seriePapier = new Serie("Havrefer", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 6);
+        Livre livrePapier = new Livre("Richard Ford", "Tome 2", "1111111111111", 2, StatutLivre.A_ACHETER, FormatLivre.PAPIER, null, null, seriePapier);
+        seriePapier.getLivres().add(livrePapier);
+
+        Serie serieEbook = new Serie("Kate Daniels", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 12);
+        Livre livreEbook = new Livre("Ilona Andrews", "Tome 2", "2222222222222", 2, StatutLivre.A_ACHETER, FormatLivre.EBOOK, null, null, serieEbook);
+        serieEbook.getLivres().add(livreEbook);
+
+        when(serieRepository.trouverSeriesAvecLivresAAcheterTrieesParDerniereLecture()).thenReturn(List.of(seriePapier, serieEbook));
+
+        List<LivreAAcheterDTO> resultat = serieService.trouverListeCoursesPapier();
+
+        assertThat(resultat).hasSize(1);
+        assertThat(resultat.getFirst().getNomSerie()).isEqualTo("Havrefer");
+    }
+
+    @Test
+    @DisplayName("Doit retourner uniquement les livres ebook dans la liste de courses ebook")
+    void trouverListeCoursesEbook_seriesCandidates_returnUniquementEbook(){
+        Serie seriePapier = new Serie("Havrefer", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 6);
+        Livre livrePapier = new Livre("Richard Ford", "Tome 2", "1111111111111", 2, StatutLivre.A_ACHETER, FormatLivre.PAPIER, null, null, seriePapier);
+        seriePapier.getLivres().add(livrePapier);
+
+        Serie serieEbook = new Serie("Kate Daniels", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 12);
+        Livre livreEbook = new Livre("Ilona Andrews", "Tome 2", "2222222222222", 2, StatutLivre.A_ACHETER, FormatLivre.EBOOK, null, null, serieEbook);
+        serieEbook.getLivres().add(livreEbook);
+
+        when(serieRepository.trouverSeriesAvecLivresAAcheterTrieesParDerniereLecture()).thenReturn(List.of(seriePapier, serieEbook));
+
+        List<LivreAAcheterDTO> resultat = serieService.trouverListeCoursesEbook();
+
+        assertThat(resultat).hasSize(1);
+        assertThat(resultat.getFirst().getNomSerie()).isEqualTo("Kate Daniels");
+    }
+
+    @Test
+    @DisplayName("Doit limiter la liste de courses papier à 20 résultats")
+    void trouverListeCoursesPapier_plusDeVingtSeries_returnLimiteAVingt(){
+        List<Serie> series = new java.util.ArrayList<>();
+        for (int i = 1; i <= 21; i++) {
+            Utilisateur utilisateurBoucle = new Utilisateur("Nom" + i, "Prenom" + i, "Pseudo" + i, "email" + i + "@email.fr");
+            utilisateurBoucle.setMdp("Azerty123");
+            Serie serieBoucle = new Serie("Serie " + i, utilisateurBoucle, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 5);
+            Livre livreBoucle = new Livre("Auteur " + i, "Tome 1", "000000000000" + i, 1, StatutLivre.A_ACHETER, FormatLivre.PAPIER, null, null,
+                    serieBoucle);
+            serieBoucle.getLivres().add(livreBoucle);
+            series.add(serieBoucle);
+        }
+        when(serieRepository.trouverSeriesAvecLivresAAcheterTrieesParDerniereLecture()).thenReturn(series);
+
+        List<LivreAAcheterDTO> resultat = serieService.trouverListeCoursesPapier();
+
+        assertThat(resultat).hasSize(20);
+    }
+
+    @Test
+    @DisplayName("Doit limiter la liste de courses ebook à 10 résultats")
+    void trouverListeCoursesEbook_plusDeDixSeries_returnLimiteADix(){
+        List<Serie> series = new java.util.ArrayList<>();
+        for (int i = 1; i <= 11; i++) {
+            Utilisateur utilisateurBoucle = new Utilisateur("Nom" + i, "Prenom" + i, "Pseudo" + i, "email" + i + "@email.fr");
+            utilisateurBoucle.setMdp("Azerty123");
+            Serie serieBoucle = new Serie("Serie " + i, utilisateurBoucle, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 5);
+            Livre livreBoucle = new Livre("Auteur " + i, "Tome 1", "111111111111" + i, 1, StatutLivre.A_ACHETER, FormatLivre.EBOOK, null, null,
+                    serieBoucle);
+            serieBoucle.getLivres().add(livreBoucle);
+            series.add(serieBoucle);
+        }
+        when(serieRepository.trouverSeriesAvecLivresAAcheterTrieesParDerniereLecture()).thenReturn(series);
+
+        List<LivreAAcheterDTO> resultat = serieService.trouverListeCoursesEbook();
+
+        assertThat(resultat).hasSize(10);
+    }
+
+    @Test
+    @DisplayName("Doit retourner une liste vide si aucune série n'a de livre à acheter")
+    void trouverListeCoursesPapier_aucuneSerie_returnListeVide(){
+        when(serieRepository.trouverSeriesAvecLivresAAcheterTrieesParDerniereLecture()).thenReturn(List.of());
+
+        List<LivreAAcheterDTO> resultat = serieService.trouverListeCoursesPapier();
 
         assertThat(resultat).isEmpty();
     }

@@ -95,6 +95,16 @@ public class SerieController {
         return ResponseEntity.ok(serieService.trouverSeriesASurveiller());
     }
 
+    @GetMapping("/listeCoursePapier")
+    public ResponseEntity<List<LivreAAcheterDTO>> afficherListeCoursePapier() {
+        return ResponseEntity.ok(serieService.trouverListeCoursesPapier());
+    }
+
+    @GetMapping("/listeCourseEbook")
+    public ResponseEntity<List<LivreAAcheterDTO>> afficherListeCourseEbook() {
+        return ResponseEntity.ok(serieService.trouverListeCoursesEbook());
+    }
+
     @PostMapping
     public ResponseEntity<Serie> creerSerie(@RequestBody SerieCreationDTO dto) {
         Utilisateur utilisateur = utilisateurService.trouverUtilisateurParId(dto.getUtilisateurId());

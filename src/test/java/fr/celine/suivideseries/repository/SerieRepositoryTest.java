@@ -312,4 +312,84 @@ public class SerieRepositoryTest {
 
         assertThat(resultat).isEmpty();
     }
+
+    @Test
+    @DisplayName("Doit retourner les séries avec livres à acheter triées par dernière lecture croissante")
+    void trouverSeriesAvecLivresAAcheterTrieesParDerniereLecture_returnTriesParDateCroissante(){
+        Serie serieRecente = new Serie("Kate Daniels", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 12);
+        Livre livreLuRecent = new Livre("Ilona Andrews", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null,
+                LocalDate.of(2026, 6, 1), serieRecente);
+        Livre livreAAcheterRecent = new Livre("Ilona Andrews", "Tome 2", "2222222222222", 2, StatutLivre.A_ACHETER, FormatLivre.EBOOK, null, null,
+                serieRecente);
+
+        Serie serieAncienne = new Serie("Alpha & Omega", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 5);
+        Livre livreLuAncien = new Livre("Patricia Briggs", "Tome 1", "3333333333333", 1, StatutLivre.LU, FormatLivre.EBOOK, null,
+                LocalDate.of(2022, 1, 1), serieAncienne);
+        Livre livreAAcheterAncien = new Livre("Patricia Briggs", "Tome 2", "4444444444444", 2, StatutLivre.A_ACHETER, FormatLivre.EBOOK, null, null,
+                serieAncienne);
+
+        entityManager.persist(serieRecente);
+        entityManager.persist(livreLuRecent);
+        entityManager.persist(livreAAcheterRecent);
+        entityManager.persist(serieAncienne);
+        entityManager.persist(livreLuAncien);
+        entityManager.persist(livreAAcheterAncien);
+        entityManager.flush();
+
+        List<Serie> resultat = serieRepository.trouverSeriesAvecLivresAAcheterTrieesParDerniereLecture();
+
+        assertThat(resultat).hasSize(2);
+        assertThat(resultat.get(0)).isEqualTo(serieAncienne);
+        assertThat(resultat.get(1)).isEqualTo(serieRecente);
+    }
+
+    @Test
+    @DisplayName("Ne doit pas retourner une série sans aucun livre à acheter")
+    void trouverSeriesAvecLivresAAcheterTrieesParDerniereLecture_excludesSerieSansLivreAAcheter(){
+        Serie serieSansAchat = new Serie("Kate Daniels", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 12);
+        Livre livreLu = new Livre("Ilona Andrews", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null,
+                LocalDate.of(2026, 6, 1), serieSansAchat);
+
+        entityManager.persist(serieSansAchat);
+        entityManager.persist(livreLu);
+        entityManager.flush();
+
+        List<Serie> resultat = serieRepository.trouverSeriesAvecLivresAAcheterTrieesParDerniereLecture();
+
+        assertThat(resultat).doesNotContain(serieSansAchat);
+    }
+
+    @Test
+    @DisplayName("Doit départager par nombre de tomes à acheter en cas d'égalité de dernière lecture")
+    void trouverSeriesAvecLivresAAcheterTrieesParDerniereLecture_departageParNombreAAcheter(){
+        LocalDate memeDate = LocalDate.of(2023, 3, 1);
+
+        Serie serieAvecPlusATrouver = new Serie("Havrefer", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 6);
+        Livre livreLu1 = new Livre("Richard Ford", "Tome 1", "5555555555555", 1, StatutLivre.LU, FormatLivre.PAPIER, null, memeDate, serieAvecPlusATrouver);
+        Livre livreAAcheter1 = new Livre("Richard Ford", "Tome 2", "6666666666666", 2, StatutLivre.A_ACHETER, FormatLivre.PAPIER, null, null,
+                serieAvecPlusATrouver);
+        Livre livreAAcheter2 = new Livre("Richard Ford", "Tome 3", "7777777777777", 3, StatutLivre.A_ACHETER, FormatLivre.PAPIER, null, null,
+                serieAvecPlusATrouver);
+
+        Serie serieAvecMoinsATrouver = new Serie("Kushiel", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 6);
+        Livre livreLu2 = new Livre("Jacqueline Carey", "Tome 1", "8888888888888", 1, StatutLivre.LU, FormatLivre.PAPIER, null, memeDate,
+                serieAvecMoinsATrouver);
+        Livre livreAAcheter3 = new Livre("Jacqueline Carey", "Tome 2", "9999999999999", 2, StatutLivre.A_ACHETER, FormatLivre.PAPIER, null, null,
+                serieAvecMoinsATrouver);
+
+        entityManager.persist(serieAvecPlusATrouver);
+        entityManager.persist(livreLu1);
+        entityManager.persist(livreAAcheter1);
+        entityManager.persist(livreAAcheter2);
+        entityManager.persist(serieAvecMoinsATrouver);
+        entityManager.persist(livreLu2);
+        entityManager.persist(livreAAcheter3);
+        entityManager.flush();
+
+        List<Serie> resultat = serieRepository.trouverSeriesAvecLivresAAcheterTrieesParDerniereLecture();
+
+        assertThat(resultat).hasSize(2);
+        assertThat(resultat.get(0)).isEqualTo(serieAvecMoinsATrouver);
+        assertThat(resultat.get(1)).isEqualTo(serieAvecPlusATrouver);
+    }
 }

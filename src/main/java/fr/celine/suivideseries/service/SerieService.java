@@ -284,6 +284,10 @@ public class SerieService {
         Serie serie = trouverSerieAleatoireDansSerieEbook();
         int numeroProchainTome = trouverTomePlusPetitDansSerie(serie);
 
+        if(!tomesPrecedentsTousLus(serie, numeroProchainTome)){
+            throw new BusinessException("Il manque un tome dans cette série avant de pouvoir en proposer un.");
+        }
+
         Livre livre = trouverLivreParNumero(serie, numeroProchainTome);
 
         return new EbookAleatoireDTO(livre.getTitre(), livre.getAuteur(), serie.getNom(), livre.getNumeroDansLaSerie());
@@ -349,5 +353,42 @@ public class SerieService {
                         .map(Livre::getAuteur)
                         .orElse("Auteur inconnu."));
         return new SerieASurveillerDTO(serie.getIdSerie(), serie.getNom(), auteur);
+    }
+
+    // Trouver le premier tome à acheter dans une série
+    private int trouverPremierTomeAAcheterDansSerie(Serie serie) {
+        return serie.getLivres().stream()
+                .filter(l -> l.getStatutLivre() == StatutLivre.A_ACHETER)
+                .mapToInt(Livre::getNumeroDansLaSerie)
+                .min()
+                .orElse(0);
+    }
+
+    // Convertir un livre en DTO pour la liste des livres à acheter
+    private LivreAAcheterDTO convertirEnDTOAcheter(Livre livre) {
+        String nomSerie =  livre.getSerie().getNom();
+        return new LivreAAcheterDTO(livre.getTitre(), livre.getAuteur(), nomSerie, livre.getNumeroDansLaSerie());
+    }
+
+    // Trouver les livres pour créer la liste de course
+    private List<LivreAAcheterDTO> trouverListeCourses(FormatLivre format, int limite) {
+        List<Serie> series = serieRepository.trouverSeriesAvecLivresAAcheterTrieesParDerniereLecture();
+
+        return series.stream()
+                .map(serie -> trouverLivreParNumero(serie, trouverPremierTomeAAcheterDansSerie(serie)))
+                .filter(livre -> livre.getFormatLivre() == format)
+                .limit(limite)
+                .map(this::convertirEnDTOAcheter)
+                .toList();
+    }
+
+    // Trouver la liste pour les livres papiers
+    public List<LivreAAcheterDTO> trouverListeCoursesPapier() {
+        return trouverListeCourses(FormatLivre.PAPIER, 20);
+    }
+
+    // Trouver la liste pour les ebooks
+    public List<LivreAAcheterDTO> trouverListeCoursesEbook() {
+        return trouverListeCourses(FormatLivre.EBOOK, 10);
     }
 }
