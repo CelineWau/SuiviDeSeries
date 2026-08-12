@@ -392,4 +392,23 @@ public class SerieRepositoryTest {
         assertThat(resultat.get(0)).isEqualTo(serieAvecMoinsATrouver);
         assertThat(resultat.get(1)).isEqualTo(serieAvecPlusATrouver);
     }
+
+    @Test
+    @DisplayName("Ne doit pas retourner une série sans aucune date de lecture connue")
+    void trouverSeriesAvecLivresAAcheterTrieesParDerniereLecture_excludesSerieJamaisCommencee(){
+        Serie serieJamaisCommencee = new Serie("Alpha & Omega", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 5);
+        Livre livreEnPal = new Livre("Patricia Briggs", "Tome 1", "1111111111111", 1, StatutLivre.DANS_PAL, FormatLivre.EBOOK, null, null,
+                serieJamaisCommencee);
+        Livre livreAAcheter = new Livre("Patricia Briggs", "Tome 3", "2222222222222", 3, StatutLivre.A_ACHETER, FormatLivre.EBOOK, null, null,
+                serieJamaisCommencee);
+
+        entityManager.persist(serieJamaisCommencee);
+        entityManager.persist(livreEnPal);
+        entityManager.persist(livreAAcheter);
+        entityManager.flush();
+
+        List<Serie> resultat = serieRepository.trouverSeriesAvecLivresAAcheterTrieesParDerniereLecture();
+
+        assertThat(resultat).doesNotContain(serieJamaisCommencee);
+    }
 }
