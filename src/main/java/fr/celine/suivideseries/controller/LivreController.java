@@ -40,6 +40,17 @@ public class LivreController {
         return ResponseEntity.ok(livreService.modifierFormatLivre(id, dto.getFormatLivre()));
     }
 
+    @PatchMapping("/{id}")
+    public ResponseEntity<Livre> modifierLivre(@PathVariable int id, @RequestBody ModifierLivreDTO dto) {
+        return ResponseEntity.ok(livreService.modifierLivre(id, dto));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> supprimerLivre(@PathVariable int id) {
+        livreService.supprimerLivre(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/auteurs")
     public ResponseEntity<List<String>> trouverAuteurs() {
         return ResponseEntity.ok(livreService.trouverAuteurs());

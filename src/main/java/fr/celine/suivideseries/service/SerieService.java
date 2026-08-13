@@ -391,4 +391,25 @@ public class SerieService {
     public List<LivreAAcheterDTO> trouverListeCoursesEbook() {
         return trouverListeCourses(FormatLivre.EBOOK, 10);
     }
+
+    // Modifier le nom d'une série
+    public Serie modifierNomSerie(int id, String nouveauNom) {
+        Serie serie = serieRepository.findById(id).orElseThrow(() -> new BusinessException("Série non trouvée."));
+
+        boolean nomPrisParAutreSerie = serieRepository.findByNom(nouveauNom)
+                .filter(s -> s.getIdSerie() != id)
+                .isPresent();
+        if(nomPrisParAutreSerie) {
+            throw new BusinessException("Le nouveau titre de la série existe déjà.");
+        }
+
+        serie.setNom(nouveauNom);
+        return serieRepository.save(serie);
+    }
+
+    // Calculer le temps de lecture d'une série
+    public double calculerTempsLectureSerie(int id) {
+        Serie serie = trouverSerieParId(id);
+        return calculerDifferenceDatePremiereEtDerniereLecture(serie);
+    }
 }

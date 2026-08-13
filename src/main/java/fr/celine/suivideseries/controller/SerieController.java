@@ -30,6 +30,11 @@ public class SerieController {
         return ResponseEntity.ok(serieService.afficherSeries());
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Serie> trouverSerie(@PathVariable int id) {
+        return ResponseEntity.ok(serieService.trouverSerieParId(id));
+    }
+
     @GetMapping("/presqueFiniesPal")
     public ResponseEntity<List<Serie>> trouverSeriesPresqueFiniesDansLaPal(@RequestParam int seuil) {
         return ResponseEntity.ok(serieService.trouverSeriesPresqueFiniesDansLaPal(seuil));
@@ -105,6 +110,11 @@ public class SerieController {
         return ResponseEntity.ok(serieService.trouverListeCoursesEbook());
     }
 
+    @GetMapping("/{id}/tempsLecture")
+    public ResponseEntity<Double> afficherTempsLecture(@PathVariable int id) {
+        return ResponseEntity.ok(serieService.calculerTempsLectureSerie(id));
+    }
+
     @PostMapping
     public ResponseEntity<Serie> creerSerie(@RequestBody SerieCreationDTO dto) {
         Utilisateur utilisateur = utilisateurService.trouverUtilisateurParId(dto.getUtilisateurId());
@@ -130,5 +140,10 @@ public class SerieController {
     @PatchMapping("/{id}/statutSerie")
     public ResponseEntity<Serie> modifierStatutSerie(@PathVariable int id, @RequestBody StatutSerieDTO dto) {
         return ResponseEntity.ok(serieService.modifierStatutSerie(id, dto.getStatutSerie()));
+    }
+
+    @PatchMapping("/{id}/nom")
+    public ResponseEntity<Serie> modifierNomSerie(@PathVariable int id, @RequestBody NomSerieDTO dto) {
+        return ResponseEntity.ok(serieService.modifierNomSerie(id, dto.getNom()));
     }
 }

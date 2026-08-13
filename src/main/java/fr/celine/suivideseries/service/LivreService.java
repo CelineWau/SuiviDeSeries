@@ -1,6 +1,7 @@
 package fr.celine.suivideseries.service;
 
 import fr.celine.suivideseries.dto.AuteursSeriesEnCoursDTO;
+import fr.celine.suivideseries.dto.ModifierLivreDTO;
 import fr.celine.suivideseries.dto.RepartitionFormatDTO;
 import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
@@ -126,5 +127,37 @@ public class LivreService {
     public List<AuteursSeriesEnCoursDTO> trouverAuteursAvecSerieEnCours() {
         Pageable pageable = PageRequest.of(0, 5);
         return livreRepository.trouverAuteursParNombreSerieEnCours(pageable);
+    }
+
+    // Supprimer un livre
+    public void supprimerLivre(int id) {
+        livreRepository.deleteById(id);
+    }
+
+    // Modifier un livre
+    public Livre modifierLivre(int id, ModifierLivreDTO dto) {
+        Livre livre = livreRepository.findById(id).orElseThrow(() -> new BusinessException("Livre non trouvé."));
+
+        boolean isbnPrisParAutreLivre = livreRepository.findByIsbn(dto.getIsbn())
+                .filter(l -> l.getIdLivre() != id)
+                .isPresent();
+        if(isbnPrisParAutreLivre) {
+            throw new BusinessException("Un livre existe déjà avec cet ISBN.");
+        }
+
+        Serie serie = livre.getSerie();
+        boolean numeroPrisParAutreLivre = livreRepository.findByNumeroDansLaSerieAndSerie(dto.getNumeroDansLaSerie(), serie)
+                .filter(l -> l.getIdLivre() != id)
+                .isPresent();
+        if(numeroPrisParAutreLivre) {
+            throw new BusinessException("Un livre avec ce numéro existe déjà dans cette série.");
+        }
+
+        livre.setTitre(dto.getTitre());
+        livre.setAuteur(dto.getAuteur());
+        livre.setIsbn(dto.getIsbn());
+        livre.setNumeroDansLaSerie(dto.getNumeroDansLaSerie());
+
+        return livreRepository.save(livre);
     }
 }
