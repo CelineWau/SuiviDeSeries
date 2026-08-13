@@ -323,4 +323,66 @@ public class LivreServiceTest {
         assertThat(resultat).isNotNull();
         assertThat(resultat).isEmpty();
     }
+
+    @Test
+    @DisplayName("Doit lever une exception si le livre à modifier n'existe pas")
+    void modifierLivre_livreNonTrouve_leveBusinessException(){
+        when(livreRepository.findById(99)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> livreService.modifierLivre(99, "Nouveau titre", "Nouvel auteur", "1234567891234", 1))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Livre non trouvé.");
+    }
+
+    @Test
+    @DisplayName("Doit modifier le livre quand rien ne change (même ISBN, même numéro)")
+    void modifierLivre_memesValeurs_returnsLivreModifie(){
+        livre.setIdLivre(1);
+        when(livreRepository.findById(1)).thenReturn(Optional.of(livre));
+        when(livreRepository.findByIsbn("1234567891234")).thenReturn(Optional.of(livre));
+        when(livreRepository.findByNumeroDansLaSerieAndSerie(1, serie)).thenReturn(Optional.of(livre));
+        when(livreRepository.save(any(Livre.class))).thenReturn(livre);
+
+        Livre resultat = livreService.modifierLivre(1, "Nouveau titre", "Nouvel auteur", "1234567891234", 1);
+
+        assertThat(resultat.getTitre()).isEqualTo("Nouveau titre");
+        assertThat(resultat.getAuteur()).isEqualTo("Nouvel auteur");
+        verify(livreRepository, times(1)).save(livre);
+    }
+
+    @Test
+    @DisplayName("Doit lever une exception si l'ISBN appartient déjà à un autre livre")
+    void modifierLivre_isbnPrisParAutreLivre_leveBusinessException(){
+        Livre autreLivre = new Livre("Autre auteur", "Autre titre", "9999999999999", 2, StatutLivre.LU, FormatLivre.PAPIER, null, null, serie);
+
+        when(livreRepository.findById(1)).thenReturn(Optional.of(livre));
+        when(livreRepository.findByIsbn("9999999999999")).thenReturn(Optional.of(autreLivre));
+
+        assertThatThrownBy(() -> livreService.modifierLivre(1, "Nouveau titre", "Nouvel auteur", "9999999999999", 1))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Un livre existe déjà avec cet ISBN.");
+    }
+
+    @Test
+    @DisplayName("Doit lever une exception si le numéro appartient déjà à un autre livre de la série")
+    void modifierLivre_numeroPrisParAutreLivre_leveBusinessException(){
+        livre.setIdLivre(1);
+        Livre autreLivre = new Livre("Autre auteur", "Autre titre", "9999999999999", 2, StatutLivre.LU, FormatLivre.PAPIER, null, null, serie);
+
+        when(livreRepository.findById(1)).thenReturn(Optional.of(livre));
+        when(livreRepository.findByIsbn("1234567891234")).thenReturn(Optional.of(livre));
+        when(livreRepository.findByNumeroDansLaSerieAndSerie(2, serie)).thenReturn(Optional.of(autreLivre));
+
+        assertThatThrownBy(() -> livreService.modifierLivre(1, "Nouveau titre", "Nouvel auteur", "1234567891234", 2))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Un livre avec ce numéro existe déjà dans cette série.");
+    }
+
+    @Test
+    @DisplayName("Doit supprimer un livre par son id")
+    void supprimerLivre_appelleDeleteById(){
+        livreService.supprimerLivre(1);
+
+        verify(livreRepository, times(1)).deleteById(1);
+    }
 }

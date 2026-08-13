@@ -135,10 +135,10 @@ public class LivreService {
     }
 
     // Modifier un livre
-    public Livre modifierLivre(int id, ModifierLivreDTO dto) {
+    public Livre modifierLivre(int id, String titre, String auteur, String isbn, int numeroDansLaSerie) {
         Livre livre = livreRepository.findById(id).orElseThrow(() -> new BusinessException("Livre non trouvé."));
 
-        boolean isbnPrisParAutreLivre = livreRepository.findByIsbn(dto.getIsbn())
+        boolean isbnPrisParAutreLivre = livreRepository.findByIsbn(isbn)
                 .filter(l -> l.getIdLivre() != id)
                 .isPresent();
         if(isbnPrisParAutreLivre) {
@@ -146,17 +146,17 @@ public class LivreService {
         }
 
         Serie serie = livre.getSerie();
-        boolean numeroPrisParAutreLivre = livreRepository.findByNumeroDansLaSerieAndSerie(dto.getNumeroDansLaSerie(), serie)
+        boolean numeroPrisParAutreLivre = livreRepository.findByNumeroDansLaSerieAndSerie(numeroDansLaSerie, serie)
                 .filter(l -> l.getIdLivre() != id)
                 .isPresent();
         if(numeroPrisParAutreLivre) {
             throw new BusinessException("Un livre avec ce numéro existe déjà dans cette série.");
         }
 
-        livre.setTitre(dto.getTitre());
-        livre.setAuteur(dto.getAuteur());
-        livre.setIsbn(dto.getIsbn());
-        livre.setNumeroDansLaSerie(dto.getNumeroDansLaSerie());
+        livre.setTitre(titre);
+        livre.setAuteur(auteur);
+        livre.setIsbn(isbn);
+        livre.setNumeroDansLaSerie(numeroDansLaSerie);
 
         return livreRepository.save(livre);
     }

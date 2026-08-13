@@ -42,7 +42,7 @@ public class LivreController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<Livre> modifierLivre(@PathVariable int id, @RequestBody ModifierLivreDTO dto) {
-        return ResponseEntity.ok(livreService.modifierLivre(id, dto));
+        return ResponseEntity.ok(livreService.modifierLivre(id, dto.getTitre(), dto.getAuteur(), dto.getIsbn(), dto.getNumeroDansLaSerie()));
     }
 
     @DeleteMapping("/{id}")

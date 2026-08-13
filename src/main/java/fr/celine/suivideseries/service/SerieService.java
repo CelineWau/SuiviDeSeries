@@ -91,7 +91,7 @@ public class SerieService {
 
     // Trouver une série par Id
     public Serie trouverSerieParId(int id) {
-        return serieRepository.findById(id).orElseThrow();
+        return serieRepository.findById(id).orElseThrow(() -> new BusinessException("Série non trouvée."));
     }
 
     // Supprimer une série

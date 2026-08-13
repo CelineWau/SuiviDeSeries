@@ -47,7 +47,7 @@ public class SerieServiceTest {
     @Test
     @DisplayName("Doit lever une exception si le nom est nul")
     void creerSerie_nomNull_leveBusinessException() {
-        assertThatThrownBy(() -> serieService.creerSerie(null, utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE,4))
+        assertThatThrownBy(() -> serieService.creerSerie(null, utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 4))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Le nom de la série est obligatoire.");
     }
@@ -55,7 +55,7 @@ public class SerieServiceTest {
     @Test
     @DisplayName("Doit lever une exception si l'utilisateur est nul")
     void creerSerie_utilisateurNull_leveBusinessException() {
-        assertThatThrownBy(() -> serieService.creerSerie("Twilight", null, StatutSerie.EN_COURS, StatutPublication.TERMINEE,4))
+        assertThatThrownBy(() -> serieService.creerSerie("Twilight", null, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 4))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Un utilisateur doit être associé à une série.");
     }
@@ -63,7 +63,7 @@ public class SerieServiceTest {
     @Test
     @DisplayName("Doit lever une exception si le nombre total de livre est inférieur à zéro")
     void creerSerie_nombreLivreTotalInferieurAZero_leveBusinessException() {
-        assertThatThrownBy(() -> serieService.creerSerie("Twilight", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE,-8))
+        assertThatThrownBy(() -> serieService.creerSerie("Twilight", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, -8))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("La série doit avoir un nombre de livre total supérieur à zéro.");
     }
@@ -71,7 +71,7 @@ public class SerieServiceTest {
     @Test
     @DisplayName("Doit lever une exception si le statut de la série est nul")
     void creerSerie_statutSerieNull_leveBusinessException() {
-        assertThatThrownBy(() -> serieService.creerSerie("Twilight", utilisateur, null, StatutPublication.TERMINEE,4))
+        assertThatThrownBy(() -> serieService.creerSerie("Twilight", utilisateur, null, StatutPublication.TERMINEE, 4))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("La série doit obligatoirement avoir un statut.");
     }
@@ -79,16 +79,16 @@ public class SerieServiceTest {
     @Test
     @DisplayName("Doit lever une exception si le statut de publication de la série est nul")
     void creerSerie_statutPublicationNull_leveBusinessException() {
-        assertThatThrownBy(() -> serieService.creerSerie("Twilight", utilisateur, StatutSerie.EN_COURS, null,4))
+        assertThatThrownBy(() -> serieService.creerSerie("Twilight", utilisateur, StatutSerie.EN_COURS, null, 4))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("La série doit obligatoirement avoir un statut de publication.");
     }
 
     @Test
     @DisplayName("Doit lever une exception si le série existe déjà en base de données")
-    void creerSerie_dejaPresentEnBDD_leveBusinessException(){
+    void creerSerie_dejaPresentEnBDD_leveBusinessException() {
         when(serieRepository.findByNom("Twilight")).thenReturn(Optional.of(new Serie()));
-        assertThatThrownBy(()-> serieService.creerSerie("Twilight", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE,4))
+        assertThatThrownBy(() -> serieService.creerSerie("Twilight", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 4))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Une série existe déjà avec ce nom.");
     }
@@ -97,9 +97,9 @@ public class SerieServiceTest {
     @DisplayName("Doit créer une nouvelle série")
     void creerSerie_donneesValides_returnsSerie() {
 
-        when(serieRepository.save(any(Serie.class))).thenReturn(new Serie("Twilight", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE,4));
+        when(serieRepository.save(any(Serie.class))).thenReturn(new Serie("Twilight", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 4));
 
-        Serie resultat = serieService.creerSerie("Twilight", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE,4);
+        Serie resultat = serieService.creerSerie("Twilight", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 4);
 
         assertThat(resultat).isNotNull();
         assertThat(resultat.getNom()).isEqualTo("Twilight");
@@ -112,7 +112,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Doit lever une exception si le nombre de livres manquants est inférieur ou égal à 0")
-    void trouverSerieAvecNombreLivresManquants_livresManquantsInferieurZero_leveBusinessException(){
+    void trouverSerieAvecNombreLivresManquants_livresManquantsInferieurZero_leveBusinessException() {
         assertThatThrownBy(() -> serieService.trouverSerieAvecNombreLivresManquants(-9))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Le nombre de livre manquant ne peut pas être négatif ou égal à zéro.");
@@ -132,7 +132,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Doit lever une exception si le nombre de livres manquants pour la PAL est inférieur ou égal à 0")
-    void trouverSeriesPresqueFiniesDansLaPal_livreManquantInferieurOuEgalZero_leveBusinessException(){
+    void trouverSeriesPresqueFiniesDansLaPal_livreManquantInferieurOuEgalZero_leveBusinessException() {
         assertThatThrownBy(() -> serieService.trouverSeriesPresqueFiniesDansLaPal(0))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Le nombre de livre manquant ne peut pas être négatif ou égal à zéro.");
@@ -140,7 +140,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Doit retourner les séries presque finies dans la PAL")
-    void trouverSeriesPresqueFiniesDansLaPal_donneesValides_returnsSeries(){
+    void trouverSeriesPresqueFiniesDansLaPal_donneesValides_returnsSeries() {
         when(serieRepository.trouverSeriesPresqueFinieDansLaPal(2)).thenReturn(List.of(serie));
 
         List<Serie> resultat = serieService.trouverSeriesPresqueFiniesDansLaPal(2);
@@ -152,7 +152,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Doit modifier le nombre de livres total et repasser la série en EN_COURS si elle n'est pas abandonnée")
-    void modifierNombreLivreTotal_serieNonAbandonnee_repasseEnCours(){
+    void modifierNombreLivreTotal_serieNonAbandonnee_repasseEnCours() {
         serie.setStatutSerie(StatutSerie.TERMINEE);
         when(serieRepository.findById(1)).thenReturn(Optional.of(serie));
         when(serieRepository.save(any(Serie.class))).thenReturn(serie);
@@ -165,7 +165,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Ne doit pas repasser une série abandonnée en EN_COURS lors de la modification du nombre de livres")
-    void modifierNombreLivreTotal_serieAbandonnee_resteAbandonnee(){
+    void modifierNombreLivreTotal_serieAbandonnee_resteAbandonnee() {
         serie.setStatutSerie(StatutSerie.ABANDONNEE);
         when(serieRepository.findById(1)).thenReturn(Optional.of(serie));
         when(serieRepository.save(any(Serie.class))).thenReturn(serie);
@@ -178,7 +178,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Doit convertir les séries en DTO avec leur nombre de livres à acheter")
-    void trouverSeriesAvecLivresAAcheter_returnListeDeDTO(){
+    void trouverSeriesAvecLivresAAcheter_returnListeDeDTO() {
         Livre livreLu = new Livre("Tolkien", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null, null, serie);
         Livre livreAAcheter1 = new Livre("Tolkien", "Tome 2", "2222222222222", 2, StatutLivre.A_ACHETER, FormatLivre.EBOOK, null, null, serie);
         Livre livreAAcheter2 = new Livre("Tolkien", "Tome 3", "3333333333333", 3, StatutLivre.A_ACHETER, FormatLivre.EBOOK, null, null, serie);
@@ -199,7 +199,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Doit remplir la date de fin automatiquement lors du passage de EN_COURS à TERMINEE")
-    void modifierStatutSerie_transitionEnCoursVersTerminee_remplitDateFin(){
+    void modifierStatutSerie_transitionEnCoursVersTerminee_remplitDateFin() {
         serie.setStatutSerie(StatutSerie.EN_COURS);
         when(serieRepository.findById(1)).thenReturn(Optional.of(serie));
         when(serieRepository.save(any(Serie.class))).thenReturn(serie);
@@ -211,7 +211,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Ne doit pas remplir la date de fin si la transition n'est pas EN_COURS vers TERMINEE")
-    void modifierStatutSerie_transitionAutre_neRemplitPasDateFin(){
+    void modifierStatutSerie_transitionAutre_neRemplitPasDateFin() {
         serie.setStatutSerie(StatutSerie.EN_COURS);
         when(serieRepository.findById(1)).thenReturn(Optional.of(serie));
         when(serieRepository.save(any(Serie.class))).thenReturn(serie);
@@ -223,7 +223,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Doit répartir les séries en petites, moyennes et sagas selon leur nombre de livres")
-    void calculerRepartitionTailleSeries_donneesValides_returnsRepartitionCorrecte(){
+    void calculerRepartitionTailleSeries_donneesValides_returnsRepartitionCorrecte() {
         Serie petite = new Serie("Petite série", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 2);
         Serie moyenne = new Serie("Série moyenne", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 5);
         Serie saga = new Serie("Grande saga", utilisateur, StatutSerie.TERMINEE, StatutPublication.TERMINEE, 12);
@@ -238,7 +238,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Doit retourner une répartition à zéro si aucune série n'est présente")
-    void calculerRepartitionTailleSeries_aucuneSerie_returnsRepartitionAZero(){
+    void calculerRepartitionTailleSeries_aucuneSerie_returnsRepartitionAZero() {
         when(serieRepository.findByStatutSerieNot(StatutSerie.ABANDONNEE)).thenReturn(List.of());
 
         TailleSerieDTO resultat = serieService.calculerRepartitionTailleSeries();
@@ -250,7 +250,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Doit calculer la différence en jours entre la première et la dernière lecture")
-    void calculerDifferenceDatePremiereEtDerniereLecture_datesPresentes_returnsDifferenceEnJours(){
+    void calculerDifferenceDatePremiereEtDerniereLecture_datesPresentes_returnsDifferenceEnJours() {
         Livre livre1 = new Livre("Tolkien", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null, LocalDate.of(2026, 1, 1), serie);
         Livre livre2 = new Livre("Tolkien", "Tome 2", "2222222222222", 2, StatutLivre.LU, FormatLivre.EBOOK, null, LocalDate.of(2026, 1, 11), serie);
         serie.getLivres().add(livre1);
@@ -263,7 +263,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Doit retourner zéro si aucun livre n'a de date de lecture")
-    void calculerDifferenceDatePremiereEtDerniereLecture_aucuneDateLecture_returnsZero(){
+    void calculerDifferenceDatePremiereEtDerniereLecture_aucuneDateLecture_returnsZero() {
         Livre livre1 = new Livre("Tolkien", "Tome 1", "1111111111111", 1, StatutLivre.DANS_PAL, FormatLivre.EBOOK, null, null, serie);
         serie.getLivres().add(livre1);
 
@@ -274,7 +274,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Doit calculer la durée moyenne de lecture des séries terminées")
-    void calculerDureeMoyenneLecture_seriesTerminees_returnsMoyenneCorrecte(){
+    void calculerDureeMoyenneLecture_seriesTerminees_returnsMoyenneCorrecte() {
         Serie serieA = new Serie("Série A", utilisateur, StatutSerie.TERMINEE, StatutPublication.TERMINEE, 2);
         serieA.getLivres().add(new Livre("Auteur A", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null, LocalDate.of(2026, 1, 1), serieA));
         serieA.getLivres().add(new Livre("Auteur A", "Tome 2", "2222222222222", 2, StatutLivre.LU, FormatLivre.EBOOK, null, LocalDate.of(2026, 1, 11), serieA));
@@ -292,7 +292,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Doit retourner zéro si aucune série terminée n'est présente")
-    void calculerDureeMoyenneLecture_aucuneSerieTerminee_returnsZero(){
+    void calculerDureeMoyenneLecture_aucuneSerieTerminee_returnsZero() {
         when(serieRepository.findByStatutSerie(StatutSerie.TERMINEE)).thenReturn(List.of());
 
         double resultat = serieService.calculerDureeMoyenneLecture();
@@ -302,7 +302,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Doit lever une exception si aucune série avec ebook dans la PAL n'est trouvée")
-    void trouverSerieAleatoireDansSerieEbook_aucuneSerie_leveBusinessException(){
+    void trouverSerieAleatoireDansSerieEbook_aucuneSerie_leveBusinessException() {
         when(serieRepository.trouverSeriesAvecEbooksDansLaPal()).thenReturn(List.of());
 
         assertThatThrownBy(() -> serieService.trouverSerieAleatoireDansSerieEbook())
@@ -312,7 +312,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Doit retourner l'unique série disponible avec ebook dans la PAL")
-    void trouverSerieAleatoireDansSerieEbook_uneSerieDisponible_returnsCetteSerie(){
+    void trouverSerieAleatoireDansSerieEbook_uneSerieDisponible_returnsCetteSerie() {
         when(serieRepository.trouverSeriesAvecEbooksDansLaPal()).thenReturn(List.of(serie));
 
         Serie resultat = serieService.trouverSerieAleatoireDansSerieEbook();
@@ -322,7 +322,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Doit trouver le numéro de tome le plus petit parmi les ebooks en PAL")
-    void trouverTomePlusPetitDansSerie_ebooksDansPal_returnsNumeroLePlusPetit(){
+    void trouverTomePlusPetitDansSerie_ebooksDansPal_returnsNumeroLePlusPetit() {
         serie.getLivres().add(new Livre("Tolkien", "Tome 3", "1111111111111", 3, StatutLivre.DANS_PAL, FormatLivre.EBOOK, null, null, serie));
         serie.getLivres().add(new Livre("Tolkien", "Tome 1", "2222222222222", 1, StatutLivre.DANS_PAL, FormatLivre.EBOOK, null, null, serie));
         serie.getLivres().add(new Livre("Tolkien", "Tome 2", "3333333333333", 2, StatutLivre.LU, FormatLivre.EBOOK, null, null, serie));
@@ -334,7 +334,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Doit retourner zéro si aucun ebook n'est en PAL dans la série")
-    void trouverTomePlusPetitDansSerie_aucunEbookEnPal_returnsZero(){
+    void trouverTomePlusPetitDansSerie_aucunEbookEnPal_returnsZero() {
         serie.getLivres().add(new Livre("Tolkien", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.PAPIER, null, null, serie));
 
         int resultat = serieService.trouverTomePlusPetitDansSerie(serie);
@@ -344,7 +344,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Doit proposer un ebook aléatoire à lire parmi les séries en cours dans la PAL")
-    void proposerLivreAleatoire_livreDisponible_returnsEbookAleatoireDTO(){
+    void proposerLivreAleatoire_livreDisponible_returnsEbookAleatoireDTO() {
         Livre livre = new Livre("Tolkien", "Le retour du roi", "1111111111111", 1, StatutLivre.DANS_PAL, FormatLivre.EBOOK, null, null, serie);
         serie.getLivres().add(livre);
         when(serieRepository.trouverSeriesAvecEbooksDansLaPal()).thenReturn(List.of(serie));
@@ -359,7 +359,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Doit lever une exception si aucun tome de la série n'est en PAL/ebook")
-    void proposerLivreAleatoire_aucunLivreCorrespondant_leveBusinessException(){
+    void proposerLivreAleatoire_aucunLivreCorrespondant_leveBusinessException() {
         serie.getLivres().add(new Livre("Tolkien", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.PAPIER, null, null, serie));
         when(serieRepository.trouverSeriesAvecEbooksDansLaPal()).thenReturn(List.of(serie));
 
@@ -370,7 +370,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Ne doit pas proposer un livre s'il manque un tome non lu avant lui dans la série")
-    void proposerLivreAleatoire_tomeIntermediaireManquant_leveBusinessException(){
+    void proposerLivreAleatoire_tomeIntermediaireManquant_leveBusinessException() {
         Livre tome1Lu = new Livre("Raymond E. Feist", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null, null, serie);
         Livre tome10EnPal = new Livre("Raymond E. Feist", "Tome 10", "2222222222222", 10, StatutLivre.DANS_PAL, FormatLivre.EBOOK, null, null, serie);
         serie.getLivres().add(tome1Lu);
@@ -385,7 +385,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Doit retourner les livres triés par date d'acquisition croissante")
-    void trouverLivresPalVieillissante_livresAvecDate_returnTriesParDateCroissante(){
+    void trouverLivresPalVieillissante_livresAvecDate_returnTriesParDateCroissante() {
         Utilisateur autreUtilisateur = new Utilisateur("Rowling", "Joanne", "JoJo", "jo@email.fr");
         autreUtilisateur.setMdp("Azerty123");
 
@@ -411,7 +411,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Doit placer les livres sans date d'acquisition en premier")
-    void trouverLivresPalVieillissante_livreSansDate_returnEnPremier(){
+    void trouverLivresPalVieillissante_livreSansDate_returnEnPremier() {
         Utilisateur autreUtilisateur = new Utilisateur("Rowling", "Joanne", "JoJo", "jo@email.fr");
         autreUtilisateur.setMdp("Azerty123");
 
@@ -438,7 +438,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Doit limiter le résultat à 5 livres")
-    void trouverLivresPalVieillissante_plusDeCinqSeries_returnLimiteACinq(){
+    void trouverLivresPalVieillissante_plusDeCinqSeries_returnLimiteACinq() {
         List<Serie> series = new java.util.ArrayList<>();
         for (int i = 1; i <= 6; i++) {
             Utilisateur utilisateurBoucle = new Utilisateur("Nom" + i, "Prenom" + i, "Pseudo" + i, "email" + i + "@email.fr");
@@ -458,7 +458,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Doit retourner une liste vide si aucune série candidate n'est trouvée")
-    void trouverLivresPalVieillissante_aucuneSerie_returnListeVide(){
+    void trouverLivresPalVieillissante_aucuneSerie_returnListeVide() {
         when(serieRepository.trouverSeriesAvecEbooksDansLaPal()).thenReturn(List.of());
 
         List<LivrePalVieillissantDTO> resultat = serieService.trouverLivresPalVieillissante();
@@ -468,7 +468,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Ne doit pas proposer un livre s'il manque un tome non lu avant lui dans la série")
-    void trouverLivresPalVieillissante_tomeIntermediaireManquant_excludesSerie(){
+    void trouverLivresPalVieillissante_tomeIntermediaireManquant_excludesSerie() {
         Utilisateur autreUtilisateur = new Utilisateur("Feist", "Raymond", "RayF", "ray@email.fr");
         autreUtilisateur.setMdp("Azerty123");
 
@@ -490,7 +490,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Doit proposer un livre si tous les tomes précédents sont bien lus")
-    void trouverLivresPalVieillissante_tomesPrecedentsTousLus_includesSerie(){
+    void trouverLivresPalVieillissante_tomesPrecedentsTousLus_includesSerie() {
         Utilisateur autreUtilisateur = new Utilisateur("Briggs", "Patricia", "PatB", "pat@email.fr");
         autreUtilisateur.setMdp("Azerty123");
 
@@ -516,7 +516,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Doit retourner les séries à surveiller avec l'auteur du tome 1")
-    void trouverSeriesASurveiller_tome1Present_returnAuteurDuTome1(){
+    void trouverSeriesASurveiller_tome1Present_returnAuteurDuTome1() {
         Serie serieCosmere = new Serie("Cosmere", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 20);
         Livre tome2 = new Livre("Brandon Sanderson", "Tome 2", "1111111111111", 2, StatutLivre.LU, FormatLivre.EBOOK, null, null, serieCosmere);
         Livre tome1 = new Livre("Brandon Sanderson", "Tome 1", "2222222222222", 1, StatutLivre.LU, FormatLivre.EBOOK, null, null, serieCosmere);
@@ -534,7 +534,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Doit utiliser l'auteur d'un autre tome si le tome 1 n'est pas enregistré")
-    void trouverSeriesASurveiller_tome1Absent_returnAuteurAutreTome(){
+    void trouverSeriesASurveiller_tome1Absent_returnAuteurAutreTome() {
         Serie serieSansTome1 = new Serie("Kate Daniels", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 10);
         Livre tome3 = new Livre("Ilona Andrews", "Tome 3", "3333333333333", 3, StatutLivre.LU, FormatLivre.EBOOK, null, null, serieSansTome1);
         serieSansTome1.getLivres().add(tome3);
@@ -548,7 +548,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Doit retourner 'Auteur inconnu' si la série n'a aucun livre enregistré")
-    void trouverSeriesASurveiller_aucunLivre_returnAuteurInconnu(){
+    void trouverSeriesASurveiller_aucunLivre_returnAuteurInconnu() {
         Serie serieVide = new Serie("Nouvelle série", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 5);
 
         when(serieRepository.findByStatutSerieAndStatutPublication(StatutSerie.EN_COURS, StatutPublication.EN_COURS)).thenReturn(List.of(serieVide));
@@ -560,7 +560,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Doit retourner une liste vide si aucune série n'est à surveiller")
-    void trouverSeriesASurveiller_aucuneSerie_returnListeVide(){
+    void trouverSeriesASurveiller_aucuneSerie_returnListeVide() {
         when(serieRepository.findByStatutSerieAndStatutPublication(StatutSerie.EN_COURS, StatutPublication.EN_COURS)).thenReturn(List.of());
 
         List<SerieASurveillerDTO> resultat = serieService.trouverSeriesASurveiller();
@@ -570,7 +570,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Doit retourner uniquement les livres papier dans la liste de courses papier")
-    void trouverListeCoursesPapier_seriesCandidates_returnUniquementPapier(){
+    void trouverListeCoursesPapier_seriesCandidates_returnUniquementPapier() {
         Serie seriePapier = new Serie("Havrefer", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 6);
         Livre livrePapier = new Livre("Richard Ford", "Tome 2", "1111111111111", 2, StatutLivre.A_ACHETER, FormatLivre.PAPIER, null, null, seriePapier);
         seriePapier.getLivres().add(livrePapier);
@@ -589,7 +589,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Doit retourner uniquement les livres ebook dans la liste de courses ebook")
-    void trouverListeCoursesEbook_seriesCandidates_returnUniquementEbook(){
+    void trouverListeCoursesEbook_seriesCandidates_returnUniquementEbook() {
         Serie seriePapier = new Serie("Havrefer", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 6);
         Livre livrePapier = new Livre("Richard Ford", "Tome 2", "1111111111111", 2, StatutLivre.A_ACHETER, FormatLivre.PAPIER, null, null, seriePapier);
         seriePapier.getLivres().add(livrePapier);
@@ -608,7 +608,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Doit limiter la liste de courses papier à 20 résultats")
-    void trouverListeCoursesPapier_plusDeVingtSeries_returnLimiteAVingt(){
+    void trouverListeCoursesPapier_plusDeVingtSeries_returnLimiteAVingt() {
         List<Serie> series = new java.util.ArrayList<>();
         for (int i = 1; i <= 21; i++) {
             Utilisateur utilisateurBoucle = new Utilisateur("Nom" + i, "Prenom" + i, "Pseudo" + i, "email" + i + "@email.fr");
@@ -628,7 +628,7 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Doit limiter la liste de courses ebook à 10 résultats")
-    void trouverListeCoursesEbook_plusDeDixSeries_returnLimiteADix(){
+    void trouverListeCoursesEbook_plusDeDixSeries_returnLimiteADix() {
         List<Serie> series = new java.util.ArrayList<>();
         for (int i = 1; i <= 11; i++) {
             Utilisateur utilisateurBoucle = new Utilisateur("Nom" + i, "Prenom" + i, "Pseudo" + i, "email" + i + "@email.fr");
@@ -648,11 +648,88 @@ public class SerieServiceTest {
 
     @Test
     @DisplayName("Doit retourner une liste vide si aucune série n'a de livre à acheter")
-    void trouverListeCoursesPapier_aucuneSerie_returnListeVide(){
+    void trouverListeCoursesPapier_aucuneSerie_returnListeVide() {
         when(serieRepository.trouverSeriesAvecLivresAAcheterTrieesParDerniereLecture()).thenReturn(List.of());
 
         List<LivreAAcheterDTO> resultat = serieService.trouverListeCoursesPapier();
 
         assertThat(resultat).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Doit retourner la série correspondant à l'id")
+    void trouverSerieParId_serieExistante_returnsSerie(){
+        when(serieRepository.findById(1)).thenReturn(Optional.of(serie));
+
+        Serie resultat = serieService.trouverSerieParId(1);
+
+        assertThat(resultat).isEqualTo(serie);
+    }
+
+    @Test
+    @DisplayName("Doit lever une exception si la série n'existe pas")
+    void trouverSerieParId_serieInexistante_leveBusinessException(){
+        when(serieRepository.findById(99)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> serieService.trouverSerieParId(99))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Série non trouvée.");
+    }
+
+    @Test
+    @DisplayName("Doit modifier le nom de la série quand rien ne change")
+    void modifierNomSerie_memeNom_returnsSerieModifiee(){
+        serie.setIdSerie(1);
+        when(serieRepository.findById(1)).thenReturn(Optional.of(serie));
+        when(serieRepository.findByNom(serie.getNom())).thenReturn(Optional.of(serie));
+        when(serieRepository.save(any(Serie.class))).thenReturn(serie);
+
+        Serie resultat = serieService.modifierNomSerie(1, serie.getNom());
+
+        assertThat(resultat.getNom()).isEqualTo(serie.getNom());
+        verify(serieRepository, times(1)).save(serie);
+    }
+
+    @Test
+    @DisplayName("Doit modifier le nom de la série avec un nouveau nom disponible")
+    void modifierNomSerie_nouveauNomDisponible_returnsSerieModifiee(){
+        serie.setIdSerie(1);
+        when(serieRepository.findById(1)).thenReturn(Optional.of(serie));
+        when(serieRepository.findByNom("Nouveau nom")).thenReturn(Optional.empty());
+        when(serieRepository.save(any(Serie.class))).thenReturn(serie);
+
+        Serie resultat = serieService.modifierNomSerie(1, "Nouveau nom");
+
+        assertThat(resultat.getNom()).isEqualTo("Nouveau nom");
+    }
+
+    @Test
+    @DisplayName("Doit lever une exception si le nom appartient déjà à une autre série")
+    void modifierNomSerie_nomPrisParAutreSerie_leveBusinessException(){
+        serie.setIdSerie(1);
+        Serie autreSerie = new Serie("Chasseuse de la nuit", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 3);
+        autreSerie.setIdSerie(2);
+
+        when(serieRepository.findById(1)).thenReturn(Optional.of(serie));
+        when(serieRepository.findByNom("Chasseuse de la nuit")).thenReturn(Optional.of(autreSerie));
+
+        assertThatThrownBy(() -> serieService.modifierNomSerie(1, "Chasseuse de la nuit"))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Le nouveau titre de la série existe déjà.");
+    }
+
+    @Test
+    @DisplayName("Doit calculer le temps de lecture d'une série via son id")
+    void calculerTempsLectureSerie_serieExistante_returnsDifferenceEnJours(){
+        Livre livre1 = new Livre("Tolkien", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null, LocalDate.of(2026, 1, 1), serie);
+        Livre livre2 = new Livre("Tolkien", "Tome 2", "2222222222222", 2, StatutLivre.LU, FormatLivre.EBOOK, null, LocalDate.of(2026, 1, 11), serie);
+        serie.getLivres().add(livre1);
+        serie.getLivres().add(livre2);
+
+        when(serieRepository.findById(1)).thenReturn(Optional.of(serie));
+
+        double resultat = serieService.calculerTempsLectureSerie(1);
+
+        assertThat(resultat).isEqualTo(10.0);
     }
 }
