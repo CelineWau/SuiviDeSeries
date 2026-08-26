@@ -280,13 +280,16 @@ public class SerieRepositoryTest {
     }
 
     @Test
-    @DisplayName("Doit retourner les séries en cours dont la publication n'est pas terminée")
-    void findByStatutSerieAndStatutPublication_returnSeriesASurveiller(){
+    @DisplayName("Doit retourner les séries en cours dont la publication est en cours et pas encore entièrement lues")
+    void trouverSerieASurveiller_returnSeriesASurveiller(){
         Serie serieASurveiller = new Serie("Cosmere", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 20);
+        Livre livreNonLu = new Livre("Brandon Sanderson", "Tome 2", "1111111111111", 2, StatutLivre.DANS_PAL, FormatLivre.EBOOK, null, null,
+                serieASurveiller);
         entityManager.persist(serieASurveiller);
+        entityManager.persist(livreNonLu);
         entityManager.flush();
 
-        List<Serie> resultat = serieRepository.findByStatutSerieAndStatutPublication(StatutSerie.EN_COURS, StatutPublication.EN_COURS);
+        List<Serie> resultat = serieRepository.trouverSerieASurveiller();
 
         assertThat(resultat).hasSize(1);
         assertThat(resultat).containsOnly(serieASurveiller);
@@ -294,23 +297,44 @@ public class SerieRepositoryTest {
 
     @Test
     @DisplayName("Ne doit pas retourner une série dont la publication est déjà terminée")
-    void findByStatutSerieAndStatutPublication_excludesPublicationTerminee(){
+    void trouverSerieASurveiller_excludesPublicationTerminee(){
         // La série du setup a déjà statutPublication = TERMINEE, donc elle ne doit pas ressortir.
-        List<Serie> resultat = serieRepository.findByStatutSerieAndStatutPublication(StatutSerie.EN_COURS, StatutPublication.EN_COURS);
+        List<Serie> resultat = serieRepository.trouverSerieASurveiller();
 
         assertThat(resultat).isEmpty();
     }
 
     @Test
     @DisplayName("Ne doit pas retourner une série abandonnée même si sa publication est en cours")
-    void findByStatutSerieAndStatutPublication_excludesSerieAbandonnee(){
+    void trouverSerieASurveiller_excludesSerieAbandonnee(){
         Serie serieAbandonnee = new Serie("Cosmere", utilisateur, StatutSerie.ABANDONNEE, StatutPublication.EN_COURS, 20);
+        Livre livreNonLu = new Livre("Brandon Sanderson", "Tome 2", "1111111111111", 2, StatutLivre.DANS_PAL, FormatLivre.EBOOK, null, null,
+                serieAbandonnee);
         entityManager.persist(serieAbandonnee);
+        entityManager.persist(livreNonLu);
         entityManager.flush();
 
-        List<Serie> resultat = serieRepository.findByStatutSerieAndStatutPublication(StatutSerie.EN_COURS, StatutPublication.EN_COURS);
+        List<Serie> resultat = serieRepository.trouverSerieASurveiller();
 
         assertThat(resultat).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Ne doit pas retourner une série dont tous les livres sont déjà lus (déjà à jour)")
+    void trouverSerieASurveiller_excludesSerieDejaAJour(){
+        Serie serieAJour = new Serie("Kate Daniels", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 2);
+        Livre livre1 = new Livre("Ilona Andrews", "Tome 1", "2222222222222", 1, StatutLivre.LU, FormatLivre.EBOOK, null, LocalDate.of(2026, 1, 1),
+                serieAJour);
+        Livre livre2 = new Livre("Ilona Andrews", "Tome 2", "3333333333333", 2, StatutLivre.LU, FormatLivre.EBOOK, null, LocalDate.of(2026, 2, 1),
+                serieAJour);
+        entityManager.persist(serieAJour);
+        entityManager.persist(livre1);
+        entityManager.persist(livre2);
+        entityManager.flush();
+
+        List<Serie> resultat = serieRepository.trouverSerieASurveiller();
+
+        assertThat(resultat).doesNotContain(serieAJour);
     }
 
     @Test

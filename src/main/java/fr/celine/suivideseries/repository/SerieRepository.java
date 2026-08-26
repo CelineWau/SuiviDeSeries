@@ -57,7 +57,10 @@ public interface SerieRepository  extends JpaRepository<Serie, Integer> {
             "AND l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.DANS_PAL AND l.formatLivre = fr.celine.suivideseries.enums.FormatLivre.EBOOK)")
     List<Serie> trouverSeriesAvecEbooksDansLaPal();
 
-    List<Serie> findByStatutSerieAndStatutPublication(StatutSerie statutSerie, StatutPublication statutPublication);
+    @Query("SELECT s FROM Serie s LEFT JOIN s.livres l WHERE s.statutSerie = fr.celine.suivideseries.enums.StatutSerie.EN_COURS " +
+            "AND s.statutPublication = fr.celine.suivideseries.enums.StatutPublication.EN_COURS GROUP BY s.idSerie " +
+            "HAVING SUM(CASE WHEN l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.LU THEN 1 ELSE 0 END) != COUNT(l)")
+    List<Serie> trouverSerieASurveiller();
 
     @Query("SELECT s FROM Serie s LEFT JOIN s.livres l WHERE s.statutSerie = fr.celine.suivideseries.enums.StatutSerie.EN_COURS AND EXISTS (SELECT l2 FROM Livre l2 WHERE l2.serie = s AND " +
             "l2.statutLivre = fr.celine.suivideseries.enums.StatutLivre.A_ACHETER) GROUP BY s.idSerie HAVING MAX(l.dateLecture) IS NOT NULL ORDER BY MAX(l.dateLecture) ASC, " +

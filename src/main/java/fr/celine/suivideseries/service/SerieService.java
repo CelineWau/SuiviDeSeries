@@ -334,7 +334,7 @@ public class SerieService {
 
     // Trouver les séries à surveiller
     public List<SerieASurveillerDTO> trouverSeriesASurveiller() {
-        List<Serie> series = serieRepository.findByStatutSerieAndStatutPublication(StatutSerie.EN_COURS, StatutPublication.EN_COURS);
+        List<Serie> series = serieRepository.trouverSerieASurveiller();
 
         return series.stream()
                 .map(this::convertirEnDTOASurveiller)

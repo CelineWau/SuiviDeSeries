@@ -523,7 +523,7 @@ public class SerieServiceTest {
         serieCosmere.getLivres().add(tome2);
         serieCosmere.getLivres().add(tome1);
 
-        when(serieRepository.findByStatutSerieAndStatutPublication(StatutSerie.EN_COURS, StatutPublication.EN_COURS)).thenReturn(List.of(serieCosmere));
+        when(serieRepository.trouverSerieASurveiller()).thenReturn(List.of(serieCosmere));
 
         List<SerieASurveillerDTO> resultat = serieService.trouverSeriesASurveiller();
 
@@ -539,7 +539,7 @@ public class SerieServiceTest {
         Livre tome3 = new Livre("Ilona Andrews", "Tome 3", "3333333333333", 3, StatutLivre.LU, FormatLivre.EBOOK, null, null, serieSansTome1);
         serieSansTome1.getLivres().add(tome3);
 
-        when(serieRepository.findByStatutSerieAndStatutPublication(StatutSerie.EN_COURS, StatutPublication.EN_COURS)).thenReturn(List.of(serieSansTome1));
+        when(serieRepository.trouverSerieASurveiller()).thenReturn(List.of(serieSansTome1));
 
         List<SerieASurveillerDTO> resultat = serieService.trouverSeriesASurveiller();
 
@@ -551,7 +551,7 @@ public class SerieServiceTest {
     void trouverSeriesASurveiller_aucunLivre_returnAuteurInconnu() {
         Serie serieVide = new Serie("Nouvelle série", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 5);
 
-        when(serieRepository.findByStatutSerieAndStatutPublication(StatutSerie.EN_COURS, StatutPublication.EN_COURS)).thenReturn(List.of(serieVide));
+        when(serieRepository.trouverSerieASurveiller()).thenReturn(List.of(serieVide));
 
         List<SerieASurveillerDTO> resultat = serieService.trouverSeriesASurveiller();
 
@@ -561,7 +561,7 @@ public class SerieServiceTest {
     @Test
     @DisplayName("Doit retourner une liste vide si aucune série n'est à surveiller")
     void trouverSeriesASurveiller_aucuneSerie_returnListeVide() {
-        when(serieRepository.findByStatutSerieAndStatutPublication(StatutSerie.EN_COURS, StatutPublication.EN_COURS)).thenReturn(List.of());
+        when(serieRepository.trouverSerieASurveiller()).thenReturn(List.of());
 
         List<SerieASurveillerDTO> resultat = serieService.trouverSeriesASurveiller();
 
