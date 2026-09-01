@@ -65,4 +65,9 @@ public class LivreController {
     public ResponseEntity<List<AuteursSeriesEnCoursDTO>> afficherAuteursSeriesEnCours() {
         return ResponseEntity.ok(livreService.trouverAuteursAvecSerieEnCours());
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Livre> trouverLivre(@PathVariable int id) {
+        return ResponseEntity.ok(livreService.trouverLivreParId(id));
+    }
 }

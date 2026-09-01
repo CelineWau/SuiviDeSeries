@@ -385,4 +385,24 @@ public class LivreServiceTest {
 
         verify(livreRepository, times(1)).deleteById(1);
     }
+    @Test
+    @DisplayName("Doit retourner le livre correspondant à l'id")
+    void trouverLivreParId_livreExistant_returnsLivre(){
+        when(livreRepository.findById(1)).thenReturn(Optional.of(livre));
+
+        Livre resultat = livreService.trouverLivreParId(1);
+
+        assertThat(resultat).isEqualTo(livre);
+    }
+
+    @Test
+    @DisplayName("Doit lever une exception si le livre n'existe pas")
+    void trouverLivreParId_livreInexistant_leveBusinessException(){
+        when(livreRepository.findById(99)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> livreService.trouverLivreParId(99))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Livre non trouvé.");
+    }
+
 }

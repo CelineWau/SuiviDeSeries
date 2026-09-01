@@ -160,4 +160,9 @@ public class LivreService {
 
         return livreRepository.save(livre);
     }
+
+    // Trouver un livre avec son ID
+    public Livre trouverLivreParId(int id) {
+        return livreRepository.findById(id).orElseThrow(() -> new BusinessException("Livre non trouvé."));
+    }
 }
