@@ -70,4 +70,9 @@ public class LivreController {
     public ResponseEntity<Livre> trouverLivre(@PathVariable int id) {
         return ResponseEntity.ok(livreService.trouverLivreParId(id));
     }
+
+    @GetMapping("/dureeMoyenneDansPal")
+    public ResponseEntity<Double>afficherDureeMoyenneDansPal() {
+        return ResponseEntity.ok(livreService.calculerTempsMoyenPal());
+    }
 }

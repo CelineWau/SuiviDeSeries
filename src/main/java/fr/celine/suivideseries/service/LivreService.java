@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
@@ -164,5 +165,27 @@ public class LivreService {
     // Trouver un livre avec son ID
     public Livre trouverLivreParId(int id) {
         return livreRepository.findById(id).orElseThrow(() -> new BusinessException("Livre non trouvé."));
+    }
+
+    // Calculer la différence entre la date d'acquisition et la date de lecture
+    public double calculerDifferenceDateAcquisitionEtDateLecture(Livre livre) {
+        LocalDate dateAcquisition = livre.getDateAcquisition();
+        LocalDate dateLecture = livre.getDateLecture();
+
+        if(dateAcquisition != null && dateLecture != null) {
+            return ChronoUnit.DAYS.between(dateAcquisition, dateLecture);
+        } else {
+            return 0;
+        }
+    }
+
+    // Calculer le temps moyen des livres dans la PAL
+    public double calculerTempsMoyenPal() {
+        List<Livre> livres = livreRepository.findByStatutLivre(StatutLivre.LU);
+
+        return livres.stream()
+                .mapToDouble(this::calculerDifferenceDateAcquisitionEtDateLecture)
+                .average()
+                .orElse(0);
     }
 }

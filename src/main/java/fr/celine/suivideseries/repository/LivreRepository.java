@@ -26,4 +26,6 @@ public interface LivreRepository extends JpaRepository<Livre, Integer> {
     @Query("SELECT new fr.celine.suivideseries.dto.AuteursSeriesEnCoursDTO(l.auteur, COUNT(DISTINCT l.serie)) FROM Livre l WHERE l.serie.statutSerie = fr.celine.suivideseries.enums.StatutSerie.EN_COURS " +
             "GROUP BY l.auteur ORDER BY COUNT(DISTINCT l.serie) DESC, l.auteur ASC" )
     List<AuteursSeriesEnCoursDTO> trouverAuteursParNombreSerieEnCours(Pageable pageable);
+
+    List<Livre> findByStatutLivre(StatutLivre statutLivre);
 }

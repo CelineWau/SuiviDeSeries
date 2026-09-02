@@ -405,4 +405,49 @@ public class LivreServiceTest {
                 .hasMessage("Livre non trouvé.");
     }
 
+    @Test
+    @DisplayName("Doit calculer la différence entre acquisition et lecture pour un livre")
+    void calculerDifferenceDateAcquisitionEtDateLecture_datesPresentes_returnsDifferenceEnJours(){
+        Livre livreAvecDates = new Livre("Tolkien", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK,
+                LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 11), serie);
+
+        double resultat = livreService.calculerDifferenceDateAcquisitionEtDateLecture(livreAvecDates);
+
+        assertThat(resultat).isEqualTo(10.0);
+    }
+
+    @Test
+    @DisplayName("Doit retourner zéro si une des deux dates est absente")
+    void calculerDifferenceDateAcquisitionEtDateLecture_dateManquante_returnsZero(){
+        Livre livreSansDate = new Livre("Tolkien", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null, null, serie);
+
+        double resultat = livreService.calculerDifferenceDateAcquisitionEtDateLecture(livreSansDate);
+
+        assertThat(resultat).isEqualTo(0.0);
+    }
+
+    @Test
+    @DisplayName("Doit calculer le temps moyen des livres dans la PAL")
+    void calculerTempsMoyenPal_livresLus_returnsMoyenneCorrecte(){
+        Livre livre1 = new Livre("Tolkien", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK,
+                LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 11), serie);
+        Livre livre2 = new Livre("Tolkien", "Tome 2", "2222222222222", 2, StatutLivre.LU, FormatLivre.PAPIER,
+                LocalDate.of(2026, 2, 1), LocalDate.of(2026, 2, 21), serie);
+
+        when(livreRepository.findByStatutLivre(StatutLivre.LU)).thenReturn(List.of(livre1, livre2));
+
+        double resultat = livreService.calculerTempsMoyenPal();
+
+        assertThat(resultat).isEqualTo(15.0);
+    }
+
+    @Test
+    @DisplayName("Doit retourner zéro si aucun livre n'est LU")
+    void calculerTempsMoyenPal_aucunLivreLu_returnsZero(){
+        when(livreRepository.findByStatutLivre(StatutLivre.LU)).thenReturn(List.of());
+
+        double resultat = livreService.calculerTempsMoyenPal();
+
+        assertThat(resultat).isEqualTo(0.0);
+    }
 }
