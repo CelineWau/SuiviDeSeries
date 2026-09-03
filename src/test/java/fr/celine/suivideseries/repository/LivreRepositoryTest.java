@@ -18,6 +18,7 @@ import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -165,4 +166,55 @@ public class LivreRepositoryTest {
 
         assertThat(resultat).hasSize(1);
     }
+
+    @Test
+    @DisplayName("Doit compter les livres tome 1 lus et série finie dans la même période")
+    void compterSeriesCommenceesEtFiniesMemeAnnee_livreEtSerieDansLaPeriode_returnsUn(){
+        Serie serieCommenceeEtFinie = new Serie("Alpha & Omega", utilisateur, StatutSerie.TERMINEE, StatutPublication.TERMINEE, 1);
+        serieCommenceeEtFinie.setDateFin(LocalDate.of(2026, 6, 15));
+        Livre tome1 = new Livre("Patricia Briggs", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null,
+                LocalDate.of(2026, 3, 1), serieCommenceeEtFinie);
+
+        entityManager.persist(serieCommenceeEtFinie);
+        entityManager.persist(tome1);
+        entityManager.flush();
+
+        long resultat = livreRepository.compterSeriesCommenceesEtFiniesMemeAnnee(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31));
+
+        assertThat(resultat).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("Ne doit pas compter une série finie dans la période mais commencée une autre année")
+    void compterSeriesCommenceesEtFiniesMemeAnnee_commenceeAvant_excludesSerie(){
+        Serie serieCommenceeAvant = new Serie("Alpha & Omega", utilisateur, StatutSerie.TERMINEE, StatutPublication.TERMINEE, 1);
+        serieCommenceeAvant.setDateFin(LocalDate.of(2026, 6, 15));
+        Livre tome1 = new Livre("Patricia Briggs", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null,
+                LocalDate.of(2022, 3, 1), serieCommenceeAvant);
+
+        entityManager.persist(serieCommenceeAvant);
+        entityManager.persist(tome1);
+        entityManager.flush();
+
+        long resultat = livreRepository.compterSeriesCommenceesEtFiniesMemeAnnee(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31));
+
+        assertThat(resultat).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("Ne doit pas compter une série commencée dans la période mais pas encore finie")
+    void compterSeriesCommenceesEtFiniesMemeAnnee_pasEncoreFinie_excludesSerie(){
+        Serie serieEnCours = new Serie("Alpha & Omega", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 3);
+        Livre tome1 = new Livre("Patricia Briggs", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null,
+                LocalDate.of(2026, 3, 1), serieEnCours);
+
+        entityManager.persist(serieEnCours);
+        entityManager.persist(tome1);
+        entityManager.flush();
+
+        long resultat = livreRepository.compterSeriesCommenceesEtFiniesMemeAnnee(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31));
+
+        assertThat(resultat).isEqualTo(0);
+    }
+
 }

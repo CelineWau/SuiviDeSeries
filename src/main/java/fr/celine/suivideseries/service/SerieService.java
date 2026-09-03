@@ -142,11 +142,8 @@ public class SerieService {
 
     // Compter les séries entre le 1er janvier et le 31 décembre
     public long compterSeriesPourAnnee(){
-        int annee = LocalDate.now().getYear();
-        LocalDate dateDebut = LocalDate.of(annee, 1, 1);
-        LocalDate dateFin = LocalDate.of(annee, 12, 31);
-
-        return serieRepository.countByDateFinBetween(dateDebut, dateFin);
+        LocalDate[] dates = calculerDatesAnnee();
+        return serieRepository.countByDateFinBetween(dates[0], dates[1]);
     }
 
     // Convertir une série en DTO avec son nombre de livres à acheter
@@ -418,9 +415,31 @@ public class SerieService {
 
     // Calculer le nombre de séries commencées dans l'année en cours
     public long compterSeriesCommenceesPourAnnee() {
+        LocalDate[] dates = calculerDatesAnnee();
+        return livreRepository.countByNumeroDansLaSerieAndStatutLivreAndDateLectureBetween(1, StatutLivre.LU, dates[0], dates[1]);
+    }
+
+    // Compter les séries commencées et finies dans l'année en cours
+    public long compterSeriesCommenceesEtFinieMemeAnnee(LocalDate dateDebut, LocalDate dateFin) {
+        return livreRepository.compterSeriesCommenceesEtFiniesMemeAnnee(dateDebut, dateFin);
+    }
+
+    // Calculer le ratio des séries commencées et finies dans l'année en cours
+    public double calculerRatioSeriesCommenceesEtFinieMemeAnnee() {
+        LocalDate[] dates = calculerDatesAnnee();
+
+        if(compterSeriesCommenceesPourAnnee() == 0) {
+            return 0;
+        } else {
+            return (double) compterSeriesCommenceesEtFinieMemeAnnee(dates[0], dates[1]) / compterSeriesCommenceesPourAnnee();
+        }
+    }
+
+    // Calculer l'année en cours
+    private LocalDate[] calculerDatesAnnee() {
         int annee = LocalDate.now().getYear();
         LocalDate dateDebut = LocalDate.of(annee, 1, 1);
         LocalDate dateFin = LocalDate.of(annee, 12, 31);
-        return livreRepository.countByNumeroDansLaSerieAndStatutLivreAndDateLectureBetween(1, StatutLivre.LU, dateDebut, dateFin);
+        return new LocalDate[]{dateDebut, dateFin};
     }
 }

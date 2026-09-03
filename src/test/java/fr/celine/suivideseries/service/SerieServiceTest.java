@@ -764,4 +764,33 @@ public class SerieServiceTest {
 
         assertThat(resultat).isEqualTo(0L);
     }
+    @Test
+    @DisplayName("Doit calculer le ratio de séries commencées et finies la même année")
+    void calculerRatioSeriesCommenceesEtFinieMemeAnnee_donneesPresentes_returnsRatioCorrect(){
+        int annee = LocalDate.now().getYear();
+        LocalDate dateDebut = LocalDate.of(annee, 1, 1);
+        LocalDate dateFin = LocalDate.of(annee, 12, 31);
+
+        when(livreRepository.countByNumeroDansLaSerieAndStatutLivreAndDateLectureBetween(1, StatutLivre.LU, dateDebut, dateFin)).thenReturn(10L);
+        when(livreRepository.compterSeriesCommenceesEtFiniesMemeAnnee(dateDebut, dateFin)).thenReturn(2L);
+
+        double resultat = serieService.calculerRatioSeriesCommenceesEtFinieMemeAnnee();
+
+        assertThat(resultat).isEqualTo(0.2);
+    }
+
+    @Test
+    @DisplayName("Doit retourner zéro si aucune série n'a été commencée cette année")
+    void calculerRatioSeriesCommenceesEtFinieMemeAnnee_aucuneSerieCommencee_returnsZero(){
+        int annee = LocalDate.now().getYear();
+        LocalDate dateDebut = LocalDate.of(annee, 1, 1);
+        LocalDate dateFin = LocalDate.of(annee, 12, 31);
+
+        when(livreRepository.countByNumeroDansLaSerieAndStatutLivreAndDateLectureBetween(1, StatutLivre.LU, dateDebut, dateFin)).thenReturn(0L);
+
+        double resultat = serieService.calculerRatioSeriesCommenceesEtFinieMemeAnnee();
+
+        assertThat(resultat).isEqualTo(0.0);
+    }
+
 }

@@ -120,6 +120,11 @@ public class SerieController {
         return ResponseEntity.ok(serieService.compterSeriesCommenceesPourAnnee());
     }
 
+    @GetMapping("/ratioSeriesCommenceesEtFiniesParAnnee")
+    public ResponseEntity<Double> afficherRatioSeriesCommenceesParAnnee() {
+        return ResponseEntity.ok(serieService.calculerRatioSeriesCommenceesEtFinieMemeAnnee());
+    }
+
     @PostMapping
     public ResponseEntity<Serie> creerSerie(@RequestBody SerieCreationDTO dto) {
         Utilisateur utilisateur = utilisateurService.trouverUtilisateurParId(dto.getUtilisateurId());
