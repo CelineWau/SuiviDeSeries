@@ -115,6 +115,11 @@ public class SerieController {
         return ResponseEntity.ok(serieService.calculerTempsLectureSerie(id));
     }
 
+    @GetMapping("/compteurSeriesCommenceesParAnnee")
+    public ResponseEntity<Long> afficherCompteurSeriesCommenceesParAnnee() {
+        return ResponseEntity.ok(serieService.compterSeriesCommenceesPourAnnee());
+    }
+
     @PostMapping
     public ResponseEntity<Serie> creerSerie(@RequestBody SerieCreationDTO dto) {
         Utilisateur utilisateur = utilisateurService.trouverUtilisateurParId(dto.getUtilisateurId());

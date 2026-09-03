@@ -9,6 +9,7 @@ import fr.celine.suivideseries.enums.StatutLivre;
 import fr.celine.suivideseries.enums.StatutPublication;
 import fr.celine.suivideseries.enums.StatutSerie;
 import fr.celine.suivideseries.exception.BusinessException;
+import fr.celine.suivideseries.repository.LivreRepository;
 import fr.celine.suivideseries.repository.SerieRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,9 +26,11 @@ import java.util.Optional;
 public class SerieService {
 
     private final SerieRepository serieRepository;
+    private final LivreRepository livreRepository;
 
-    public SerieService(SerieRepository serieRepository) {
+    public SerieService(SerieRepository serieRepository, LivreRepository livreRepository) {
         this.serieRepository = serieRepository;
+        this.livreRepository = livreRepository;
     }
 
     // Ajouter une série en BDD
@@ -411,5 +414,13 @@ public class SerieService {
     public double calculerTempsLectureSerie(int id) {
         Serie serie = trouverSerieParId(id);
         return calculerDifferenceDatePremiereEtDerniereLecture(serie);
+    }
+
+    // Calculer le nombre de séries commencées dans l'année en cours
+    public long compterSeriesCommenceesPourAnnee() {
+        int annee = LocalDate.now().getYear();
+        LocalDate dateDebut = LocalDate.of(annee, 1, 1);
+        LocalDate dateFin = LocalDate.of(annee, 12, 31);
+        return livreRepository.countByNumeroDansLaSerieAndStatutLivreAndDateLectureBetween(1, StatutLivre.LU, dateDebut, dateFin);
     }
 }

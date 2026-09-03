@@ -9,6 +9,7 @@ import fr.celine.suivideseries.enums.StatutLivre;
 import fr.celine.suivideseries.enums.StatutPublication;
 import fr.celine.suivideseries.enums.StatutSerie;
 import fr.celine.suivideseries.exception.BusinessException;
+import fr.celine.suivideseries.repository.LivreRepository;
 import fr.celine.suivideseries.repository.SerieRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -31,6 +32,9 @@ public class SerieServiceTest {
 
     @Mock
     private SerieRepository serieRepository;
+
+    @Mock
+    private LivreRepository livreRepository;
 
     @InjectMocks
     private SerieService serieService;
@@ -731,5 +735,33 @@ public class SerieServiceTest {
         double resultat = serieService.calculerTempsLectureSerie(1);
 
         assertThat(resultat).isEqualTo(10.0);
+    }
+
+    @Test
+    @DisplayName("Doit compter les séries commencées dans l'année en cours")
+    void compterSeriesCommenceesPourAnnee_livresPresents_returnsCompteCorrect(){
+        int annee = LocalDate.now().getYear();
+        LocalDate dateDebut = LocalDate.of(annee, 1, 1);
+        LocalDate dateFin = LocalDate.of(annee, 12, 31);
+
+        when(livreRepository.countByNumeroDansLaSerieAndStatutLivreAndDateLectureBetween(1, StatutLivre.LU, dateDebut, dateFin)).thenReturn(3L);
+
+        long resultat = serieService.compterSeriesCommenceesPourAnnee();
+
+        assertThat(resultat).isEqualTo(3L);
+    }
+
+    @Test
+    @DisplayName("Doit retourner zéro si aucune série n'a été commencée cette année")
+    void compterSeriesCommenceesPourAnnee_aucuneSerie_returnsZero(){
+        int annee = LocalDate.now().getYear();
+        LocalDate dateDebut = LocalDate.of(annee, 1, 1);
+        LocalDate dateFin = LocalDate.of(annee, 12, 31);
+
+        when(livreRepository.countByNumeroDansLaSerieAndStatutLivreAndDateLectureBetween(1, StatutLivre.LU, dateDebut, dateFin)).thenReturn(0L);
+
+        long resultat = serieService.compterSeriesCommenceesPourAnnee();
+
+        assertThat(resultat).isEqualTo(0L);
     }
 }

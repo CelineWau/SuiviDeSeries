@@ -72,7 +72,7 @@ public class LivreController {
     }
 
     @GetMapping("/dureeMoyenneDansPal")
-    public ResponseEntity<Double>afficherDureeMoyenneDansPal() {
+    public ResponseEntity<Double> afficherDureeMoyenneDansPal() {
         return ResponseEntity.ok(livreService.calculerTempsMoyenPal());
     }
 }
