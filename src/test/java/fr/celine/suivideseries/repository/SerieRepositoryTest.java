@@ -435,4 +435,52 @@ public class SerieRepositoryTest {
 
         assertThat(resultat).doesNotContain(serieJamaisCommencee);
     }
+
+    @Test
+    @DisplayName("Doit retourner les séries dont le tome 1 a été lu dans la période donnée")
+    void trouverSeriesAvecTome1LuDansAnnee_tome1LuDansLaPeriode_returnsSerie(){
+        Serie serieCandidate = new Serie("Alpha & Omega", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 5);
+        Livre tome1 = new Livre("Patricia Briggs", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null,
+                LocalDate.of(2026, 3, 1), serieCandidate);
+
+        entityManager.persist(serieCandidate);
+        entityManager.persist(tome1);
+        entityManager.flush();
+
+        List<Serie> resultat = serieRepository.trouverSeriesAvecTome1LuDansAnnee(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31));
+
+        assertThat(resultat).containsOnly(serieCandidate);
+    }
+
+    @Test
+    @DisplayName("Ne doit pas retourner une série dont le tome 1 a été lu hors de la période")
+    void trouverSeriesAvecTome1LuDansAnnee_tome1LuHorsPeriode_excludesSerie(){
+        Serie serieHorsPeriode = new Serie("Alpha & Omega", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 5);
+        Livre tome1 = new Livre("Patricia Briggs", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null,
+                LocalDate.of(2022, 3, 1), serieHorsPeriode);
+
+        entityManager.persist(serieHorsPeriode);
+        entityManager.persist(tome1);
+        entityManager.flush();
+
+        List<Serie> resultat = serieRepository.trouverSeriesAvecTome1LuDansAnnee(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31));
+
+        assertThat(resultat).doesNotContain(serieHorsPeriode);
+    }
+
+    @Test
+    @DisplayName("Ne doit pas retourner une série dont le tome 1 n'est pas lu")
+    void trouverSeriesAvecTome1LuDansAnnee_tome1NonLu_excludesSerie(){
+        Serie serieTome1NonLu = new Serie("Alpha & Omega", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 5);
+        Livre tome1 = new Livre("Patricia Briggs", "Tome 1", "1111111111111", 1, StatutLivre.DANS_PAL, FormatLivre.EBOOK, null, null,
+                serieTome1NonLu);
+
+        entityManager.persist(serieTome1NonLu);
+        entityManager.persist(tome1);
+        entityManager.flush();
+
+        List<Serie> resultat = serieRepository.trouverSeriesAvecTome1LuDansAnnee(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31));
+
+        assertThat(resultat).doesNotContain(serieTome1NonLu);
+    }
 }

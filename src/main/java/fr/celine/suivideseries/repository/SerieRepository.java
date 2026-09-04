@@ -66,4 +66,8 @@ public interface SerieRepository  extends JpaRepository<Serie, Integer> {
             "l2.statutLivre = fr.celine.suivideseries.enums.StatutLivre.A_ACHETER) GROUP BY s.idSerie HAVING MAX(l.dateLecture) IS NOT NULL ORDER BY MAX(l.dateLecture) ASC, " +
             "SUM(CASE WHEN l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.A_ACHETER THEN 1 ELSE 0 END) ASC")
     List<Serie> trouverSeriesAvecLivresAAcheterTrieesParDerniereLecture();
+
+    @Query("SELECT s FROM Serie s WHERE EXISTS (SELECT l FROM Livre l WHERE l.serie = s AND l.numeroDansLaSerie = 1 AND l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.LU AND l.dateLecture " +
+            "BETWEEN ?1 AND ?2)")
+    List<Serie> trouverSeriesAvecTome1LuDansAnnee(LocalDate dateDebut, LocalDate dateFin);
 }

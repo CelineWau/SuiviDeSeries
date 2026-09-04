@@ -793,4 +793,53 @@ public class SerieServiceTest {
         assertThat(resultat).isEqualTo(0.0);
     }
 
+    @Test
+    @DisplayName("Doit compter les séries où seul le tome 1 est lu dans l'année")
+    void compterSeriesAvecSeulTomeUnLuDansAnnee_tome1SeulLu_returnsUn(){
+        LocalDate[] dates = {LocalDate.of(LocalDate.now().getYear(), 1, 1), LocalDate.of(LocalDate.now().getYear(), 12, 31)};
+
+        Serie serieTome1Seul = new Serie("Alpha & Omega", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 5);
+        Livre tome1 = new Livre("Patricia Briggs", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null,
+                LocalDate.of(dates[0].getYear(), 3, 1), serieTome1Seul);
+        serieTome1Seul.getLivres().add(tome1);
+
+        when(serieRepository.trouverSeriesAvecTome1LuDansAnnee(dates[0], dates[1])).thenReturn(List.of(serieTome1Seul));
+
+        long resultat = serieService.compterSeriesAvecSeulTomeUnLuDansAnnee();
+
+        assertThat(resultat).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("Ne doit pas compter une série où un autre tome que le 1 est aussi lu")
+    void compterSeriesAvecSeulTomeUnLuDansAnnee_autreTomeAussiLu_returnsZero(){
+        LocalDate[] dates = {LocalDate.of(LocalDate.now().getYear(), 1, 1), LocalDate.of(LocalDate.now().getYear(), 12, 31)};
+
+        Serie serieAvancee = new Serie("Alpha & Omega", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 5);
+        Livre tome1 = new Livre("Patricia Briggs", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null,
+                LocalDate.of(dates[0].getYear(), 3, 1), serieAvancee);
+        Livre tome2 = new Livre("Patricia Briggs", "Tome 2", "2222222222222", 2, StatutLivre.LU, FormatLivre.EBOOK, null,
+                LocalDate.of(dates[0].getYear(), 4, 1), serieAvancee);
+        serieAvancee.getLivres().add(tome1);
+        serieAvancee.getLivres().add(tome2);
+
+        when(serieRepository.trouverSeriesAvecTome1LuDansAnnee(dates[0], dates[1])).thenReturn(List.of(serieAvancee));
+
+        long resultat = serieService.compterSeriesAvecSeulTomeUnLuDansAnnee();
+
+        assertThat(resultat).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("Doit retourner zéro si aucune série candidate n'est trouvée")
+    void compterSeriesAvecSeulTomeUnLuDansAnnee_aucuneSerie_returnsZero(){
+        LocalDate[] dates = {LocalDate.of(LocalDate.now().getYear(), 1, 1), LocalDate.of(LocalDate.now().getYear(), 12, 31)};
+
+        when(serieRepository.trouverSeriesAvecTome1LuDansAnnee(dates[0], dates[1])).thenReturn(List.of());
+
+        long resultat = serieService.compterSeriesAvecSeulTomeUnLuDansAnnee();
+
+        assertThat(resultat).isEqualTo(0);
+    }
+
 }

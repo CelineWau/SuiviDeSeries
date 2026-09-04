@@ -442,4 +442,21 @@ public class SerieService {
         LocalDate dateFin = LocalDate.of(annee, 12, 31);
         return new LocalDate[]{dateDebut, dateFin};
     }
+
+    // Isoler les séries avec uniquement le tome 1 de lu
+    private boolean seulTomeUnLu(Serie serie) {
+        long tomelu = serie.getLivres().stream()
+                .filter(l -> l.getStatutLivre() == StatutLivre.LU)
+                .count();
+        return  tomelu == 1;
+    }
+
+    // Compter le nombre de séries avec que le tome 1 lu dans l'année
+    public long compterSeriesAvecSeulTomeUnLuDansAnnee() {
+        LocalDate[] dates = calculerDatesAnnee();
+        List<Serie> series = serieRepository.trouverSeriesAvecTome1LuDansAnnee(dates[0], dates[1]);
+        return series.stream()
+                .filter(this::seulTomeUnLu)
+                .count();
+    }
 }
