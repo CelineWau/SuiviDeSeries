@@ -130,6 +130,11 @@ public class SerieController {
         return ResponseEntity.ok(serieService.compterSeriesAvecSeulTomeUnLuDansAnnee());
     }
 
+    @GetMapping("/seriesTermineesPlusLonguePlusCourte")
+    public ResponseEntity<SeriesTermineesPlusLonguePlusCourteDTO> afficherSeriesTermineesPlusLonguePlusCourte() {
+        return ResponseEntity.ok(serieService.trouverSeriesTermineesPlusLonguePlusCourte());
+    }
+
     @PostMapping
     public ResponseEntity<Serie> creerSerie(@RequestBody SerieCreationDTO dto) {
         Utilisateur utilisateur = utilisateurService.trouverUtilisateurParId(dto.getUtilisateurId());

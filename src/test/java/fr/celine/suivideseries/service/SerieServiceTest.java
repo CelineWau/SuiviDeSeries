@@ -842,4 +842,59 @@ public class SerieServiceTest {
         assertThat(resultat).isEqualTo(0);
     }
 
+    @Test
+    @DisplayName("Doit trouver la série terminée la plus longue et la plus courte en temps de lecture")
+    void trouverSeriesTermineesPlusLonguePlusCourte_seriesAvecLecture_returnsLesDeux(){
+        Serie serieLongue = new Serie("Alpha & Omega", utilisateur, StatutSerie.TERMINEE, StatutPublication.TERMINEE, 2);
+        Livre livre1Longue = new Livre("Patricia Briggs", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null,
+                LocalDate.of(2026, 1, 1), serieLongue);
+        Livre livre2Longue = new Livre("Patricia Briggs", "Tome 2", "2222222222222", 2, StatutLivre.LU, FormatLivre.EBOOK, null,
+                LocalDate.of(2026, 6, 1), serieLongue);
+        serieLongue.getLivres().add(livre1Longue);
+        serieLongue.getLivres().add(livre2Longue);
+
+        Serie serieCourte = new Serie("Kate Daniels", utilisateur, StatutSerie.TERMINEE, StatutPublication.TERMINEE, 2);
+        Livre livre1Courte = new Livre("Ilona Andrews", "Tome 1", "3333333333333", 1, StatutLivre.LU, FormatLivre.EBOOK, null,
+                LocalDate.of(2026, 3, 1), serieCourte);
+        Livre livre2Courte = new Livre("Ilona Andrews", "Tome 2", "4444444444444", 2, StatutLivre.LU, FormatLivre.EBOOK, null,
+                LocalDate.of(2026, 3, 11), serieCourte);
+        serieCourte.getLivres().add(livre1Courte);
+        serieCourte.getLivres().add(livre2Courte);
+
+        when(serieRepository.findByStatutSerie(StatutSerie.TERMINEE)).thenReturn(List.of(serieLongue, serieCourte));
+
+        SeriesTermineesPlusLonguePlusCourteDTO resultat = serieService.trouverSeriesTermineesPlusLonguePlusCourte();
+
+        assertThat(resultat.getSerieTermineePlusLongue().getNom()).isEqualTo("Alpha & Omega");
+        assertThat(resultat.getSerieTermineePlusLongue().getDureeLecture()).isEqualTo(151.0);
+        assertThat(resultat.getSerieTermineePlusCourte().getNom()).isEqualTo("Kate Daniels");
+        assertThat(resultat.getSerieTermineePlusCourte().getDureeLecture()).isEqualTo(10.0);
+    }
+
+    @Test
+    @DisplayName("Ne doit pas compter une série sans aucune lecture")
+    void trouverSeriesTermineesPlusLonguePlusCourte_serieSansLecture_excludesSerie(){
+        Serie serieSansLecture = new Serie("Elric", utilisateur, StatutSerie.TERMINEE, StatutPublication.TERMINEE, 1);
+        Livre livreNonLu = new Livre("Julien Blondel", "Tome 1", "5555555555555", 1, StatutLivre.DANS_PAL, FormatLivre.EBOOK, null, null,
+                serieSansLecture);
+        serieSansLecture.getLivres().add(livreNonLu);
+
+        when(serieRepository.findByStatutSerie(StatutSerie.TERMINEE)).thenReturn(List.of(serieSansLecture));
+
+        SeriesTermineesPlusLonguePlusCourteDTO resultat = serieService.trouverSeriesTermineesPlusLonguePlusCourte();
+
+        assertThat(resultat.getSerieTermineePlusLongue()).isNull();
+        assertThat(resultat.getSerieTermineePlusCourte()).isNull();
+    }
+
+    @Test
+    @DisplayName("Doit retourner null pour les deux si aucune série terminée n'existe")
+    void trouverSeriesTermineesPlusLonguePlusCourte_aucuneSerie_returnsNullPourLesDeux(){
+        when(serieRepository.findByStatutSerie(StatutSerie.TERMINEE)).thenReturn(List.of());
+
+        SeriesTermineesPlusLonguePlusCourteDTO resultat = serieService.trouverSeriesTermineesPlusLonguePlusCourte();
+
+        assertThat(resultat.getSerieTermineePlusLongue()).isNull();
+        assertThat(resultat.getSerieTermineePlusCourte()).isNull();
+    }
 }

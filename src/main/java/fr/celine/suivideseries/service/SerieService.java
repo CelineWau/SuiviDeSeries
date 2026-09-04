@@ -459,4 +459,33 @@ public class SerieService {
                 .filter(this::seulTomeUnLu)
                 .count();
     }
+
+    // Calculer la série en cours avec le temps de lecture le plus long et le plus court
+    public SeriesTermineesPlusLonguePlusCourteDTO trouverSeriesTermineesPlusLonguePlusCourte(){
+        List<Serie> series = serieRepository.findByStatutSerie(StatutSerie.TERMINEE);
+
+        List<Serie> seriesAvecLecture = series.stream()
+                .filter(s -> calculerDifferenceDatePremiereEtDerniereLecture(s) > 0)
+                .toList();
+
+        Serie plusLongue = seriesAvecLecture.stream()
+                .max(Comparator.comparing(this::calculerDifferenceDatePremiereEtDerniereLecture))
+                .orElse(null);
+
+        Serie plusCourte = seriesAvecLecture.stream()
+                .min(Comparator.comparing(this::calculerDifferenceDatePremiereEtDerniereLecture))
+                .orElse(null);
+
+        SerieDureeLectureDTO dtoPlusLongue = null;
+        if(plusLongue != null) {
+            dtoPlusLongue = new SerieDureeLectureDTO(plusLongue.getNom(), calculerDifferenceDatePremiereEtDerniereLecture(plusLongue));
+        }
+
+        SerieDureeLectureDTO dtoPlusCourte = null;
+        if(plusCourte != null) {
+            dtoPlusCourte = new SerieDureeLectureDTO(plusCourte.getNom(), calculerDifferenceDatePremiereEtDerniereLecture(plusCourte));
+        }
+
+        return new SeriesTermineesPlusLonguePlusCourteDTO(dtoPlusLongue, dtoPlusCourte);
+    }
 }
