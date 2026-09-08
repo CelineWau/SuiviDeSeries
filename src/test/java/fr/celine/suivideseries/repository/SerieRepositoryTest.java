@@ -483,4 +483,68 @@ public class SerieRepositoryTest {
 
         assertThat(resultat).doesNotContain(serieTome1NonLu);
     }
+
+    @Test
+    @DisplayName("Doit retourner une série en cours sans aucun livre lu")
+    void trouverSeriesJamaisCommencees_serieSansLivreLu_returnSerie(){
+        Serie serieJamaisCommencee = new Serie("Alpha & Omega", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 3);
+        Livre livreNonLu = new Livre("Patricia Briggs", "Tome 1", "1111111111111", 1, StatutLivre.DANS_PAL, FormatLivre.EBOOK, null, null,
+                serieJamaisCommencee);
+
+        entityManager.persist(serieJamaisCommencee);
+        entityManager.persist(livreNonLu);
+        entityManager.flush();
+
+        List<Serie> resultat = serieRepository.trouverSeriesJamaisCommencees();
+
+        assertThat(resultat).containsOnly(serieJamaisCommencee);
+    }
+
+    @Test
+    @DisplayName("Ne doit pas retourner une série avec au moins un livre lu")
+    void trouverSeriesJamaisCommencees_serieAvecLivreLu_excludesSerie(){
+        Serie serieCommencee = new Serie("Alpha & Omega", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 3);
+        Livre livreLu = new Livre("Patricia Briggs", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null,
+                LocalDate.of(2026, 1, 1), serieCommencee);
+
+        entityManager.persist(serieCommencee);
+        entityManager.persist(livreLu);
+        entityManager.flush();
+
+        List<Serie> resultat = serieRepository.trouverSeriesJamaisCommencees();
+
+        assertThat(resultat).doesNotContain(serieCommencee);
+    }
+
+    @Test
+    @DisplayName("Ne doit pas retourner une série terminée sans lecture")
+    void trouverSeriesJamaisCommencees_serieTermineeSansLecture_excludesSerie(){
+        Serie serieTerminee = new Serie("Alpha & Omega", utilisateur, StatutSerie.TERMINEE, StatutPublication.TERMINEE, 3);
+        Livre livreNonLu = new Livre("Patricia Briggs", "Tome 1", "1111111111111", 1, StatutLivre.DANS_PAL, FormatLivre.EBOOK, null, null,
+                serieTerminee);
+
+        entityManager.persist(serieTerminee);
+        entityManager.persist(livreNonLu);
+        entityManager.flush();
+
+        List<Serie> resultat = serieRepository.trouverSeriesJamaisCommencees();
+
+        assertThat(resultat).doesNotContain(serieTerminee);
+    }
+
+    @Test
+    @DisplayName("Ne doit pas retournée une série abandonnée sans aucune lecture")
+    void trouverSeriesJamaisCommencees_serieAbandonneSansLecture_excludesSerie(){
+        Serie serieAbandonnee = new Serie("Chasseuse de la nuit", utilisateur, StatutSerie.ABANDONNEE, StatutPublication.TERMINEE, 8);
+        Livre livreNonLu = new Livre("Jeaniene Forst", "Au bord de la tombe", "123456789123", 1, StatutLivre.A_ACHETER, FormatLivre.EBOOK, null,
+                null, serieAbandonnee);
+
+        entityManager.persist(serieAbandonnee);
+        entityManager.persist(livreNonLu);
+        entityManager.flush();
+
+        List<Serie> resultat = serieRepository.trouverSeriesJamaisCommencees();
+
+        assertThat(resultat).doesNotContain(serieAbandonnee);
+    }
 }

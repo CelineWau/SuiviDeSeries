@@ -897,4 +897,25 @@ public class SerieServiceTest {
         assertThat(resultat.getSerieTermineePlusLongue()).isNull();
         assertThat(resultat.getSerieTermineePlusCourte()).isNull();
     }
+
+    @Test
+    @DisplayName("Doit retourner la liste de séries non commencées")
+    void trouverSeriesJamaisCommencees_donneesPresentes_returnsListeSeries(){
+        when(serieRepository.trouverSeriesJamaisCommencees()).thenReturn(List.of(serie));
+
+        List<Serie>  resultat = serieService.trouverSeriesJamaisCommencees();
+
+        assertThat(resultat).hasSize(1);
+        assertThat(resultat).containsOnly(serie);
+    }
+
+    @Test
+    @DisplayName("Doit retourner une liste de séries vide")
+    void trouverSeriesJamaisCommencees_aucuneSerie_returnsEmpty(){
+        when(serieRepository.trouverSeriesJamaisCommencees()).thenReturn(List.of());
+
+        List<Serie>  resultat = serieService.trouverSeriesJamaisCommencees();
+
+        assertThat(resultat).isEmpty();
+    }
 }

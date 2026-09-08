@@ -70,4 +70,8 @@ public interface SerieRepository  extends JpaRepository<Serie, Integer> {
     @Query("SELECT s FROM Serie s WHERE EXISTS (SELECT l FROM Livre l WHERE l.serie = s AND l.numeroDansLaSerie = 1 AND l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.LU AND l.dateLecture " +
             "BETWEEN ?1 AND ?2)")
     List<Serie> trouverSeriesAvecTome1LuDansAnnee(LocalDate dateDebut, LocalDate dateFin);
+
+    @Query("SELECT s FROM Serie s WHERE NOT EXISTS (SELECT l FROM Livre l WHERE l.serie = s AND l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.LU) AND s.statutSerie = " +
+            "fr.celine.suivideseries.enums.StatutSerie.EN_COURS")
+    List<Serie> trouverSeriesJamaisCommencees();
 }

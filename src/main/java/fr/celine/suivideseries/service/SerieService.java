@@ -488,4 +488,9 @@ public class SerieService {
 
         return new SeriesTermineesPlusLonguePlusCourteDTO(dtoPlusLongue, dtoPlusCourte);
     }
+
+    // Trouver les séries qui ne sont pas commencées
+    public List<Serie> trouverSeriesJamaisCommencees() {
+        return serieRepository.trouverSeriesJamaisCommencees();
+    }
 }

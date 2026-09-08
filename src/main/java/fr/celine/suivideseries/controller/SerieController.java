@@ -135,6 +135,11 @@ public class SerieController {
         return ResponseEntity.ok(serieService.trouverSeriesTermineesPlusLonguePlusCourte());
     }
 
+    @GetMapping("/seriesJamaisCommencees")
+    public ResponseEntity<List<Serie>> afficherSeriesJamaisCommencees() {
+        return ResponseEntity.ok(serieService.trouverSeriesJamaisCommencees());
+    }
+
     @PostMapping
     public ResponseEntity<Serie> creerSerie(@RequestBody SerieCreationDTO dto) {
         Utilisateur utilisateur = utilisateurService.trouverUtilisateurParId(dto.getUtilisateurId());
