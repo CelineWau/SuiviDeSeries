@@ -153,6 +153,7 @@ public class Utilisateur implements UserDetails {
     }
 
     @Override
+    @JsonIgnore
     public @Nullable String getPassword() {
         return this.mdp;
     }
