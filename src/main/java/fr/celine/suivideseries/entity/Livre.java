@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import fr.celine.suivideseries.enums.FormatLivre;
 import fr.celine.suivideseries.enums.StatutLivre;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
@@ -33,6 +35,14 @@ public class Livre {
     @NotNull(message = "Le numéro du livre dans la série est obligatoire.")
     @Column(nullable = false)
     private int numeroDansLaSerie;
+
+    @Column
+    private int nombreDePages;
+
+    @Min(value = 0, message = "La note minimale ne peut pas être en dessous de 0.")
+    @Max(value = 5, message = "La note maximale ne peut pas dépasser 5.")
+    @Column
+    private int note;
 
     @Enumerated(EnumType.STRING)
     @NotNull(message = "Le statut du livre est obligatoire.")
@@ -150,15 +160,31 @@ public class Livre {
         this.serie = serie;
     }
 
+    public int getNombreDePages() {
+        return nombreDePages;
+    }
+
+    public void setNombreDePages(int nombreDePages) {
+        this.nombreDePages = nombreDePages;
+    }
+
+    public int getNote() {
+        return note;
+    }
+
+    public void setNote(int note) {
+        this.note = note;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof Livre livre)) return false;
-        return idLivre == livre.idLivre && numeroDansLaSerie == livre.numeroDansLaSerie && Objects.equals(auteur, livre.auteur) && Objects.equals(titre, livre.titre) && Objects.equals(isbn, livre.isbn) && statutLivre == livre.statutLivre && formatLivre == livre.formatLivre && Objects.equals(dateAcquisition, livre.dateAcquisition) && Objects.equals(dateLecture, livre.dateLecture) && Objects.equals(serie, livre.serie);
+        return idLivre == livre.idLivre && numeroDansLaSerie == livre.numeroDansLaSerie && nombreDePages == livre.nombreDePages && note == livre.note && Objects.equals(auteur, livre.auteur) && Objects.equals(titre, livre.titre) && Objects.equals(isbn, livre.isbn) && statutLivre == livre.statutLivre && formatLivre == livre.formatLivre && Objects.equals(dateAcquisition, livre.dateAcquisition) && Objects.equals(dateLecture, livre.dateLecture) && Objects.equals(serie, livre.serie);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(idLivre, auteur, titre, isbn, numeroDansLaSerie, statutLivre, formatLivre, dateAcquisition, dateLecture, serie);
+        return Objects.hash(idLivre, auteur, titre, isbn, numeroDansLaSerie, nombreDePages, note, statutLivre, formatLivre, dateAcquisition, dateLecture, serie);
     }
 
     @Override
@@ -174,6 +200,8 @@ public class Livre {
                 ", dateAcquisition=" + dateAcquisition +
                 ", dateLecture=" + dateLecture +
                 ", serie=" + serie +
+                ", nombreDePages=" + nombreDePages +
+                ", note=" + note +
                 '}';
     }
 }
