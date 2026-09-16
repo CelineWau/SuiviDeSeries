@@ -547,4 +547,81 @@ public class SerieRepositoryTest {
 
         assertThat(resultat).doesNotContain(serieAbandonnee);
     }
+
+    @Test
+    @DisplayName("Doit retourner une série dont tous les tomes (sur le total réel) sont lus")
+    void trouverSeriesAJour_touteLaSerieLue_returnSerie(){
+        Serie serieAJour = new Serie("Alpha & Omega", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 2);
+        Livre tome1 = new Livre("Patricia Briggs", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null,
+                LocalDate.of(2026, 1, 1), serieAJour);
+        Livre tome2 = new Livre("Patricia Briggs", "Tome 2", "2222222222222", 2, StatutLivre.LU, FormatLivre.EBOOK, null,
+                LocalDate.of(2026, 2, 1), serieAJour);
+
+        entityManager.persist(serieAJour);
+        entityManager.persist(tome1);
+        entityManager.persist(tome2);
+        entityManager.flush();
+
+        List<Serie> resultat = serieRepository.trouverSeriesAJour();
+
+        assertThat(resultat).containsOnly(serieAJour);
+    }
+
+    @Test
+    @DisplayName("Ne doit pas retourner une série dont il manque des tomes non encore enregistrés (bug Bourbon Kid)")
+    void trouverSeriesAJour_tomesManquantsNonEnregistres_excludesSerie(){
+        Serie bourbonKid = new Serie("Bourbon Kid", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 11);
+        Livre tome1 = new Livre("Anonyme", "Tome 1", "3333333333333", 1, StatutLivre.LU, FormatLivre.EBOOK, null,
+                LocalDate.of(2026, 1, 1), bourbonKid);
+        Livre tome2 = new Livre("Anonyme", "Tome 2", "4444444444444", 2, StatutLivre.LU, FormatLivre.EBOOK, null,
+                LocalDate.of(2026, 1, 15), bourbonKid);
+        // Seuls 2 tomes sur les 11 sont enregistrés, tous les deux LU — le bug faisait ressortir cette série à tort.
+
+        entityManager.persist(bourbonKid);
+        entityManager.persist(tome1);
+        entityManager.persist(tome2);
+        entityManager.flush();
+
+        List<Serie> resultat = serieRepository.trouverSeriesAJour();
+
+        assertThat(resultat).doesNotContain(bourbonKid);
+    }
+
+    @Test
+    @DisplayName("Ne doit pas retourner une série avec un tome non lu enregistré")
+    void trouverSeriesAJour_tomeNonLuEnregistre_excludesSerie(){
+        Serie serieEnCours = new Serie("Kate Daniels", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 2);
+        Livre tome1 = new Livre("Ilona Andrews", "Tome 1", "5555555555555", 1, StatutLivre.LU, FormatLivre.EBOOK, null,
+                LocalDate.of(2026, 1, 1), serieEnCours);
+        Livre tome2 = new Livre("Ilona Andrews", "Tome 2", "6666666666666", 2, StatutLivre.A_ACHETER, FormatLivre.EBOOK, null, null,
+                serieEnCours);
+
+        entityManager.persist(serieEnCours);
+        entityManager.persist(tome1);
+        entityManager.persist(tome2);
+        entityManager.flush();
+
+        List<Serie> resultat = serieRepository.trouverSeriesAJour();
+
+        assertThat(resultat).doesNotContain(serieEnCours);
+    }
+
+    @Test
+    @DisplayName("Ne doit pas retourner une série dont la publication est terminée")
+    void trouverSeriesAJour_publicationTerminee_excludesSerie(){
+        Serie serieTerminee = new Serie("Alpha & Omega", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 2);
+        Livre tome1 = new Livre("Patricia Briggs", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null,
+                LocalDate.of(2026, 1, 1), serieTerminee);
+        Livre tome2 = new Livre("Patricia Briggs", "Tome 2", "2222222222222", 2, StatutLivre.LU, FormatLivre.EBOOK, null,
+                LocalDate.of(2026, 2, 1), serieTerminee);
+
+        entityManager.persist(serieTerminee);
+        entityManager.persist(tome1);
+        entityManager.persist(tome2);
+        entityManager.flush();
+
+        List<Serie> resultat = serieRepository.trouverSeriesAJour();
+
+        assertThat(resultat).doesNotContain(serieTerminee);
+    }
 }
