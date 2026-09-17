@@ -624,4 +624,27 @@ public class SerieRepositoryTest {
 
         assertThat(resultat).doesNotContain(serieTerminee);
     }
+
+    @Test
+    @DisplayName("Doit retourner les séries marquées à lire en anglais")
+    void findByLireEnAnglais_serieMarquee_returnSerie(){
+        Serie serieAnglais = new Serie("Kushiel", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 3);
+        serieAnglais.setLireEnAnglais(true);
+
+        entityManager.persist(serieAnglais);
+        entityManager.flush();
+
+        List<Serie> resultat = serieRepository.findByLireEnAnglais(true);
+
+        assertThat(resultat).containsOnly(serieAnglais);
+    }
+
+    @Test
+    @DisplayName("Ne doit pas retourner une série non marquée à lire en anglais")
+    void findByLireEnAnglais_serieNonMarquee_excludesSerie(){
+        // La série du setup a lireEnAnglais = false par défaut.
+        List<Serie> resultat = serieRepository.findByLireEnAnglais(true);
+
+        assertThat(resultat).doesNotContain(serie);
+    }
 }

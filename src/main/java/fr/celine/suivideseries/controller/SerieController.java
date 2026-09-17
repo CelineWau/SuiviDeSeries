@@ -140,6 +140,11 @@ public class SerieController {
         return ResponseEntity.ok(serieService.trouverSeriesJamaisCommencees());
     }
 
+    @GetMapping("/lireEnAnglais")
+    public ResponseEntity<List<Serie>> afficherLireEnAnglais() {
+        return ResponseEntity.ok(serieService.trouverSeriesALireEnAnglais());
+    }
+
     @PostMapping
     public ResponseEntity<Serie> creerSerie(@RequestBody SerieCreationDTO dto) {
         Utilisateur utilisateur = utilisateurService.trouverUtilisateurParId(dto.getUtilisateurId());
@@ -170,5 +175,10 @@ public class SerieController {
     @PatchMapping("/{id}/nom")
     public ResponseEntity<Serie> modifierNomSerie(@PathVariable int id, @RequestBody NomSerieDTO dto) {
         return ResponseEntity.ok(serieService.modifierNomSerie(id, dto.getNom()));
+    }
+
+    @PatchMapping("/{id}/lireEnAnglais")
+    public ResponseEntity<Serie> modifierLireEnAnglais(@PathVariable int id, @RequestBody LireEnAnglaisDTO dto) {
+        return ResponseEntity.ok(serieService.modifierLireEnAnglais(id, dto.isLireEnAnglais()));
     }
 }

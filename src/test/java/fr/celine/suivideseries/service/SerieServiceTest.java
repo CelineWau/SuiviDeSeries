@@ -914,7 +914,49 @@ public class SerieServiceTest {
     void trouverSeriesJamaisCommencees_aucuneSerie_returnsEmpty(){
         when(serieRepository.trouverSeriesJamaisCommencees()).thenReturn(List.of());
 
-        List<Serie>  resultat = serieService.trouverSeriesJamaisCommencees();
+        List<Serie> resultat = serieService.trouverSeriesJamaisCommencees();
+
+        assertThat(resultat).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Doit retourner une série modifiée")
+    void modifierLireEnAnglais_serieExistante_returnsSerieModifiee(){
+        when(serieRepository.findById(1)).thenReturn(Optional.of(serie));
+        when(serieRepository.save(serie)).thenReturn(serie);
+
+        Serie resultat = serieService.modifierLireEnAnglais(1, true);
+
+        assertThat(resultat).isNotNull();
+        assertThat(resultat.isLireEnAnglais()).isTrue();
+    }
+
+    @Test
+    @DisplayName("Doit retourner une BusinessException car la série n'existe pas")
+    void modifierLireEnAnglais_serieInexistante_leveBusinessException() {
+        when(serieRepository.findById(1)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> serieService.modifierLireEnAnglais(1, true))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Série non trouvée.");
+    }
+
+    @Test
+    @DisplayName("Doit retourner les séries à lire en anglais")
+    void trouverSeriesALireEnAnglais_seriesMarquees_returnsListe(){
+        when(serieRepository.findByLireEnAnglais(true)).thenReturn(List.of(serie));
+
+        List<Serie> resultat = serieService.trouverSeriesALireEnAnglais();
+
+        assertThat(resultat).containsOnly(serie);
+    }
+
+    @Test
+    @DisplayName("Doit retourner une liste vide si aucune série n'est à lire en anglais")
+    void trouverSeriesALireEnAnglais_aucuneSerie_returnsListeVide(){
+        when(serieRepository.findByLireEnAnglais(true)).thenReturn(List.of());
+
+        List<Serie> resultat = serieService.trouverSeriesALireEnAnglais();
 
         assertThat(resultat).isEmpty();
     }

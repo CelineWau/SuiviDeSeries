@@ -493,4 +493,16 @@ public class SerieService {
     public List<Serie> trouverSeriesJamaisCommencees() {
         return serieRepository.trouverSeriesJamaisCommencees();
     }
+
+    // Modifier la série si elle est lu en anglais
+    public Serie modifierLireEnAnglais(int id, boolean lireEnAnglais) {
+        Serie serie = trouverSerieParId(id);
+        serie.setLireEnAnglais(lireEnAnglais);
+        return serieRepository.save(serie);
+    }
+
+    // Trouver les séries qui sont à lire en anglais
+    public List<Serie> trouverSeriesALireEnAnglais() {
+        return serieRepository.findByLireEnAnglais(true);
+    }
 }
