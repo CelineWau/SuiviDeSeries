@@ -944,7 +944,7 @@ public class SerieServiceTest {
     @Test
     @DisplayName("Doit retourner les séries à lire en anglais")
     void trouverSeriesALireEnAnglais_seriesMarquees_returnsListe(){
-        when(serieRepository.findByLireEnAnglais(true)).thenReturn(List.of(serie));
+        when(serieRepository.findByLireEnAnglaisAndStatutSerie(true, StatutSerie.EN_COURS)).thenReturn(List.of(serie));
 
         List<Serie> resultat = serieService.trouverSeriesALireEnAnglais();
 
@@ -954,7 +954,7 @@ public class SerieServiceTest {
     @Test
     @DisplayName("Doit retourner une liste vide si aucune série n'est à lire en anglais")
     void trouverSeriesALireEnAnglais_aucuneSerie_returnsListeVide(){
-        when(serieRepository.findByLireEnAnglais(true)).thenReturn(List.of());
+        when(serieRepository.findByLireEnAnglaisAndStatutSerie(true, StatutSerie.EN_COURS)).thenReturn(List.of());
 
         List<Serie> resultat = serieService.trouverSeriesALireEnAnglais();
 

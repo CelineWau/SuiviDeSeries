@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDate;
 import java.util.Objects;
@@ -37,11 +38,13 @@ public class Livre {
     private int numeroDansLaSerie;
 
     @Column
+    @ColumnDefault("0")
     private int nombreDePages;
 
     @Min(value = 0, message = "La note minimale ne peut pas être en dessous de 0.")
     @Max(value = 5, message = "La note maximale ne peut pas dépasser 5.")
     @Column
+    @ColumnDefault("0")
     private int note;
 
     @Enumerated(EnumType.STRING)

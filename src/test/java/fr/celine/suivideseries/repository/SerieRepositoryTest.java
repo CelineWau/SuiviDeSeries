@@ -626,25 +626,39 @@ public class SerieRepositoryTest {
     }
 
     @Test
-    @DisplayName("Doit retourner les séries marquées à lire en anglais")
-    void findByLireEnAnglais_serieMarquee_returnSerie(){
+    @DisplayName("Doit retourner les séries en cours marquées à lire en anglais")
+    void findByLireEnAnglaisAndStatutSerie_serieEnCoursMarquee_returnSerie(){
         Serie serieAnglais = new Serie("Kushiel", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 3);
         serieAnglais.setLireEnAnglais(true);
 
         entityManager.persist(serieAnglais);
         entityManager.flush();
 
-        List<Serie> resultat = serieRepository.findByLireEnAnglais(true);
+        List<Serie> resultat = serieRepository.findByLireEnAnglaisAndStatutSerie(true, StatutSerie.EN_COURS);
 
         assertThat(resultat).containsOnly(serieAnglais);
     }
 
     @Test
     @DisplayName("Ne doit pas retourner une série non marquée à lire en anglais")
-    void findByLireEnAnglais_serieNonMarquee_excludesSerie(){
+    void findByLireEnAnglaisAndStatutSerie_serieNonMarquee_excludesSerie(){
         // La série du setup a lireEnAnglais = false par défaut.
-        List<Serie> resultat = serieRepository.findByLireEnAnglais(true);
+        List<Serie> resultat = serieRepository.findByLireEnAnglaisAndStatutSerie(true, StatutSerie.EN_COURS);
 
         assertThat(resultat).doesNotContain(serie);
+    }
+
+    @Test
+    @DisplayName("Ne doit pas retourner une série terminée même marquée à lire en anglais")
+    void findByLireEnAnglaisAndStatutSerie_serieTerminee_excludesSerie(){
+        Serie serieTerminee = new Serie("Red Rising", utilisateur, StatutSerie.TERMINEE, StatutPublication.TERMINEE, 6);
+        serieTerminee.setLireEnAnglais(true);
+
+        entityManager.persist(serieTerminee);
+        entityManager.flush();
+
+        List<Serie> resultat = serieRepository.findByLireEnAnglaisAndStatutSerie(true, StatutSerie.EN_COURS);
+
+        assertThat(resultat).doesNotContain(serieTerminee);
     }
 }

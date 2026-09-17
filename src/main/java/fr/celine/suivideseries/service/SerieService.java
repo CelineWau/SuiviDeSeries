@@ -503,6 +503,6 @@ public class SerieService {
 
     // Trouver les séries qui sont à lire en anglais
     public List<Serie> trouverSeriesALireEnAnglais() {
-        return serieRepository.findByLireEnAnglais(true);
+        return serieRepository.findByLireEnAnglaisAndStatutSerie(true, StatutSerie.EN_COURS);
     }
 }

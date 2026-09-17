@@ -75,5 +75,5 @@ public interface SerieRepository  extends JpaRepository<Serie, Integer> {
             "fr.celine.suivideseries.enums.StatutSerie.EN_COURS")
     List<Serie> trouverSeriesJamaisCommencees();
 
-    List<Serie> findByLireEnAnglais(boolean lireEnAnglais);
+    List<Serie> findByLireEnAnglaisAndStatutSerie(boolean lireEnAnglais, StatutSerie statutSerie);
 }
