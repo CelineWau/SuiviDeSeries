@@ -1,11 +1,13 @@
 package fr.celine.suivideseries.service;
 
 import fr.celine.suivideseries.dto.*;
+import fr.celine.suivideseries.entity.Genre;
 import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.entity.Utilisateur;
 import fr.celine.suivideseries.enums.*;
 import fr.celine.suivideseries.exception.BusinessException;
+import fr.celine.suivideseries.repository.GenreRepository;
 import fr.celine.suivideseries.repository.LivreRepository;
 import fr.celine.suivideseries.repository.SerieRepository;
 import org.springframework.data.domain.PageRequest;
@@ -24,10 +26,12 @@ public class SerieService {
 
     private final SerieRepository serieRepository;
     private final LivreRepository livreRepository;
+    private final GenreService genreService;
 
-    public SerieService(SerieRepository serieRepository, LivreRepository livreRepository) {
+    public SerieService(SerieRepository serieRepository, LivreRepository livreRepository, GenreService genreService) {
         this.serieRepository = serieRepository;
         this.livreRepository = livreRepository;
+        this.genreService = genreService;
     }
 
     // Ajouter une série en BDD
@@ -507,6 +511,14 @@ public class SerieService {
     public Serie modifierNatureSerie(int id, NatureSerie natureSerie) {
         Serie serie = trouverSerieParId(id);
         serie.setNatureSerie(natureSerie);
+        return serieRepository.save(serie);
+    }
+
+    // Modifier le genre d'une série
+    public Serie modifierGenreSerie(int idSerie, int idGenre) {
+        Serie serie = trouverSerieParId(idSerie);
+        Genre genre = genreService.trouverGenreParId(idGenre);
+        serie.setGenre(genre);
         return serieRepository.save(serie);
     }
 }

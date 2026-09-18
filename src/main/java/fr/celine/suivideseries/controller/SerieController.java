@@ -1,12 +1,11 @@
 package fr.celine.suivideseries.controller;
 
 import fr.celine.suivideseries.dto.*;
-import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.entity.Utilisateur;
 import fr.celine.suivideseries.service.SerieService;
 import fr.celine.suivideseries.service.UtilisateurService;
-import org.apache.coyote.Response;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -148,7 +147,7 @@ public class SerieController {
     @PostMapping
     public ResponseEntity<Serie> creerSerie(@RequestBody SerieCreationDTO dto) {
         Utilisateur utilisateur = utilisateurService.trouverUtilisateurParId(dto.getUtilisateurId());
-        return ResponseEntity.ok(serieService.creerSerie(dto.getNom(), utilisateur, dto.getStatutSerie(), dto.getStatutPublication(), dto.getNombreLivreTotal()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(serieService.creerSerie(dto.getNom(), utilisateur, dto.getStatutSerie(), dto.getStatutPublication(), dto.getNombreLivreTotal()));
     }
 
     @DeleteMapping("/{id}")
@@ -185,5 +184,10 @@ public class SerieController {
     @PatchMapping("/{id}/natureSerie")
     public ResponseEntity<Serie> modifierNatureSerie(@PathVariable int id, @RequestBody NatureSerieDTO dto) {
         return ResponseEntity.ok(serieService.modifierNatureSerie(id, dto.getNatureSerie()));
+    }
+
+    @PatchMapping("/{id}/genre")
+    public ResponseEntity<Serie> modifierGenreSerie(@PathVariable int id, @RequestBody GenreSerieDTO dto) {
+        return ResponseEntity.ok(serieService.modifierGenreSerie(id, dto.getIdGenre()));
     }
 }

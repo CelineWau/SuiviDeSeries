@@ -1,6 +1,7 @@
 package fr.celine.suivideseries.service;
 
 import fr.celine.suivideseries.dto.*;
+import fr.celine.suivideseries.entity.Genre;
 import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.entity.Utilisateur;
@@ -32,6 +33,9 @@ public class SerieServiceTest {
 
     @Mock
     private LivreRepository livreRepository;
+
+    @Mock
+    private GenreService genreService;
 
     @InjectMocks
     private SerieService serieService;
@@ -978,5 +982,40 @@ public class SerieServiceTest {
         assertThatThrownBy(() -> serieService.modifierNatureSerie(1, NatureSerie.ROMAN))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Série non trouvée.");
+    }
+
+    @Test
+    @DisplayName("Doit modifier le genre d'une série")
+    void modifierGenreSerie_donneesValides_returnsSerieModifiee(){
+        Genre genre = new Genre("Fantasy");
+
+        when(serieRepository.findById(1)).thenReturn(Optional.of(serie));
+        when(genreService.trouverGenreParId(1)).thenReturn(genre);
+        when(serieRepository.save(any(Serie.class))).thenReturn(serie);
+
+        Serie resultat = serieService.modifierGenreSerie(1, 1);
+
+        assertThat(resultat.getGenre()).isEqualTo(genre);
+    }
+
+    @Test
+    @DisplayName("Doit lever une exception si la série n'existe pas")
+    void modifierGenreSerie_serieInexistante_leveBusinessException(){
+        when(serieRepository.findById(99)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> serieService.modifierGenreSerie(99, 1))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Série non trouvée.");
+    }
+
+    @Test
+    @DisplayName("Doit lever une exception si le genre n'existe pas")
+    void modifierGenreSerie_genreInexistant_leveBusinessException(){
+        when(serieRepository.findById(1)).thenReturn(Optional.of(serie));
+        when(genreService.trouverGenreParId(99)).thenThrow(new BusinessException("Genre non trouvé."));
+
+        assertThatThrownBy(() -> serieService.modifierGenreSerie(1, 99))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Genre non trouvé.");
     }
 }

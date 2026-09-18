@@ -5,6 +5,7 @@ import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.service.LivreService;
 import fr.celine.suivideseries.service.SerieService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,7 +27,7 @@ public class LivreController {
     @PostMapping
     public ResponseEntity<Livre> creerLivre(@RequestBody LivreCreationDTO dto){
         Serie serie =  serieService.trouverSerieParId(dto.getSerieId());
-        return ResponseEntity.ok(livreService.creerLivre(dto.getAuteur(), dto.getTitre(), dto.getIsbn(), dto.getNumeroDansLaSerie(), dto.getStatutLivre(), dto.getFormatLivre(), dto.getDateAcquisition(),
+        return ResponseEntity.status(HttpStatus.CREATED).body(livreService.creerLivre(dto.getAuteur(), dto.getTitre(), dto.getIsbn(), dto.getNumeroDansLaSerie(), dto.getStatutLivre(), dto.getFormatLivre(), dto.getDateAcquisition(),
                 dto.getDateLecture(), serie));
     }
 
