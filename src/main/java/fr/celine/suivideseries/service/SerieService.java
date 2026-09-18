@@ -4,10 +4,7 @@ import fr.celine.suivideseries.dto.*;
 import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.entity.Utilisateur;
-import fr.celine.suivideseries.enums.FormatLivre;
-import fr.celine.suivideseries.enums.StatutLivre;
-import fr.celine.suivideseries.enums.StatutPublication;
-import fr.celine.suivideseries.enums.StatutSerie;
+import fr.celine.suivideseries.enums.*;
 import fr.celine.suivideseries.exception.BusinessException;
 import fr.celine.suivideseries.repository.LivreRepository;
 import fr.celine.suivideseries.repository.SerieRepository;
@@ -504,5 +501,12 @@ public class SerieService {
     // Trouver les séries qui sont à lire en anglais
     public List<Serie> trouverSeriesALireEnAnglais() {
         return serieRepository.findByLireEnAnglaisAndStatutSerie(true, StatutSerie.EN_COURS);
+    }
+
+    // Modifier la nature (roman, BD, manga, comics...) de la série
+    public Serie modifierNatureSerie(int id, NatureSerie natureSerie) {
+        Serie serie = trouverSerieParId(id);
+        serie.setNatureSerie(natureSerie);
+        return serieRepository.save(serie);
     }
 }

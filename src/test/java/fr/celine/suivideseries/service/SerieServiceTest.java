@@ -4,10 +4,7 @@ import fr.celine.suivideseries.dto.*;
 import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.entity.Utilisateur;
-import fr.celine.suivideseries.enums.FormatLivre;
-import fr.celine.suivideseries.enums.StatutLivre;
-import fr.celine.suivideseries.enums.StatutPublication;
-import fr.celine.suivideseries.enums.StatutSerie;
+import fr.celine.suivideseries.enums.*;
 import fr.celine.suivideseries.exception.BusinessException;
 import fr.celine.suivideseries.repository.LivreRepository;
 import fr.celine.suivideseries.repository.SerieRepository;
@@ -920,7 +917,7 @@ public class SerieServiceTest {
     }
 
     @Test
-    @DisplayName("Doit retourner une série modifiée")
+    @DisplayName("Doit retourner une série modifiée sur lire en anglais")
     void modifierLireEnAnglais_serieExistante_returnsSerieModifiee(){
         when(serieRepository.findById(1)).thenReturn(Optional.of(serie));
         when(serieRepository.save(serie)).thenReturn(serie);
@@ -959,5 +956,27 @@ public class SerieServiceTest {
         List<Serie> resultat = serieService.trouverSeriesALireEnAnglais();
 
         assertThat(resultat).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Doit retourner une série dont la nature de la série a été modifiée")
+    void modifierNatureSerie_serieExistante_returnsSerieModifiee(){
+        when(serieRepository.findById(1)).thenReturn(Optional.of(serie));
+        when(serieRepository.save(serie)).thenReturn(serie);
+
+        Serie resultat = serieService.modifierNatureSerie(1, NatureSerie.ROMAN);
+
+        assertThat(resultat).isNotNull();
+        assertThat(resultat.getNatureSerie()).isEqualTo(NatureSerie.ROMAN);
+    }
+
+    @Test
+    @DisplayName("Doit retourner une BusinessException car la série n'existe pas")
+    void modifierNatureSerie_serieInexistante_leveBusinessException() {
+        when(serieRepository.findById(1)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> serieService.modifierNatureSerie(1, NatureSerie.ROMAN))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Série non trouvée.");
     }
 }

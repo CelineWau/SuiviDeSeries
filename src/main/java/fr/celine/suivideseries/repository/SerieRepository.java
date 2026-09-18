@@ -1,6 +1,7 @@
 package fr.celine.suivideseries.repository;
 
 import fr.celine.suivideseries.entity.Serie;
+import fr.celine.suivideseries.enums.NatureSerie;
 import fr.celine.suivideseries.enums.StatutPublication;
 import fr.celine.suivideseries.enums.StatutSerie;
 import org.springframework.data.domain.Pageable;

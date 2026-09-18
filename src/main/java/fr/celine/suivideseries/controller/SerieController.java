@@ -181,4 +181,9 @@ public class SerieController {
     public ResponseEntity<Serie> modifierLireEnAnglais(@PathVariable int id, @RequestBody LireEnAnglaisDTO dto) {
         return ResponseEntity.ok(serieService.modifierLireEnAnglais(id, dto.isLireEnAnglais()));
     }
+
+    @PatchMapping("/{id}/natureSerie")
+    public ResponseEntity<Serie> modifierNatureSerie(@PathVariable int id, @RequestBody NatureSerieDTO dto) {
+        return ResponseEntity.ok(serieService.modifierNatureSerie(id, dto.getNatureSerie()));
+    }
 }
