@@ -1,5 +1,6 @@
 package fr.celine.suivideseries.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
@@ -20,6 +21,7 @@ public class Genre {
     @Column(nullable = false, unique = true)
     private String nom;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "genre")
     private List<Serie> series = new ArrayList<>();
 
