@@ -147,7 +147,8 @@ public class SerieController {
     @PostMapping
     public ResponseEntity<Serie> creerSerie(@RequestBody SerieCreationDTO dto) {
         Utilisateur utilisateur = utilisateurService.trouverUtilisateurParId(dto.getUtilisateurId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(serieService.creerSerie(dto.getNom(), utilisateur, dto.getStatutSerie(), dto.getStatutPublication(), dto.getNombreLivreTotal()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(serieService.creerSerie(dto.getNom(), utilisateur, dto.getStatutSerie(), dto.getStatutPublication(), dto.getNombreLivreTotal(),
+                dto.getNatureSerie(), dto.getIdGenre()));
     }
 
     @DeleteMapping("/{id}")

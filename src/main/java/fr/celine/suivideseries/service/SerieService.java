@@ -35,7 +35,7 @@ public class SerieService {
     }
 
     // Ajouter une série en BDD
-    public Serie creerSerie(String nom, Utilisateur utilisateur, StatutSerie statutSerie, StatutPublication statutPublication, int nombreLivreTotal) {
+    public Serie creerSerie(String nom, Utilisateur utilisateur, StatutSerie statutSerie, StatutPublication statutPublication, int nombreLivreTotal, NatureSerie natureSerie, int idGenre) {
 
         // Validation métier
         if(nom == null || nom.isBlank()) {
@@ -58,12 +58,23 @@ public class SerieService {
             throw new BusinessException("La série doit obligatoirement avoir un statut de publication.");
         }
 
+        if(natureSerie == null) {
+            throw new BusinessException("La série doit obligatoirement avoir un type de série (Roman, Manga, Comics...).");
+        }
+
         if(serieRepository.findByNom(nom).isPresent()) {
             throw new BusinessException("Une série existe déjà avec ce nom.");
         }
 
         Serie serie = new Serie(nom, utilisateur, statutSerie, statutPublication, nombreLivreTotal);
-        return serieRepository.save(serie);
+        Serie serieSauvegardee = serieRepository.save(serie);
+        if(natureSerie != NatureSerie.NON_DEFINI) {
+            serieSauvegardee = this.modifierNatureSerie(serieSauvegardee.getIdSerie(), natureSerie);
+        }
+        if(idGenre != 0) {
+            serieSauvegardee = this.modifierGenreSerie(serieSauvegardee.getIdSerie(), idGenre);
+        }
+        return serieSauvegardee;
     }
 
     // Trouver les séries avec un nombre de livres manquants

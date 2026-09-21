@@ -1,5 +1,6 @@
 package fr.celine.suivideseries.dto;
 
+import fr.celine.suivideseries.enums.NatureSerie;
 import fr.celine.suivideseries.enums.StatutPublication;
 import fr.celine.suivideseries.enums.StatutSerie;
 
@@ -10,6 +11,8 @@ public class SerieCreationDTO {
     StatutSerie statutSerie;
     StatutPublication statutPublication;
     int nombreLivreTotal;
+    int idGenre;
+    NatureSerie natureSerie;
 
     public int getUtilisateurId() {
         return utilisateurId;
@@ -29,5 +32,13 @@ public class SerieCreationDTO {
 
     public int getNombreLivreTotal() {
         return nombreLivreTotal;
+    }
+
+    public int getIdGenre() {
+        return idGenre;
+    }
+
+    public NatureSerie getNatureSerie() {
+        return natureSerie;
     }
 }
