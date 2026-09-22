@@ -45,6 +45,7 @@ public class Serie {
             joinColumns = @JoinColumn(name = "id_serie"),
             inverseJoinColumns = @JoinColumn(name = "id_user")
     )
+    @JsonIgnore
     private List<Utilisateur> utilisateur = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
