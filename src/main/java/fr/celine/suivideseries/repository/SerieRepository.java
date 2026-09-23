@@ -16,16 +16,16 @@ public interface SerieRepository  extends JpaRepository<Serie, Integer> {
 
     Optional<Serie> findByNom(String nom);
 
-    @Query("SELECT s FROM Serie s LEFT JOIN s.livres l GROUP BY s.idSerie HAVING s.nombreLivreTotal - SUM(CASE WHEN l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.LU " +
+    @Query("SELECT s.idSerie FROM Serie s LEFT JOIN s.livres l GROUP BY s.idSerie HAVING MAX(s.nombreLivreTotal) - SUM(CASE WHEN l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.LU " +
             "THEN 1 ELSE 0 END) = ?1")
-    List<Serie> trouverSeriesParNombreLivresManquants(int livreManquant);
+    List<Integer> trouverIdsSeriesParNombreLivresManquants(int livreManquant);
 
-    @Query("SELECT s FROM Serie s LEFT JOIN s.livres l WHERE s.statutSerie != fr.celine.suivideseries.enums.StatutSerie.ABANDONNEE " +
+    @Query("SELECT s.idSerie FROM Serie s LEFT JOIN s.livres l WHERE s.statutSerie != fr.celine.suivideseries.enums.StatutSerie.ABANDONNEE " +
             "AND s.statutSerie != fr.celine.suivideseries.enums.StatutSerie.TERMINEE " +
-            "GROUP BY s.idSerie HAVING s.nombreLivreTotal - SUM(CASE WHEN l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.LU THEN 1 ELSE 0 END) <= ?1 " +
-            "AND s.nombreLivreTotal - SUM(CASE WHEN l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.LU THEN 1 ELSE 0 END) > 0 " +
+            "GROUP BY s.idSerie HAVING MAX(s.nombreLivreTotal) - SUM(CASE WHEN l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.LU THEN 1 ELSE 0 END) <= ?1 " +
+            "AND MAX(s.nombreLivreTotal) - SUM(CASE WHEN l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.LU THEN 1 ELSE 0 END) > 0 " +
             "AND SUM(CASE WHEN l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.A_ACHETER THEN 1 ELSE 0 END) = 0")
-    List<Serie> trouverSeriesPresqueFinieDansLaPal(int livreManquant);
+    List<Integer> trouverIdsSeriesPresqueFinieDansLaPal(int livreManquant);
 
     @Query("SELECT DISTINCT s FROM Serie s LEFT JOIN FETCH s.livres LEFT JOIN FETCH s.genre ORDER BY CASE s.statutSerie " +
             "WHEN fr.celine.suivideseries.enums.StatutSerie.EN_COURS THEN 1 " +
@@ -60,22 +60,22 @@ public interface SerieRepository  extends JpaRepository<Serie, Integer> {
 
     List<Serie> findByStatutSerie(StatutSerie statutSerie);
 
-    @Query("SELECT s FROM Serie s WHERE s.statutSerie = fr.celine.suivideseries.enums.StatutSerie.EN_COURS AND EXISTS (SELECT l FROM Livre l WHERE l.serie = s " +
-            "AND l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.DANS_PAL AND l.formatLivre = fr.celine.suivideseries.enums.FormatLivre.EBOOK)")
+    @Query("SELECT DISTINCT s FROM Serie s LEFT JOIN FETCH s.livres l LEFT JOIN FETCH s.genre WHERE s.statutSerie = fr.celine.suivideseries.enums.StatutSerie.EN_COURS AND EXISTS " +
+            "(SELECT l2 FROM Livre l2 WHERE l2.serie = s AND l2.statutLivre = fr.celine.suivideseries.enums.StatutLivre.DANS_PAL AND l2.formatLivre = fr.celine.suivideseries.enums.FormatLivre.EBOOK)")
     List<Serie> trouverSeriesAvecEbooksDansLaPal();
 
-    @Query("SELECT s FROM Serie s LEFT JOIN s.livres l WHERE s.statutSerie = fr.celine.suivideseries.enums.StatutSerie.EN_COURS " +
+    @Query("SELECT s.idSerie FROM Serie s LEFT JOIN s.livres l WHERE s.statutSerie = fr.celine.suivideseries.enums.StatutSerie.EN_COURS " +
             "AND s.statutPublication = fr.celine.suivideseries.enums.StatutPublication.EN_COURS GROUP BY s.idSerie " +
             "HAVING SUM(CASE WHEN l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.LU THEN 1 ELSE 0 END) != COUNT(l)")
-    List<Serie> trouverSerieASurveiller();
+    List<Integer> trouverIdsSerieASurveiller();
 
     @Query("SELECT s FROM Serie s LEFT JOIN s.livres l WHERE s.statutSerie = fr.celine.suivideseries.enums.StatutSerie.EN_COURS AND EXISTS (SELECT l2 FROM Livre l2 WHERE l2.serie = s AND " +
             "l2.statutLivre = fr.celine.suivideseries.enums.StatutLivre.A_ACHETER) GROUP BY s.idSerie HAVING MAX(l.dateLecture) IS NOT NULL ORDER BY MAX(l.dateLecture) ASC, " +
             "SUM(CASE WHEN l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.A_ACHETER THEN 1 ELSE 0 END) ASC")
     List<Serie> trouverSeriesAvecLivresAAcheterTrieesParDerniereLecture();
 
-    @Query("SELECT s FROM Serie s WHERE EXISTS (SELECT l FROM Livre l WHERE l.serie = s AND l.numeroDansLaSerie = 1 AND l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.LU AND l.dateLecture " +
-            "BETWEEN ?1 AND ?2)")
+    @Query("SELECT s FROM Serie s LEFT JOIN FETCH s.livres LEFT JOIN FETCH s.genre WHERE EXISTS (SELECT l FROM Livre l WHERE l.serie = s AND l.numeroDansLaSerie = 1 AND l.statutLivre = " +
+            "fr.celine.suivideseries.enums.StatutLivre.LU AND l.dateLecture BETWEEN ?1 AND ?2)")
     List<Serie> trouverSeriesAvecTome1LuDansAnnee(LocalDate dateDebut, LocalDate dateFin);
 
     @Query("SELECT DISTINCT s FROM Serie s LEFT JOIN FETCH s.livres LEFT JOIN FETCH s.genre " +

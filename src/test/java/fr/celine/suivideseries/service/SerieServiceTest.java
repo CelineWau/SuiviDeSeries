@@ -166,13 +166,15 @@ public class SerieServiceTest {
     @Test
     @DisplayName("Doit trouver une série avec des livres manquants")
     void trouverSerieAvecNombreLivresManquants_donneesValide_returnsSeries() {
-        when(serieRepository.trouverSeriesParNombreLivresManquants(1)).thenReturn(List.of(serie));
+        when(serieRepository.trouverIdsSeriesParNombreLivresManquants(1)).thenReturn(List.of(serie.getIdSerie()));
+        when(serieRepository.trouverSeriesAvecDetailsParIds(List.of(serie.getIdSerie()))).thenReturn(List.of(serie));
 
         List<Serie> resultat = serieService.trouverSerieAvecNombreLivresManquants(1);
 
         assertThat(resultat).isNotNull();
         assertThat(resultat).hasSize(1);
-        verify(serieRepository, times(1)).trouverSeriesParNombreLivresManquants(1);
+        verify(serieRepository, times(1)).trouverIdsSeriesParNombreLivresManquants(1);
+        verify(serieRepository, times(1)).trouverSeriesAvecDetailsParIds(List.of(serie.getIdSerie()));
     }
 
     @Test
@@ -186,13 +188,15 @@ public class SerieServiceTest {
     @Test
     @DisplayName("Doit retourner les séries presque finies dans la PAL")
     void trouverSeriesPresqueFiniesDansLaPal_donneesValides_returnsSeries() {
-        when(serieRepository.trouverSeriesPresqueFinieDansLaPal(2)).thenReturn(List.of(serie));
+        when(serieRepository.trouverIdsSeriesPresqueFinieDansLaPal(2)).thenReturn(List.of(serie.getIdSerie()));
+        when(serieRepository.trouverSeriesAvecDetailsParIds(List.of(serie.getIdSerie()))).thenReturn(List.of(serie));
 
         List<Serie> resultat = serieService.trouverSeriesPresqueFiniesDansLaPal(2);
 
         assertThat(resultat).isNotNull();
         assertThat(resultat).hasSize(1);
-        verify(serieRepository, times(1)).trouverSeriesPresqueFinieDansLaPal(2);
+        verify(serieRepository, times(1)).trouverIdsSeriesPresqueFinieDansLaPal(2);
+        verify(serieRepository, times(1)).trouverSeriesAvecDetailsParIds(List.of(serie.getIdSerie()));
     }
 
     @Test
@@ -568,7 +572,8 @@ public class SerieServiceTest {
         serieCosmere.getLivres().add(tome2);
         serieCosmere.getLivres().add(tome1);
 
-        when(serieRepository.trouverSerieASurveiller()).thenReturn(List.of(serieCosmere));
+        when(serieRepository.trouverIdsSerieASurveiller()).thenReturn(List.of(serieCosmere.getIdSerie()));
+        when(serieRepository.trouverSeriesAvecDetailsParIds(List.of(serieCosmere.getIdSerie()))).thenReturn(List.of(serieCosmere));
 
         List<SerieASurveillerDTO> resultat = serieService.trouverSeriesASurveiller();
 
@@ -584,7 +589,8 @@ public class SerieServiceTest {
         Livre tome3 = new Livre("Ilona Andrews", "Tome 3", "3333333333333", 3, StatutLivre.LU, FormatLivre.EBOOK, null, null, serieSansTome1);
         serieSansTome1.getLivres().add(tome3);
 
-        when(serieRepository.trouverSerieASurveiller()).thenReturn(List.of(serieSansTome1));
+        when(serieRepository.trouverIdsSerieASurveiller()).thenReturn(List.of(serieSansTome1.getIdSerie()));
+        when(serieRepository.trouverSeriesAvecDetailsParIds(List.of(serieSansTome1.getIdSerie()))).thenReturn(List.of(serieSansTome1));
 
         List<SerieASurveillerDTO> resultat = serieService.trouverSeriesASurveiller();
 
@@ -596,7 +602,9 @@ public class SerieServiceTest {
     void trouverSeriesASurveiller_aucunLivre_returnAuteurInconnu() {
         Serie serieVide = new Serie("Nouvelle série", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 5);
 
-        when(serieRepository.trouverSerieASurveiller()).thenReturn(List.of(serieVide));
+        when(serieRepository.trouverIdsSerieASurveiller()).thenReturn(List.of(serieVide.getIdSerie()));
+        when(serieRepository.trouverSeriesAvecDetailsParIds(List.of(serieVide.getIdSerie()))).thenReturn(List.of(serieVide));
+
 
         List<SerieASurveillerDTO> resultat = serieService.trouverSeriesASurveiller();
 
@@ -606,7 +614,8 @@ public class SerieServiceTest {
     @Test
     @DisplayName("Doit retourner une liste vide si aucune série n'est à surveiller")
     void trouverSeriesASurveiller_aucuneSerie_returnListeVide() {
-        when(serieRepository.trouverSerieASurveiller()).thenReturn(List.of());
+        when(serieRepository.trouverIdsSerieASurveiller()).thenReturn(List.of());
+        when(serieRepository.trouverSeriesAvecDetailsParIds(List.of())).thenReturn(List.of());
 
         List<SerieASurveillerDTO> resultat = serieService.trouverSeriesASurveiller();
 

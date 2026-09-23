@@ -75,21 +75,21 @@ public class SerieRepositoryTest {
     @Test
     @DisplayName("Doit retourner le nombre de livre manquant dans toutes les séries")
     void trouverSeriesParNombreLivresManquants_returnLivresManquant() {
-        List<Serie> resultat = serieRepository.trouverSeriesParNombreLivresManquants(1);
+        List<Integer> resultat = serieRepository.trouverIdsSeriesParNombreLivresManquants(1);
 
         assertThat(resultat).isNotNull();
-        assertThat(resultat.getFirst()).isEqualTo(serie);
+        assertThat(resultat.getFirst()).isEqualTo(serie.getIdSerie());
         assertThat(resultat).hasSize(1);
     }
 
     @Test
     @DisplayName("Doit retourner les séries presque finies avec uniquement des livres en PAL")
     void trouverSeriesPresqueFinieDansLaPal_returnSerieAvecLivresEnPal() {
-        List<Serie> resultat = serieRepository.trouverSeriesPresqueFinieDansLaPal(2);
+        List<Integer> resultat = serieRepository.trouverIdsSeriesPresqueFinieDansLaPal(2);
 
         assertThat(resultat).isNotNull();
         assertThat(resultat).hasSize(1);
-        assertThat(resultat.getFirst()).isEqualTo(serie);
+        assertThat(resultat.getFirst()).isEqualTo(serie.getIdSerie());
     }
 
     @Test
@@ -108,10 +108,10 @@ public class SerieRepositoryTest {
         entityManager.persist(livre5);
         entityManager.flush();
 
-        List<Serie> resultat = serieRepository.trouverSeriesPresqueFinieDansLaPal(2);
+        List<Integer> resultat = serieRepository.trouverIdsSeriesPresqueFinieDansLaPal(2);
 
         assertThat(resultat).hasSize(1);
-        assertThat(resultat).containsOnly(serie);
+        assertThat(resultat).containsOnly(serie.getIdSerie());
     }
 
     @Test
@@ -120,7 +120,7 @@ public class SerieRepositoryTest {
         livre3.setStatutLivre(StatutLivre.LU);
         entityManager.flush();
 
-        List<Serie> resultat = serieRepository.trouverSeriesPresqueFinieDansLaPal(2);
+        List<Integer> resultat = serieRepository.trouverIdsSeriesPresqueFinieDansLaPal(2);
 
         assertThat(resultat).isEmpty();
     }
@@ -290,17 +290,17 @@ public class SerieRepositoryTest {
         entityManager.persist(livreNonLu);
         entityManager.flush();
 
-        List<Serie> resultat = serieRepository.trouverSerieASurveiller();
+        List<Integer> resultat = serieRepository.trouverIdsSerieASurveiller();
 
         assertThat(resultat).hasSize(1);
-        assertThat(resultat).containsOnly(serieASurveiller);
+        assertThat(resultat).containsOnly(serieASurveiller.getIdSerie());
     }
 
     @Test
     @DisplayName("Ne doit pas retourner une série dont la publication est déjà terminée")
     void trouverSerieASurveiller_excludesPublicationTerminee(){
         // La série du setup a déjà statutPublication = TERMINEE, donc elle ne doit pas ressortir.
-        List<Serie> resultat = serieRepository.trouverSerieASurveiller();
+        List<Integer> resultat = serieRepository.trouverIdsSerieASurveiller();
 
         assertThat(resultat).isEmpty();
     }
@@ -315,7 +315,7 @@ public class SerieRepositoryTest {
         entityManager.persist(livreNonLu);
         entityManager.flush();
 
-        List<Serie> resultat = serieRepository.trouverSerieASurveiller();
+        List<Integer> resultat = serieRepository.trouverIdsSerieASurveiller();
 
         assertThat(resultat).isEmpty();
     }
@@ -333,9 +333,9 @@ public class SerieRepositoryTest {
         entityManager.persist(livre2);
         entityManager.flush();
 
-        List<Serie> resultat = serieRepository.trouverSerieASurveiller();
+        List<Integer> resultat = serieRepository.trouverIdsSerieASurveiller();
 
-        assertThat(resultat).doesNotContain(serieAJour);
+        assertThat(resultat).doesNotContain(serieAJour.getIdSerie());
     }
 
     @Test

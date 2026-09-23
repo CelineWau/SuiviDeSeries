@@ -85,7 +85,8 @@ public class SerieService {
             throw new BusinessException("Le nombre de livre manquant ne peut pas être négatif ou égal à zéro.");
         }
 
-         return serieRepository.trouverSeriesParNombreLivresManquants(livreManquant);
+        List<Integer> ids = serieRepository.trouverIdsSeriesParNombreLivresManquants(livreManquant);
+        return serieRepository.trouverSeriesAvecDetailsParIds(ids);
     }
 
     // Trouver les séries avec un nombre de livres manquants dans la PAL
@@ -96,7 +97,8 @@ public class SerieService {
             throw new BusinessException("Le nombre de livre manquant ne peut pas être négatif ou égal à zéro.");
         }
 
-        return serieRepository.trouverSeriesPresqueFinieDansLaPal(livreManquant);
+        List<Integer> ids = serieRepository.trouverIdsSeriesPresqueFinieDansLaPal(livreManquant);
+        return serieRepository.trouverSeriesAvecDetailsParIds(ids);
     }
 
     // Afficher les séries
@@ -347,7 +349,8 @@ public class SerieService {
 
     // Trouver les séries à surveiller
     public List<SerieASurveillerDTO> trouverSeriesASurveiller() {
-        List<Serie> series = serieRepository.trouverSerieASurveiller();
+        List<Integer> ids = serieRepository.trouverIdsSerieASurveiller();
+        List<Serie> series = serieRepository.trouverSeriesAvecDetailsParIds(ids);
 
         return series.stream()
                 .map(this::convertirEnDTOASurveiller)

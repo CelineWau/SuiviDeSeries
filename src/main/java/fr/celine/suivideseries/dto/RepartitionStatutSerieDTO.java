@@ -11,7 +11,7 @@ public class RepartitionStatutSerieDTO {
         this.abandonnees = abandonnees;
     }
 
-    public  long getEnCours() {
+    public long getEnCours() {
         return enCours;
     }
 
