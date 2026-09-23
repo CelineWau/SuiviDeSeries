@@ -27,7 +27,10 @@ public interface SerieRepository  extends JpaRepository<Serie, Integer> {
             "AND SUM(CASE WHEN l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.A_ACHETER THEN 1 ELSE 0 END) = 0")
     List<Serie> trouverSeriesPresqueFinieDansLaPal(int livreManquant);
 
-    @Query(value = "SELECT * FROM serie ORDER BY CASE statut_serie WHEN 1 THEN 1 WHEN 0 THEN 2 WHEN 2 THEN 3 END, nom ASC", nativeQuery = true)
+    @Query("SELECT DISTINCT s FROM Serie s LEFT JOIN FETCH s.livres LEFT JOIN FETCH s.genre ORDER BY CASE s.statutSerie " +
+            "WHEN fr.celine.suivideseries.enums.StatutSerie.EN_COURS THEN 1 " +
+            "WHEN fr.celine.suivideseries.enums.StatutSerie.ABANDONNEE THEN 2 " +
+            "WHEN fr.celine.suivideseries.enums.StatutSerie.TERMINEE THEN 3 END, s.nom ASC")
     List<Serie> trierParStatut();
 
     @Query("SELECT s FROM Serie s LEFT JOIN s.livres l WHERE s.statutSerie != fr.celine.suivideseries.enums.StatutSerie.ABANDONNEE " +
@@ -72,7 +75,8 @@ public interface SerieRepository  extends JpaRepository<Serie, Integer> {
             "BETWEEN ?1 AND ?2)")
     List<Serie> trouverSeriesAvecTome1LuDansAnnee(LocalDate dateDebut, LocalDate dateFin);
 
-    @Query("SELECT s FROM Serie s WHERE NOT EXISTS (SELECT l FROM Livre l WHERE l.serie = s AND l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.LU) AND s.statutSerie = " +
+    @Query("SELECT DISTINCT s FROM Serie s LEFT JOIN FETCH s.livres LEFT JOIN FETCH s.genre " +
+            "WHERE NOT EXISTS (SELECT l FROM Livre l WHERE l.serie = s AND l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.LU) AND s.statutSerie = " +
             "fr.celine.suivideseries.enums.StatutSerie.EN_COURS")
     List<Serie> trouverSeriesJamaisCommencees();
 
