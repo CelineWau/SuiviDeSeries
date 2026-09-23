@@ -1,5 +1,6 @@
 package fr.celine.suivideseries.repository;
 
+import fr.celine.suivideseries.entity.Genre;
 import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.entity.Utilisateur;
@@ -562,9 +563,9 @@ public class SerieRepositoryTest {
         entityManager.persist(tome2);
         entityManager.flush();
 
-        List<Serie> resultat = serieRepository.trouverSeriesAJour();
+        List<Integer> resultat = serieRepository.trouverIdsSeriesAJour();
 
-        assertThat(resultat).containsOnly(serieAJour);
+        assertThat(resultat).containsOnly(serieAJour.getIdSerie());
     }
 
     @Test
@@ -582,9 +583,9 @@ public class SerieRepositoryTest {
         entityManager.persist(tome2);
         entityManager.flush();
 
-        List<Serie> resultat = serieRepository.trouverSeriesAJour();
+        List<Integer> resultat = serieRepository.trouverIdsSeriesAJour();
 
-        assertThat(resultat).doesNotContain(bourbonKid);
+        assertThat(resultat).doesNotContain(bourbonKid.getIdSerie());
     }
 
     @Test
@@ -601,9 +602,9 @@ public class SerieRepositoryTest {
         entityManager.persist(tome2);
         entityManager.flush();
 
-        List<Serie> resultat = serieRepository.trouverSeriesAJour();
+        List<Integer> resultat = serieRepository.trouverIdsSeriesAJour();
 
-        assertThat(resultat).doesNotContain(serieEnCours);
+        assertThat(resultat).doesNotContain(serieEnCours.getIdSerie());
     }
 
     @Test
@@ -620,9 +621,31 @@ public class SerieRepositoryTest {
         entityManager.persist(tome2);
         entityManager.flush();
 
-        List<Serie> resultat = serieRepository.trouverSeriesAJour();
+        List<Integer> resultat = serieRepository.trouverIdsSeriesAJour();
 
-        assertThat(resultat).doesNotContain(serieTerminee);
+        assertThat(resultat).doesNotContain(serieTerminee.getIdSerie());
+    }
+
+    @Test
+    @DisplayName("Doit retourner les séries avec leurs livres et leur genre à partir d'une liste d'ids")
+    void trouverSeriesAvecDetailsParIds_idsValides_returnSeriesAvecLivresEtGenre(){
+        Genre fantasy = new Genre("Fantasy");
+        Serie serie = new Serie("Alpha & Omega", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 1);
+        serie.setGenre(fantasy);
+        Livre tome1 = new Livre("Patricia Briggs", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null,
+                LocalDate.of(2026, 1, 1), serie);
+
+        entityManager.persist(fantasy);
+        entityManager.persist(serie);
+        entityManager.persist(tome1);
+        entityManager.flush();
+        entityManager.clear();
+
+        List<Serie> resultat = serieRepository.trouverSeriesAvecDetailsParIds(List.of(serie.getIdSerie()));
+
+        assertThat(resultat).hasSize(1);
+        assertThat(resultat.get(0).getLivres()).containsExactly(tome1);
+        assertThat(resultat.get(0).getGenre()).isEqualTo(fantasy);
     }
 
     @Test

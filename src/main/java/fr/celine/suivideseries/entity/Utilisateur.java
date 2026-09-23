@@ -125,13 +125,15 @@ public class Utilisateur implements UserDetails {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof Utilisateur that)) return false;
-        return idUser == that.idUser && Objects.equals(nom, that.nom) && Objects.equals(prenom, that.prenom) && Objects.equals(pseudo, that.pseudo) && Objects.equals(mdp, that.mdp) && Objects.equals(email, that.email) && Objects.equals(serie, that.serie);
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Utilisateur that = (Utilisateur) o;
+        return idUser == that.idUser;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(idUser, nom, prenom, pseudo, mdp, email, serie);
+        return Objects.hash(idUser);
     }
 
     @Override
@@ -143,7 +145,7 @@ public class Utilisateur implements UserDetails {
                 ", pseudo='" + pseudo + '\'' +
                 ", mdp='" + mdp + '\'' +
                 ", email='" + email + '\'' +
-                ", serie=" + serie +
+                ", serie=" + (serie != null ? serie.stream().map(s -> s.getIdSerie()).toList() : null) +
                 '}';
     }
 

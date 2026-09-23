@@ -169,7 +169,8 @@ public class SerieService {
 
     // Trouver les séries à jour
     public List<Serie> trouverSerieAJour() {
-        return serieRepository.trouverSeriesAJour();
+        List<Integer> ids = serieRepository.trouverIdsSeriesAJour();
+        return serieRepository.trouverSeriesAvecDetailsParIds(ids);
     }
 
     // Trouver les séries délaissées depuis plus d'un an

@@ -198,12 +198,14 @@ public class Serie {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof Serie serie)) return false;
-        return idSerie == serie.idSerie && nombreLivreTotal == serie.nombreLivreTotal && lireEnAnglais == serie.lireEnAnglais && Objects.equals(nom, serie.nom) && Objects.equals(dateFin, serie.dateFin) && Objects.equals(utilisateur, serie.utilisateur) && statutSerie == serie.statutSerie && statutPublication == serie.statutPublication && natureSerie == serie.natureSerie && Objects.equals(livres, serie.livres) && Objects.equals(genre, serie.genre);
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Serie serie = (Serie) o;
+        return idSerie == serie.idSerie;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(idSerie, nom, nombreLivreTotal, dateFin, lireEnAnglais, utilisateur, statutSerie, statutPublication, natureSerie, livres, genre);
+        return Objects.hash(idSerie);
     }
 }

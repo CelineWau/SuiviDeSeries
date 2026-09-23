@@ -181,13 +181,15 @@ public class Livre {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof Livre livre)) return false;
-        return idLivre == livre.idLivre && numeroDansLaSerie == livre.numeroDansLaSerie && nombreDePages == livre.nombreDePages && note == livre.note && Objects.equals(auteur, livre.auteur) && Objects.equals(titre, livre.titre) && Objects.equals(isbn, livre.isbn) && statutLivre == livre.statutLivre && formatLivre == livre.formatLivre && Objects.equals(dateAcquisition, livre.dateAcquisition) && Objects.equals(dateLecture, livre.dateLecture) && Objects.equals(serie, livre.serie);
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Livre livre = (Livre) o;
+        return idLivre == livre.idLivre;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(idLivre, auteur, titre, isbn, numeroDansLaSerie, nombreDePages, note, statutLivre, formatLivre, dateAcquisition, dateLecture, serie);
+        return Objects.hash(idLivre);
     }
 
     @Override
@@ -202,7 +204,7 @@ public class Livre {
                 ", formatLivre=" + formatLivre +
                 ", dateAcquisition=" + dateAcquisition +
                 ", dateLecture=" + dateLecture +
-                ", serie=" + serie +
+                ", serie=" + (serie != null ? serie.getIdSerie() : null) +
                 ", nombreDePages=" + nombreDePages +
                 ", note=" + note +
                 '}';
