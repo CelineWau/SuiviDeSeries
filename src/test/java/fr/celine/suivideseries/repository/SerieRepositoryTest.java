@@ -150,12 +150,14 @@ public class SerieRepositoryTest {
         entityManager.flush();
 
         Pageable pageable = PageRequest.of(0, 10);
-        List<Serie> resultat = serieRepository.trouverSeriesAvecLivresAAcheter(pageable);
+        List<Integer> ids = serieRepository.trouverIdsSeriesAvecLivresAAcheter(pageable);
 
-        assertThat(resultat).isNotNull();
+        assertThat(ids).containsExactly(serieUnAAcheter.getIdSerie(), serieDeuxAAcheter.getIdSerie());
+
+        List<Serie> resultat = serieRepository.trouverSeriesAvecDetailsParIds(ids);
+
         assertThat(resultat).hasSize(2);
-        assertThat(resultat.get(0)).isEqualTo(serieUnAAcheter);
-        assertThat(resultat.get(1)).isEqualTo(serieDeuxAAcheter);
+        assertThat(resultat).containsExactlyInAnyOrder(serieUnAAcheter, serieDeuxAAcheter);
     }
 
     @Test
@@ -176,7 +178,8 @@ public class SerieRepositoryTest {
         entityManager.flush();
 
         Pageable pageable = PageRequest.of(0, 1);
-        List<Serie> resultat = serieRepository.trouverSeriesAvecLivresAAcheter(pageable);
+        List<Integer> ids = serieRepository.trouverIdsSeriesAvecLivresAAcheter(pageable);
+        List<Serie> resultat = serieRepository.trouverSeriesAvecDetailsParIds(ids);
 
         assertThat(resultat).hasSize(1);
     }
@@ -361,11 +364,14 @@ public class SerieRepositoryTest {
         entityManager.persist(livreAAcheterAncien);
         entityManager.flush();
 
-        List<Serie> resultat = serieRepository.trouverSeriesAvecLivresAAcheterTrieesParDerniereLecture();
+        List<Integer> ids = serieRepository.trouverIdsSeriesAvecLivresAAcheterTrieesParDerniereLecture();
+
+        assertThat(ids).containsExactly(serieAncienne.getIdSerie(), serieRecente.getIdSerie());
+
+        List<Serie> resultat = serieRepository.trouverSeriesAvecDetailsParIds(ids);
 
         assertThat(resultat).hasSize(2);
-        assertThat(resultat.get(0)).isEqualTo(serieAncienne);
-        assertThat(resultat.get(1)).isEqualTo(serieRecente);
+        assertThat(resultat).containsExactlyInAnyOrder(serieAncienne, serieRecente);
     }
 
     @Test
@@ -379,7 +385,8 @@ public class SerieRepositoryTest {
         entityManager.persist(livreLu);
         entityManager.flush();
 
-        List<Serie> resultat = serieRepository.trouverSeriesAvecLivresAAcheterTrieesParDerniereLecture();
+        List<Integer> ids = serieRepository.trouverIdsSeriesAvecLivresAAcheterTrieesParDerniereLecture();
+        List<Serie> resultat = serieRepository.trouverSeriesAvecDetailsParIds(ids);
 
         assertThat(resultat).doesNotContain(serieSansAchat);
     }
@@ -411,11 +418,14 @@ public class SerieRepositoryTest {
         entityManager.persist(livreAAcheter3);
         entityManager.flush();
 
-        List<Serie> resultat = serieRepository.trouverSeriesAvecLivresAAcheterTrieesParDerniereLecture();
+        List<Integer> ids = serieRepository.trouverIdsSeriesAvecLivresAAcheterTrieesParDerniereLecture();
+
+        assertThat(ids).containsExactly(serieAvecMoinsATrouver.getIdSerie(), serieAvecPlusATrouver.getIdSerie());
+
+        List<Serie> resultat = serieRepository.trouverSeriesAvecDetailsParIds(ids);
 
         assertThat(resultat).hasSize(2);
-        assertThat(resultat.get(0)).isEqualTo(serieAvecMoinsATrouver);
-        assertThat(resultat.get(1)).isEqualTo(serieAvecPlusATrouver);
+        assertThat(resultat).containsExactlyInAnyOrder(serieAvecMoinsATrouver, serieAvecPlusATrouver);
     }
 
     @Test
@@ -432,7 +442,8 @@ public class SerieRepositoryTest {
         entityManager.persist(livreAAcheter);
         entityManager.flush();
 
-        List<Serie> resultat = serieRepository.trouverSeriesAvecLivresAAcheterTrieesParDerniereLecture();
+        List<Integer> ids = serieRepository.trouverIdsSeriesAvecLivresAAcheterTrieesParDerniereLecture();
+        List<Serie> resultat = serieRepository.trouverSeriesAvecDetailsParIds(ids);
 
         assertThat(resultat).doesNotContain(serieJamaisCommencee);
     }
@@ -683,5 +694,42 @@ public class SerieRepositoryTest {
         List<Serie> resultat = serieRepository.findByLireEnAnglaisAndStatutSerie(true, StatutSerie.EN_COURS);
 
         assertThat(resultat).doesNotContain(serieTerminee);
+    }
+
+    @Test
+    @DisplayName("Doit retourner les séries délaissées (dernière lecture trop ancienne et pas totalement lues)")
+    void trouverIdsSeriesDelaissees_returnSeriesAncienneLectureNonTerminee() {
+        Utilisateur autreUtilisateur = new Utilisateur("Martin", "Paul", "PolMar", "paul@email.fr");
+        autreUtilisateur.setMdp("Azerty123");
+
+        // Série délaissée : dernière lecture il y a plus d'un an, pas terminée
+        Serie serieDelaissee = new Serie("Le Trône de Fer", autreUtilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 2);
+        Livre livreLuAncien = new Livre("George R. R. Martin", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.PAPIER, null,
+                LocalDate.of(2023, 1, 1), serieDelaissee);
+        Livre livreNonLu = new Livre("George R. R. Martin", "Tome 2", "2222222222222", 2, StatutLivre.DANS_PAL, FormatLivre.PAPIER, null,
+                null, serieDelaissee);
+
+        // Série récemment lue : ne doit PAS apparaître
+        Serie serieRecente = new Serie("Mistborn", autreUtilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 2);
+        Livre livreLuRecent = new Livre("Brandon Sanderson", "Tome 1", "3333333333333", 1, StatutLivre.LU, FormatLivre.PAPIER, null,
+                LocalDate.now().minusMonths(1), serieRecente);
+        Livre livreNonLu2 = new Livre("Brandon Sanderson", "Tome 2", "4444444444444", 2, StatutLivre.DANS_PAL, FormatLivre.PAPIER, null,
+                null, serieRecente);
+
+        entityManager.persist(autreUtilisateur);
+        entityManager.persist(serieDelaissee);
+        entityManager.persist(livreLuAncien);
+        entityManager.persist(livreNonLu);
+        entityManager.persist(serieRecente);
+        entityManager.persist(livreLuRecent);
+        entityManager.persist(livreNonLu2);
+        entityManager.flush();
+
+        LocalDate dateSeuil = LocalDate.now().minusYears(1);
+        Pageable pageable = PageRequest.of(0, 15);
+
+        List<Integer> ids = serieRepository.trouverIdsSeriesDelaissees(dateSeuil, pageable);
+
+        assertThat(ids).containsExactly(serieDelaissee.getIdSerie());
     }
 }

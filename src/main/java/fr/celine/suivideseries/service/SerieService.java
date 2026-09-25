@@ -16,10 +16,10 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 @Service
 public class SerieService {
@@ -144,12 +144,24 @@ public class SerieService {
         return serieRepository.save(serie);
     }
 
+    // Remet une liste de Serie dans l'ordre exact d'une liste d'ids
+    public List<Serie> trierSelonOrdreIds(List<Serie> series, List<Integer> ids) {
+        Map<Integer, Serie> seriesParIds = series.stream()
+                .collect(Collectors.toMap(Serie::getIdSerie, Function.identity()));
+        return ids.stream()
+                .map(seriesParIds::get)
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
     // Trouver 10 séries avec des livres à acheter
     public List<SerieAvecLivresAAcheterDTO> trouverSeriesAvecLivresAAcheter() {
         Pageable pageable = PageRequest.of(0, 10);
-        List<Serie> series = serieRepository.trouverSeriesAvecLivresAAcheter(pageable);
+        List<Integer> ids = serieRepository.trouverIdsSeriesAvecLivresAAcheter(pageable);
+        List<Serie> series =  serieRepository.trouverSeriesAvecDetailsParIds(ids);
+        List<Serie> seriesTriees = trierSelonOrdreIds(series, ids);
 
-        return series.stream()
+        return seriesTriees.stream()
                 .map(this::convertirEnDTO)
                 .toList();
     }
@@ -180,9 +192,11 @@ public class SerieService {
         LocalDate date = LocalDate.now();
         LocalDate dateSeuil = date.minusYears(1);
         Pageable pageable = PageRequest.of(0, 15);
-        List<Serie> series = serieRepository.trouverSeriesDelaissees(dateSeuil, pageable);
+        List<Integer> ids = serieRepository.trouverIdsSeriesDelaissees(dateSeuil, pageable);
+        List<Serie> series =  serieRepository.trouverSeriesAvecDetailsParIds(ids);
+        List<Serie> seriesTriees = trierSelonOrdreIds(series, ids);
 
-        return series.stream()
+        return seriesTriees.stream()
                 .map(this::convertirEnDTODelaisses)
                 .toList();
     }
@@ -388,9 +402,11 @@ public class SerieService {
 
     // Trouver les livres pour créer la liste de course
     private List<LivreAAcheterDTO> trouverListeCourses(FormatLivre format, int limite) {
-        List<Serie> series = serieRepository.trouverSeriesAvecLivresAAcheterTrieesParDerniereLecture();
+        List<Integer> ids = serieRepository.trouverIdsSeriesAvecLivresAAcheterTrieesParDerniereLecture();
+        List<Serie> series = serieRepository.trouverSeriesAvecDetailsParIds(ids);
+        List<Serie> seriesTriees = trierSelonOrdreIds(series, ids);
 
-        return series.stream()
+        return seriesTriees.stream()
                 .map(serie -> trouverLivreParNumero(serie, trouverPremierTomeAAcheterDansSerie(serie)))
                 .filter(livre -> livre.getFormatLivre() == format)
                 .limit(limite)

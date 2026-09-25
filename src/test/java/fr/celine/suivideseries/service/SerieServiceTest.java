@@ -235,7 +235,8 @@ public class SerieServiceTest {
         serie.getLivres().add(livreAAcheter1);
         serie.getLivres().add(livreAAcheter2);
 
-        when(serieRepository.trouverSeriesAvecLivresAAcheter(any(Pageable.class))).thenReturn(List.of(serie));
+        when(serieRepository.trouverIdsSeriesAvecLivresAAcheter(any(Pageable.class))).thenReturn(List.of(serie.getIdSerie()));
+        when(serieRepository.trouverSeriesAvecDetailsParIds(List.of(serie.getIdSerie()))).thenReturn(List.of(serie));
 
         List<SerieAvecLivresAAcheterDTO> resultat = serieService.trouverSeriesAvecLivresAAcheter();
 
@@ -243,7 +244,8 @@ public class SerieServiceTest {
         assertThat(resultat).hasSize(1);
         assertThat(resultat.getFirst().getNom()).isEqualTo(serie.getNom());
         assertThat(resultat.getFirst().getNombreLivreAAcheter()).isEqualTo(2);
-        verify(serieRepository, times(1)).trouverSeriesAvecLivresAAcheter(any(Pageable.class));
+        verify(serieRepository, times(1)).trouverIdsSeriesAvecLivresAAcheter(any(Pageable.class));
+        verify(serieRepository, times(1)).trouverSeriesAvecDetailsParIds(List.of(serie.getIdSerie()));
     }
 
     @Test
@@ -626,14 +628,17 @@ public class SerieServiceTest {
     @DisplayName("Doit retourner uniquement les livres papier dans la liste de courses papier")
     void trouverListeCoursesPapier_seriesCandidates_returnUniquementPapier() {
         Serie seriePapier = new Serie("Havrefer", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 6);
+        seriePapier.setIdSerie(1);
         Livre livrePapier = new Livre("Richard Ford", "Tome 2", "1111111111111", 2, StatutLivre.A_ACHETER, FormatLivre.PAPIER, null, null, seriePapier);
         seriePapier.getLivres().add(livrePapier);
 
         Serie serieEbook = new Serie("Kate Daniels", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 12);
+        serieEbook.setIdSerie(2);
         Livre livreEbook = new Livre("Ilona Andrews", "Tome 2", "2222222222222", 2, StatutLivre.A_ACHETER, FormatLivre.EBOOK, null, null, serieEbook);
         serieEbook.getLivres().add(livreEbook);
 
-        when(serieRepository.trouverSeriesAvecLivresAAcheterTrieesParDerniereLecture()).thenReturn(List.of(seriePapier, serieEbook));
+        when(serieRepository.trouverIdsSeriesAvecLivresAAcheterTrieesParDerniereLecture()).thenReturn(List.of(seriePapier.getIdSerie(), serieEbook.getIdSerie()));
+        when(serieRepository.trouverSeriesAvecDetailsParIds(List.of(seriePapier.getIdSerie(), serieEbook.getIdSerie()))).thenReturn(List.of(seriePapier, serieEbook));
 
         List<LivreAAcheterDTO> resultat = serieService.trouverListeCoursesPapier();
 
@@ -645,14 +650,17 @@ public class SerieServiceTest {
     @DisplayName("Doit retourner uniquement les livres ebook dans la liste de courses ebook")
     void trouverListeCoursesEbook_seriesCandidates_returnUniquementEbook() {
         Serie seriePapier = new Serie("Havrefer", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 6);
+        seriePapier.setIdSerie(1);
         Livre livrePapier = new Livre("Richard Ford", "Tome 2", "1111111111111", 2, StatutLivre.A_ACHETER, FormatLivre.PAPIER, null, null, seriePapier);
         seriePapier.getLivres().add(livrePapier);
 
         Serie serieEbook = new Serie("Kate Daniels", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 12);
+        serieEbook.setIdSerie(2);
         Livre livreEbook = new Livre("Ilona Andrews", "Tome 2", "2222222222222", 2, StatutLivre.A_ACHETER, FormatLivre.EBOOK, null, null, serieEbook);
         serieEbook.getLivres().add(livreEbook);
 
-        when(serieRepository.trouverSeriesAvecLivresAAcheterTrieesParDerniereLecture()).thenReturn(List.of(seriePapier, serieEbook));
+        when(serieRepository.trouverIdsSeriesAvecLivresAAcheterTrieesParDerniereLecture()).thenReturn(List.of(seriePapier.getIdSerie(), serieEbook.getIdSerie()));
+        when(serieRepository.trouverSeriesAvecDetailsParIds(List.of(seriePapier.getIdSerie(), serieEbook.getIdSerie()))).thenReturn(List.of(seriePapier, serieEbook));
 
         List<LivreAAcheterDTO> resultat = serieService.trouverListeCoursesEbook();
 
@@ -668,12 +676,15 @@ public class SerieServiceTest {
             Utilisateur utilisateurBoucle = new Utilisateur("Nom" + i, "Prenom" + i, "Pseudo" + i, "email" + i + "@email.fr");
             utilisateurBoucle.setMdp("Azerty123");
             Serie serieBoucle = new Serie("Serie " + i, utilisateurBoucle, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 5);
-            Livre livreBoucle = new Livre("Auteur " + i, "Tome 1", "000000000000" + i, 1, StatutLivre.A_ACHETER, FormatLivre.PAPIER, null, null,
-                    serieBoucle);
+            serieBoucle.setIdSerie(i);
+            Livre livreBoucle = new Livre("Auteur " + i, "Tome 1", "000000000000" + i, 1, StatutLivre.A_ACHETER, FormatLivre.PAPIER, null,
+                    null, serieBoucle);
             serieBoucle.getLivres().add(livreBoucle);
             series.add(serieBoucle);
         }
-        when(serieRepository.trouverSeriesAvecLivresAAcheterTrieesParDerniereLecture()).thenReturn(series);
+        List<Integer> ids = series.stream().map(Serie::getIdSerie).toList();
+        when(serieRepository.trouverIdsSeriesAvecLivresAAcheterTrieesParDerniereLecture()).thenReturn(ids);
+        when(serieRepository.trouverSeriesAvecDetailsParIds(ids)).thenReturn(series);
 
         List<LivreAAcheterDTO> resultat = serieService.trouverListeCoursesPapier();
 
@@ -688,12 +699,15 @@ public class SerieServiceTest {
             Utilisateur utilisateurBoucle = new Utilisateur("Nom" + i, "Prenom" + i, "Pseudo" + i, "email" + i + "@email.fr");
             utilisateurBoucle.setMdp("Azerty123");
             Serie serieBoucle = new Serie("Serie " + i, utilisateurBoucle, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 5);
-            Livre livreBoucle = new Livre("Auteur " + i, "Tome 1", "111111111111" + i, 1, StatutLivre.A_ACHETER, FormatLivre.EBOOK, null, null,
-                    serieBoucle);
+            serieBoucle.setIdSerie(i);
+            Livre livreBoucle = new Livre("Auteur " + i, "Tome 1", "111111111111" + i, 1, StatutLivre.A_ACHETER, FormatLivre.EBOOK, null,
+                    null, serieBoucle);
             serieBoucle.getLivres().add(livreBoucle);
             series.add(serieBoucle);
         }
-        when(serieRepository.trouverSeriesAvecLivresAAcheterTrieesParDerniereLecture()).thenReturn(series);
+        List<Integer> ids = series.stream().map(Serie::getIdSerie).toList();
+        when(serieRepository.trouverIdsSeriesAvecLivresAAcheterTrieesParDerniereLecture()).thenReturn(ids);
+        when(serieRepository.trouverSeriesAvecDetailsParIds(ids)).thenReturn(series);
 
         List<LivreAAcheterDTO> resultat = serieService.trouverListeCoursesEbook();
 
@@ -703,7 +717,7 @@ public class SerieServiceTest {
     @Test
     @DisplayName("Doit retourner une liste vide si aucune série n'a de livre à acheter")
     void trouverListeCoursesPapier_aucuneSerie_returnListeVide() {
-        when(serieRepository.trouverSeriesAvecLivresAAcheterTrieesParDerniereLecture()).thenReturn(List.of());
+        when(serieRepository.trouverIdsSeriesAvecLivresAAcheterTrieesParDerniereLecture()).thenReturn(List.of());
 
         List<LivreAAcheterDTO> resultat = serieService.trouverListeCoursesPapier();
 
@@ -1067,4 +1081,19 @@ public class SerieServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Genre non trouvé.");
     }
+
+    @Test
+    @DisplayName("Doit renvoyer les séries délaissées, converties en DTO")
+    void trouverSerieDelaissees_returnListeDeDTO() {
+        List<Integer> ids = List.of(serie.getIdSerie());
+        when(serieRepository.trouverIdsSeriesDelaissees(any(LocalDate.class), any(Pageable.class))).thenReturn(ids);
+        when(serieRepository.trouverSeriesAvecDetailsParIds(ids)).thenReturn(List.of(serie));
+
+        List<SeriesDelaisseesDTO> resultat = serieService.trouverSerieDelaissees();
+
+        assertThat(resultat).hasSize(1);
+        verify(serieRepository, times(1)).trouverIdsSeriesDelaissees(any(LocalDate.class), any(Pageable.class));
+        verify(serieRepository, times(1)).trouverSeriesAvecDetailsParIds(ids);
+    }
+
 }
