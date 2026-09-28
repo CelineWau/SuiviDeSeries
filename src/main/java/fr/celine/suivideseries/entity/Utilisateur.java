@@ -35,7 +35,7 @@ public class Utilisateur implements UserDetails {
 
     @NotNull(message = "Le pseudo est obligatoire")
     @Size(message = "Le pseudo ne peut pas dépasser 100 caractères")
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 100, unique = true)
     private String pseudo;
 
     @NotNull(message = "Le mot de passe est obligatoire")
