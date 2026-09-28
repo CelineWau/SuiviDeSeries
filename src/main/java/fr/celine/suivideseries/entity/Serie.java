@@ -192,7 +192,7 @@ public class Serie {
                 ", livres" + livres +
                 ", lireEnAnglais=" + lireEnAnglais +
                 ", natureSerie=" + natureSerie +
-                ", genre=" + genre +
+                ", genre=" + (genre != null ? genre.getNom() : null) +
                 '}';
     }
 

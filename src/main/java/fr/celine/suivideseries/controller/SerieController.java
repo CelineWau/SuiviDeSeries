@@ -144,6 +144,16 @@ public class SerieController {
         return ResponseEntity.ok(serieService.trouverSeriesALireEnAnglais());
     }
 
+    @GetMapping("/seriesParGenre")
+    public ResponseEntity<List<RepartitionCategorieDTO>> afficherSeriesParGenre() {
+        return ResponseEntity.ok(serieService.compterSeriesParGenre());
+    }
+
+    @GetMapping("/seriesParNature")
+    public ResponseEntity<List<RepartitionCategorieDTO>> afficherSeriesParNature() {
+        return ResponseEntity.ok(serieService.compterSeriesParNature());
+    }
+
     @PostMapping
     public ResponseEntity<Serie> creerSerie(@RequestBody SerieCreationDTO dto) {
         Utilisateur utilisateur = utilisateurService.trouverUtilisateurParId(dto.getUtilisateurId());

@@ -1,5 +1,6 @@
 package fr.celine.suivideseries.repository;
 
+import fr.celine.suivideseries.dto.RepartitionCategorieDTO;
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.enums.NatureSerie;
 import fr.celine.suivideseries.enums.StatutPublication;
@@ -85,4 +86,12 @@ public interface SerieRepository  extends JpaRepository<Serie, Integer> {
 
     @Query("SELECT DISTINCT s FROM Serie s LEFT JOIN FETCH s.livres LEFT JOIN FETCH s.genre WHERE s.lireEnAnglais = ?1 AND s.statutSerie = ?2")
     List<Serie> findByLireEnAnglaisAndStatutSerie(boolean lireEnAnglais, StatutSerie statutSerie);
+
+    @Query("SELECT new fr.celine.suivideseries.dto.RepartitionCategorieDTO(COALESCE(g.nom, 'Sans genre'), COUNT(s)) FROM Serie s LEFT JOIN s.genre g WHERE NOT s.statutSerie = " +
+            "fr.celine.suivideseries.enums.StatutSerie.ABANDONNEE GROUP BY g.nom ORDER BY COUNT(s) DESC")
+    List<RepartitionCategorieDTO> compterSeriesParGenre();
+
+    @Query("SELECT NEW fr.celine.suivideseries.dto.RepartitionCategorieDTO(CAST(s.natureSerie AS string), COUNT(s)) FROM Serie s WHERE NOT s.statutSerie = fr.celine.suivideseries.enums.StatutSerie.ABANDONNEE " +
+            "GROUP BY s.natureSerie ORDER BY COUNT(s) DESC")
+    List<RepartitionCategorieDTO> compterSeriesParNature();
 }

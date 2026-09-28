@@ -552,4 +552,14 @@ public class SerieService {
         serie.setGenre(genre);
         return serieRepository.save(serie);
     }
+
+    // Compter les séries par genre
+    public List<RepartitionCategorieDTO> compterSeriesParGenre() {
+        return  serieRepository.compterSeriesParGenre();
+    }
+
+    // Compter les séries par nature
+    public List<RepartitionCategorieDTO> compterSeriesParNature() {
+        return serieRepository.compterSeriesParNature();
+    }
 }

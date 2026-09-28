@@ -1,13 +1,11 @@
 package fr.celine.suivideseries.repository;
 
+import fr.celine.suivideseries.dto.RepartitionCategorieDTO;
 import fr.celine.suivideseries.entity.Genre;
 import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.entity.Utilisateur;
-import fr.celine.suivideseries.enums.FormatLivre;
-import fr.celine.suivideseries.enums.StatutLivre;
-import fr.celine.suivideseries.enums.StatutPublication;
-import fr.celine.suivideseries.enums.StatutSerie;
+import fr.celine.suivideseries.enums.*;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -731,5 +729,68 @@ public class SerieRepositoryTest {
         List<Integer> ids = serieRepository.trouverIdsSeriesDelaissees(dateSeuil, pageable);
 
         assertThat(ids).containsExactly(serieDelaissee.getIdSerie());
+    }
+
+    @Test
+    @DisplayName("Doit compter les séries par genre, en excluant les abandonnées et en regroupant celles sans genre sous 'Sans genre'")
+    void compterSeriesParGenre_donneesVariees_returnRepartitionCorrecte(){
+        Genre fantasy = new Genre("Fantasy");
+        Genre comics = new Genre("Comics");
+
+        Serie serieFantasy1 = new Serie("Kushiel's Legacy", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 3);
+        serieFantasy1.setGenre(fantasy);
+        Serie serieFantasy2 = new Serie("Mercy Thompson", utilisateur, StatutSerie.TERMINEE, StatutPublication.TERMINEE, 10);
+        serieFantasy2.setGenre(fantasy);
+        Serie serieComics = new Serie("Saga", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 5);
+        serieComics.setGenre(comics);
+        Serie serieAbandonnee = new Serie("Abandon", utilisateur, StatutSerie.ABANDONNEE, StatutPublication.TERMINEE, 2);
+        serieAbandonnee.setGenre(fantasy);
+
+        entityManager.persist(fantasy);
+        entityManager.persist(comics);
+        entityManager.persist(serieFantasy1);
+        entityManager.persist(serieFantasy2);
+        entityManager.persist(serieComics);
+        entityManager.persist(serieAbandonnee);
+        entityManager.flush();
+
+        List<RepartitionCategorieDTO> resultat = serieRepository.compterSeriesParGenre();
+
+        assertThat(resultat)
+                .extracting(RepartitionCategorieDTO::getNom, RepartitionCategorieDTO::getNombreSerie)
+                .containsExactlyInAnyOrder(
+                        tuple("Fantasy", 2L),
+                        tuple("Comics", 1L),
+                        tuple("Sans genre", 1L) // la série du setup, qui n'a pas de genre
+                );
+    }
+
+    @Test
+    @DisplayName("Doit compter les séries par nature, en excluant les abandonnées")
+    void compterSeriesParNature_donneesVariees_returnRepartitionCorrecte(){
+        Serie serieManga1 = new Serie("One Piece", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 100);
+        serieManga1.setNatureSerie(NatureSerie.MANGA);
+        Serie serieManga2 = new Serie("Naruto", utilisateur, StatutSerie.TERMINEE, StatutPublication.TERMINEE, 72);
+        serieManga2.setNatureSerie(NatureSerie.MANGA);
+        Serie serieRoman = new Serie("Kushiel's Legacy", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 3);
+        serieRoman.setNatureSerie(NatureSerie.ROMAN);
+        Serie serieAbandonnee = new Serie("Abandon", utilisateur, StatutSerie.ABANDONNEE, StatutPublication.TERMINEE, 2);
+        serieAbandonnee.setNatureSerie(NatureSerie.MANGA);
+
+        entityManager.persist(serieManga1);
+        entityManager.persist(serieManga2);
+        entityManager.persist(serieRoman);
+        entityManager.persist(serieAbandonnee);
+        entityManager.flush();
+
+        List<RepartitionCategorieDTO> resultat = serieRepository.compterSeriesParNature();
+
+        assertThat(resultat)
+                .extracting(RepartitionCategorieDTO::getNom, RepartitionCategorieDTO::getNombreSerie)
+                .containsExactlyInAnyOrder(
+                        tuple("MANGA", 2L),
+                        tuple("ROMAN", 1L),
+                        tuple("NON_DEFINI", 1L) // la série du setup, jamais assignée
+                );
     }
 }
