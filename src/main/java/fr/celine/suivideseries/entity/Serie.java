@@ -38,15 +38,10 @@ public class Serie {
     private boolean lireEnAnglais;
 
     @NotNull(message = "La série doit être attribuée à un utilisateur")
-    @Column(nullable = false)
-    @ManyToMany
-    @JoinTable(
-            name = "serie_utilisateur",
-            joinColumns = @JoinColumn(name = "id_serie"),
-            inverseJoinColumns = @JoinColumn(name = "id_user")
-    )
+    @JoinColumn(name = "id_user", nullable = false)
+    @ManyToOne
     @JsonIgnore
-    private List<Utilisateur> utilisateur = new ArrayList<>();
+    private Utilisateur utilisateur;
 
     @Enumerated(EnumType.STRING)
     @NotNull(message = "La série doit avoir un statut.")
@@ -71,19 +66,10 @@ public class Serie {
     @JoinColumn(name = "id_genre")
     private Genre genre;
 
-    public Serie(String nom, List<Utilisateur> utilisateur, StatutSerie statutSerie, StatutPublication statutPublication, int nombreLivreTotal) {
-        this.nom = nom;
-        this.nombreLivreTotal = nombreLivreTotal;
-        this.utilisateur = utilisateur;
-        this.statutSerie = statutSerie;
-        this.statutPublication = statutPublication;
-    }
-
     public Serie(String nom, Utilisateur utilisateur, StatutSerie statutSerie, StatutPublication statutPublication, int nombreLivreTotal) {
         this.nom = nom;
         this.nombreLivreTotal = nombreLivreTotal;
-        this.utilisateur = new ArrayList<>();
-        this.utilisateur.add(utilisateur);
+        this.utilisateur = utilisateur;
         this.statutSerie = statutSerie;
         this.statutPublication = statutPublication;
     }
@@ -123,11 +109,11 @@ public class Serie {
         this.dateFin = dateFin;
     }
 
-    public List<Utilisateur> getUtilisateur() {
+    public Utilisateur getUtilisateur() {
         return utilisateur;
     }
 
-    public void setUtilisateur(List<Utilisateur> utilisateur) {
+    public void setUtilisateur(Utilisateur utilisateur) {
         this.utilisateur = utilisateur;
     }
 

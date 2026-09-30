@@ -102,8 +102,8 @@ public class SerieService {
     }
 
     // Afficher les séries
-    public List<Serie> afficherSeries() {
-        return serieRepository.trierParStatut();
+    public List<Serie> afficherSeries(Utilisateur utilisateur) {
+        return serieRepository.trierParStatut(utilisateur);
     }
 
     // Trouver une série par Id
@@ -167,9 +167,9 @@ public class SerieService {
     }
 
     // Compter les séries entre le 1er janvier et le 31 décembre
-    public long compterSeriesPourAnnee(){
+    public long compterSeriesPourAnnee(Utilisateur utilisateur){
         LocalDate[] dates = calculerDatesAnnee();
-        return serieRepository.countByDateFinBetween(dates[0], dates[1]);
+        return serieRepository.countByDateFinBetweenAndUtilisateur(dates[0], dates[1], utilisateur);
     }
 
     // Convertir une série en DTO avec son nombre de livres à acheter
@@ -554,12 +554,12 @@ public class SerieService {
     }
 
     // Compter les séries par genre
-    public List<RepartitionCategorieDTO> compterSeriesParGenre() {
-        return  serieRepository.compterSeriesParGenre();
+    public List<RepartitionCategorieDTO> compterSeriesParGenre(Utilisateur utilisateur) {
+        return serieRepository.compterSeriesParGenre(utilisateur);
     }
 
     // Compter les séries par nature
-    public List<RepartitionCategorieDTO> compterSeriesParNature() {
-        return serieRepository.compterSeriesParNature();
+    public List<RepartitionCategorieDTO> compterSeriesParNature(Utilisateur utilisateur) {
+        return serieRepository.compterSeriesParNature(utilisateur);
     }
 }

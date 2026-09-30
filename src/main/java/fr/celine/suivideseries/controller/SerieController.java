@@ -7,6 +7,7 @@ import fr.celine.suivideseries.service.SerieService;
 import fr.celine.suivideseries.service.UtilisateurService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,8 +25,8 @@ public class SerieController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Serie>> afficherSerie() {
-        return ResponseEntity.ok(serieService.afficherSeries());
+    public ResponseEntity<List<Serie>> afficherSerie(@AuthenticationPrincipal Utilisateur utilisateurConnecte) {
+        return ResponseEntity.ok(serieService.afficherSeries(utilisateurConnecte));
     }
 
     @GetMapping("/{id}")
@@ -44,8 +45,8 @@ public class SerieController {
     }
 
     @GetMapping("/compteurSerieParAnnee")
-    public ResponseEntity<Long> compterSeriesParAnnee() {
-        return ResponseEntity.ok(serieService.compterSeriesPourAnnee());
+    public ResponseEntity<Long> compterSeriesParAnnee(@AuthenticationPrincipal Utilisateur utilisateurConnecte) {
+        return ResponseEntity.ok(serieService.compterSeriesPourAnnee(utilisateurConnecte));
     }
 
     @GetMapping("/trouverSerieAJour")
@@ -144,13 +145,13 @@ public class SerieController {
     }
 
     @GetMapping("/seriesParGenre")
-    public ResponseEntity<List<RepartitionCategorieDTO>> afficherSeriesParGenre() {
-        return ResponseEntity.ok(serieService.compterSeriesParGenre());
+    public ResponseEntity<List<RepartitionCategorieDTO>> afficherSeriesParGenre(@AuthenticationPrincipal Utilisateur utilisateurConnecte) {
+        return ResponseEntity.ok(serieService.compterSeriesParGenre(utilisateurConnecte));
     }
 
     @GetMapping("/seriesParNature")
-    public ResponseEntity<List<RepartitionCategorieDTO>> afficherSeriesParNature() {
-        return ResponseEntity.ok(serieService.compterSeriesParNature());
+    public ResponseEntity<List<RepartitionCategorieDTO>> afficherSeriesParNature(@AuthenticationPrincipal Utilisateur utilisateurConnecte) {
+        return ResponseEntity.ok(serieService.compterSeriesParNature(utilisateurConnecte));
     }
 
     @PostMapping

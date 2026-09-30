@@ -151,7 +151,7 @@ public class SerieServiceTest {
         assertThat(resultat.getStatutSerie()).isEqualTo(StatutSerie.EN_COURS);
         assertThat(resultat.getStatutPublication()).isEqualTo(StatutPublication.TERMINEE);
         assertThat(resultat.getNombreLivreTotal()).isEqualTo(4);
-        assertThat(resultat.getUtilisateur().getFirst()).isEqualTo(utilisateur);
+        assertThat(resultat.getUtilisateur()).isEqualTo(utilisateur);
         verify(serieRepository, times(1)).save(any(Serie.class));
     }
 

@@ -2,6 +2,7 @@ package fr.celine.suivideseries.repository;
 
 import fr.celine.suivideseries.dto.RepartitionCategorieDTO;
 import fr.celine.suivideseries.entity.Serie;
+import fr.celine.suivideseries.entity.Utilisateur;
 import fr.celine.suivideseries.enums.NatureSerie;
 import fr.celine.suivideseries.enums.StatutPublication;
 import fr.celine.suivideseries.enums.StatutSerie;
@@ -28,18 +29,18 @@ public interface SerieRepository  extends JpaRepository<Serie, Integer> {
             "AND SUM(CASE WHEN l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.A_ACHETER THEN 1 ELSE 0 END) = 0")
     List<Integer> trouverIdsSeriesPresqueFinieDansLaPal(int livreManquant);
 
-    @Query("SELECT DISTINCT s FROM Serie s LEFT JOIN FETCH s.livres LEFT JOIN FETCH s.genre ORDER BY CASE s.statutSerie " +
+    @Query("SELECT DISTINCT s FROM Serie s LEFT JOIN FETCH s.livres LEFT JOIN FETCH s.genre WHERE s.utilisateur = ?1 ORDER BY CASE s.statutSerie " +
             "WHEN fr.celine.suivideseries.enums.StatutSerie.EN_COURS THEN 1 " +
             "WHEN fr.celine.suivideseries.enums.StatutSerie.ABANDONNEE THEN 2 " +
             "WHEN fr.celine.suivideseries.enums.StatutSerie.TERMINEE THEN 3 END, s.nom ASC")
-    List<Serie> trierParStatut();
+    List<Serie> trierParStatut(Utilisateur utilisateur);
 
     @Query("SELECT s.idSerie FROM Serie s LEFT JOIN s.livres l WHERE s.statutSerie != fr.celine.suivideseries.enums.StatutSerie.ABANDONNEE " +
             "GROUP BY s.idSerie HAVING SUM(CASE WHEN l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.A_ACHETER THEN 1 ELSE 0 END) > 0 " +
             "ORDER BY SUM(CASE WHEN l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.A_ACHETER THEN 1 ELSE 0 END) ASC")
     List<Integer> trouverIdsSeriesAvecLivresAAcheter(Pageable pageable);
 
-    long countByDateFinBetween(LocalDate dateDebut, LocalDate dateFin);
+    long countByDateFinBetweenAndUtilisateur(LocalDate dateDebut, LocalDate dateFin, Utilisateur utilisateur);
 
     @Query("SELECT s.idSerie FROM Serie s LEFT JOIN s.livres l WHERE s.statutSerie = fr.celine.suivideseries.enums.StatutSerie.EN_COURS " +
             "AND s.statutPublication != fr.celine.suivideseries.enums.StatutPublication.TERMINEE GROUP BY s.idSerie " +
@@ -88,10 +89,10 @@ public interface SerieRepository  extends JpaRepository<Serie, Integer> {
     List<Serie> findByLireEnAnglaisAndStatutSerie(boolean lireEnAnglais, StatutSerie statutSerie);
 
     @Query("SELECT new fr.celine.suivideseries.dto.RepartitionCategorieDTO(COALESCE(g.nom, 'Sans genre'), COUNT(s)) FROM Serie s LEFT JOIN s.genre g WHERE NOT s.statutSerie = " +
-            "fr.celine.suivideseries.enums.StatutSerie.ABANDONNEE GROUP BY g.nom ORDER BY COUNT(s) DESC")
-    List<RepartitionCategorieDTO> compterSeriesParGenre();
+            "fr.celine.suivideseries.enums.StatutSerie.ABANDONNEE AND s.utilisateur = ?1 GROUP BY g.nom ORDER BY COUNT(s) DESC")
+    List<RepartitionCategorieDTO> compterSeriesParGenre(Utilisateur utilisateur);
 
-    @Query("SELECT NEW fr.celine.suivideseries.dto.RepartitionCategorieDTO(CAST(s.natureSerie AS string), COUNT(s)) FROM Serie s WHERE NOT s.statutSerie = fr.celine.suivideseries.enums.StatutSerie.ABANDONNEE " +
-            "GROUP BY s.natureSerie ORDER BY COUNT(s) DESC")
-    List<RepartitionCategorieDTO> compterSeriesParNature();
+    @Query("SELECT NEW fr.celine.suivideseries.dto.RepartitionCategorieDTO(CAST(s.natureSerie AS string), COUNT(s)) FROM Serie s WHERE NOT s.statutSerie = " +
+            "fr.celine.suivideseries.enums.StatutSerie.ABANDONNEE AND s.utilisateur = ?1 GROUP BY s.natureSerie ORDER BY COUNT(s) DESC")
+    List<RepartitionCategorieDTO> compterSeriesParNature(Utilisateur utilisateur);
 }

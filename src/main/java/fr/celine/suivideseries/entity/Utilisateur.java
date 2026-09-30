@@ -48,8 +48,7 @@ public class Utilisateur implements UserDetails {
     @Column(nullable = false)
     private String email;
 
-    @Column
-    @ManyToMany(mappedBy = "utilisateur")
+    @OneToMany(mappedBy = "utilisateur")
     @JsonIgnore
     private List<Serie> serie = new ArrayList<>();
 
