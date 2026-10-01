@@ -7,7 +7,6 @@ import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.entity.Utilisateur;
 import fr.celine.suivideseries.enums.*;
 import fr.celine.suivideseries.exception.BusinessException;
-import fr.celine.suivideseries.repository.GenreRepository;
 import fr.celine.suivideseries.repository.LivreRepository;
 import fr.celine.suivideseries.repository.SerieRepository;
 import org.springframework.data.domain.PageRequest;
@@ -18,7 +17,6 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @Service
@@ -69,10 +67,10 @@ public class SerieService {
         Serie serie = new Serie(nom, utilisateur, statutSerie, statutPublication, nombreLivreTotal);
         Serie serieSauvegardee = serieRepository.save(serie);
         if(natureSerie != NatureSerie.NON_DEFINI) {
-            serieSauvegardee = this.modifierNatureSerie(serieSauvegardee.getIdSerie(), natureSerie);
+            serieSauvegardee = this.modifierNatureSerie(serieSauvegardee.getIdSerie(), natureSerie, utilisateur);
         }
         if(idGenre != 0) {
-            serieSauvegardee = this.modifierGenreSerie(serieSauvegardee.getIdSerie(), idGenre);
+            serieSauvegardee = this.modifierGenreSerie(serieSauvegardee.getIdSerie(), idGenre, utilisateur);
         }
         return serieSauvegardee;
     }
@@ -90,14 +88,14 @@ public class SerieService {
     }
 
     // Trouver les séries avec un nombre de livres manquants dans la PAL
-    public List<Serie> trouverSeriesPresqueFiniesDansLaPal(int livreManquant) {
+    public List<Serie> trouverSeriesPresqueFiniesDansLaPal(int livreManquant, Utilisateur utilisateur) {
 
         // Validation métier
         if(livreManquant <= 0) {
             throw new BusinessException("Le nombre de livre manquant ne peut pas être négatif ou égal à zéro.");
         }
 
-        List<Integer> ids = serieRepository.trouverIdsSeriesPresqueFinieDansLaPal(livreManquant);
+        List<Integer> ids = serieRepository.trouverIdsSeriesPresqueFinieDansLaPal(livreManquant, utilisateur);
         return serieRepository.trouverSeriesAvecDetailsParIds(ids);
     }
 
@@ -107,18 +105,23 @@ public class SerieService {
     }
 
     // Trouver une série par Id
-    public Serie trouverSerieParId(int id) {
-        return serieRepository.findById(id).orElseThrow(() -> new BusinessException("Série non trouvée."));
+    public Serie trouverSerieParId(int id, Utilisateur utilisateur) {
+        Serie serie = serieRepository.findById(id).orElseThrow(() -> new BusinessException("Serie non trouvé."));
+        if (serie.getUtilisateur().getIdUser() != utilisateur.getIdUser()) {
+            throw new BusinessException("Série non trouvée.");
+        }
+        return serie;
     }
 
     // Supprimer une série
-    public void supprimerSerie(int id) {
+    public void supprimerSerie(int id, Utilisateur utilisateur) {
+        trouverSerieParId(id, utilisateur);
         serieRepository.deleteById(id);
     }
 
     // Modifier le nombre de livres dans une série
-    public Serie modifierNombreLivreTotal(int id, int nouveauTotal) {
-        Serie serie = trouverSerieParId(id);
+    public Serie modifierNombreLivreTotal(int id, int nouveauTotal, Utilisateur utilisateur) {
+        Serie serie = trouverSerieParId(id, utilisateur);
         serie.setNombreLivreTotal(nouveauTotal);
         if (serie.getStatutSerie() != StatutSerie.ABANDONNEE) {
             serie.setStatutSerie(StatutSerie.EN_COURS);
@@ -127,15 +130,15 @@ public class SerieService {
     }
 
     // Modifier le statut de publication d'une série
-    public Serie modifierStatutPublication(int id, StatutPublication nouveauStatutPublication) {
-        Serie serie = trouverSerieParId(id);
+    public Serie modifierStatutPublication(int id, StatutPublication nouveauStatutPublication, Utilisateur utilisateur) {
+        Serie serie = trouverSerieParId(id, utilisateur);
         serie.setStatutPublication(nouveauStatutPublication);
         return serieRepository.save(serie);
     }
 
     // Modifier le statut de la série
-    public Serie modifierStatutSerie(int id, StatutSerie nouveauStatutSerie) {
-        Serie serie = trouverSerieParId(id);
+    public Serie modifierStatutSerie(int id, StatutSerie nouveauStatutSerie, Utilisateur utilisateur) {
+        Serie serie = trouverSerieParId(id, utilisateur);
         StatutSerie ancienStatut = serie.getStatutSerie();
         serie.setStatutSerie(nouveauStatutSerie);
         if (ancienStatut == StatutSerie.EN_COURS && nouveauStatutSerie == StatutSerie.TERMINEE) {
@@ -155,9 +158,9 @@ public class SerieService {
     }
 
     // Trouver 10 séries avec des livres à acheter
-    public List<SerieAvecLivresAAcheterDTO> trouverSeriesAvecLivresAAcheter() {
+    public List<SerieAvecLivresAAcheterDTO> trouverSeriesAvecLivresAAcheter(Utilisateur utilisateur) {
         Pageable pageable = PageRequest.of(0, 10);
-        List<Integer> ids = serieRepository.trouverIdsSeriesAvecLivresAAcheter(pageable);
+        List<Integer> ids = serieRepository.trouverIdsSeriesAvecLivresAAcheter(pageable, utilisateur);
         List<Serie> series =  serieRepository.trouverSeriesAvecDetailsParIds(ids);
         List<Serie> seriesTriees = trierSelonOrdreIds(series, ids);
 
@@ -182,17 +185,17 @@ public class SerieService {
     }
 
     // Trouver les séries à jour
-    public List<Serie> trouverSerieAJour() {
-        List<Integer> ids = serieRepository.trouverIdsSeriesAJour();
+    public List<Serie> trouverSerieAJour(Utilisateur utilisateur) {
+        List<Integer> ids = serieRepository.trouverIdsSeriesAJour(utilisateur);
         return serieRepository.trouverSeriesAvecDetailsParIds(ids);
     }
 
     // Trouver les séries délaissées depuis plus d'un an
-    public List<SeriesDelaisseesDTO> trouverSerieDelaissees() {
+    public List<SeriesDelaisseesDTO> trouverSerieDelaissees(Utilisateur utilisateur) {
         LocalDate date = LocalDate.now();
         LocalDate dateSeuil = date.minusYears(1);
         Pageable pageable = PageRequest.of(0, 15);
-        List<Integer> ids = serieRepository.trouverIdsSeriesDelaissees(dateSeuil, pageable);
+        List<Integer> ids = serieRepository.trouverIdsSeriesDelaissees(dateSeuil, utilisateur, pageable);
         List<Serie> series =  serieRepository.trouverSeriesAvecDetailsParIds(ids);
         List<Serie> seriesTriees = trierSelonOrdreIds(series, ids);
 
@@ -213,9 +216,9 @@ public class SerieService {
     }
 
     // Calculer le ratio de séries finies vs commencées
-    public double calculerRatioSeries() {
-        long seriesTerminees = serieRepository.countByStatutSerie(StatutSerie.TERMINEE);
-        long seriesEnCours = serieRepository.countByStatutSerie(StatutSerie.EN_COURS);
+    public double calculerRatioSeries(Utilisateur utilisateur) {
+        long seriesTerminees = serieRepository.countByStatutSerieAndUtilisateur(StatutSerie.TERMINEE, utilisateur);
+        long seriesEnCours = serieRepository.countByStatutSerieAndUtilisateur(StatutSerie.EN_COURS, utilisateur);
         long seriesCommencees = seriesTerminees + seriesEnCours;
         if (seriesCommencees == 0){
             return 0;
@@ -225,23 +228,23 @@ public class SerieService {
     }
 
     // Calculer la répartition entre les séries en cours, terminées et abandonnées
-    public RepartitionStatutSerieDTO calculerRepartitionStatutSeries() {
-        long seriesTerminees = serieRepository.countByStatutSerie(StatutSerie.TERMINEE);
-        long seriesEnCours = serieRepository.countByStatutSerie(StatutSerie.EN_COURS);
-        long seriesAbandonnees = serieRepository.countByStatutSerie(StatutSerie.ABANDONNEE);
+    public RepartitionStatutSerieDTO calculerRepartitionStatutSeries(Utilisateur utilisateur) {
+        long seriesTerminees = serieRepository.countByStatutSerieAndUtilisateur(StatutSerie.TERMINEE, utilisateur);
+        long seriesEnCours = serieRepository.countByStatutSerieAndUtilisateur(StatutSerie.EN_COURS, utilisateur);
+        long seriesAbandonnees = serieRepository.countByStatutSerieAndUtilisateur(StatutSerie.ABANDONNEE, utilisateur);
         return new RepartitionStatutSerieDTO(seriesEnCours, seriesTerminees, seriesAbandonnees);
     }
 
     // Trouver les séries les plus longues dans En cours et Terminées
-    public SeriesLesPlusLonguesDTO trouverSeriePlusLongueEnCoursEtTerminee() {
-        Serie seriePlusLongueEnCours = serieRepository.findFirstByStatutSerieOrderByNombreLivreTotalDesc(StatutSerie.EN_COURS).orElse(null);
-        Serie seriePlusLongueTerminee = serieRepository.findFirstByStatutSerieOrderByNombreLivreTotalDesc(StatutSerie.TERMINEE).orElse(null);
+    public SeriesLesPlusLonguesDTO trouverSeriePlusLongueEnCoursEtTerminee(Utilisateur utilisateur) {
+        Serie seriePlusLongueEnCours = serieRepository.findFirstByStatutSerieAndUtilisateurOrderByNombreLivreTotalDesc(StatutSerie.EN_COURS, utilisateur).orElse(null);
+        Serie seriePlusLongueTerminee = serieRepository.findFirstByStatutSerieAndUtilisateurOrderByNombreLivreTotalDesc(StatutSerie.TERMINEE, utilisateur).orElse(null);
         return new SeriesLesPlusLonguesDTO(seriePlusLongueEnCours, seriePlusLongueTerminee);
     }
 
     // Calculer la répartition des séries par taille (petites/moyenne/sagas)
-    public TailleSerieDTO calculerRepartitionTailleSeries(){
-        List<Serie> series = serieRepository.findByStatutSerieNot(StatutSerie.ABANDONNEE);
+    public TailleSerieDTO calculerRepartitionTailleSeries(Utilisateur utilisateur){
+        List<Serie> series = serieRepository.findByStatutSerieNotAndUtilisateur(StatutSerie.ABANDONNEE, utilisateur);
 
         long petites = series.stream()
                 .filter(s -> s.getNombreLivreTotal() >= 1 && s.getNombreLivreTotal() <= 3)
@@ -280,8 +283,8 @@ public class SerieService {
     }
 
     // Calculer la durée moyenne des lectures TERMINEE
-    public double calculerDureeMoyenneLecture() {
-        List<Serie> series = serieRepository.findByStatutSerie(StatutSerie.TERMINEE);
+    public double calculerDureeMoyenneLecture(Utilisateur utilisateur) {
+        List<Serie> series = serieRepository.findByStatutSerieAndUtilisateur(StatutSerie.TERMINEE, utilisateur);
 
         return series.stream()
                 .mapToDouble(this::calculerDifferenceDatePremiereEtDerniereLecture)
@@ -290,8 +293,8 @@ public class SerieService {
     }
 
     // Trouver une série au hasard dans les séries ebook en cours
-    public Serie trouverSerieAleatoireDansSerieEbook() {
-        List<Serie> series = serieRepository.trouverSeriesAvecEbooksDansLaPal();
+    public Serie trouverSerieAleatoireDansSerieEbook(Utilisateur utilisateur) {
+        List<Serie> series = serieRepository.trouverSeriesAvecEbooksDansLaPal(utilisateur);
         if (series.isEmpty()) {
             throw new BusinessException("Il n'y a pas d'ebooks dans la pile à lire qui correspond à demande.");
         }
@@ -309,8 +312,8 @@ public class SerieService {
     }
 
     // Proposer un ebook à lire au hasard parmi les ebooks d'une série en cours dans la PAL
-    public EbookAleatoireDTO proposerLivreAleatoire() {
-        Serie serie = trouverSerieAleatoireDansSerieEbook();
+    public EbookAleatoireDTO proposerLivreAleatoire(Utilisateur utilisateur) {
+        Serie serie = trouverSerieAleatoireDansSerieEbook(utilisateur);
         int numeroProchainTome = trouverTomePlusPetitDansSerie(serie);
 
         if(!tomesPrecedentsTousLus(serie, numeroProchainTome)){
@@ -331,8 +334,8 @@ public class SerieService {
     }
 
     // Trouver les 5 livres les plus anciens en PAL (défi PAL vieillissante)
-    public List<LivrePalVieillissantDTO> trouverLivresPalVieillissante() {
-        List<Serie> series = serieRepository.trouverSeriesAvecEbooksDansLaPal();
+    public List<LivrePalVieillissantDTO> trouverLivresPalVieillissante(Utilisateur utilisateur) {
+        List<Serie> series = serieRepository.trouverSeriesAvecEbooksDansLaPal(utilisateur);
 
         List<Livre> livres = series.stream()
                 .map(serie -> trouverLivreParNumero(serie, trouverTomePlusPetitDansSerie(serie)))
@@ -362,8 +365,8 @@ public class SerieService {
     }
 
     // Trouver les séries à surveiller
-    public List<SerieASurveillerDTO> trouverSeriesASurveiller() {
-        List<Integer> ids = serieRepository.trouverIdsSerieASurveiller();
+    public List<SerieASurveillerDTO> trouverSeriesASurveiller(Utilisateur utilisateur) {
+        List<Integer> ids = serieRepository.trouverIdsSerieASurveiller(utilisateur);
         List<Serie> series = serieRepository.trouverSeriesAvecDetailsParIds(ids);
 
         return series.stream()
@@ -401,8 +404,8 @@ public class SerieService {
     }
 
     // Trouver les livres pour créer la liste de course
-    private List<LivreAAcheterDTO> trouverListeCourses(FormatLivre format, int limite) {
-        List<Integer> ids = serieRepository.trouverIdsSeriesAvecLivresAAcheterTrieesParDerniereLecture();
+    private List<LivreAAcheterDTO> trouverListeCourses(FormatLivre format, int limite, Utilisateur utilisateur) {
+        List<Integer> ids = serieRepository.trouverIdsSeriesAvecLivresAAcheterTrieesParDerniereLecture(utilisateur);
         List<Serie> series = serieRepository.trouverSeriesAvecDetailsParIds(ids);
         List<Serie> seriesTriees = trierSelonOrdreIds(series, ids);
 
@@ -415,18 +418,18 @@ public class SerieService {
     }
 
     // Trouver la liste pour les livres papiers
-    public List<LivreAAcheterDTO> trouverListeCoursesPapier() {
-        return trouverListeCourses(FormatLivre.PAPIER, 20);
+    public List<LivreAAcheterDTO> trouverListeCoursesPapier(Utilisateur utilisateur) {
+        return trouverListeCourses(FormatLivre.PAPIER, 20, utilisateur);
     }
 
     // Trouver la liste pour les ebooks
-    public List<LivreAAcheterDTO> trouverListeCoursesEbook() {
-        return trouverListeCourses(FormatLivre.EBOOK, 10);
+    public List<LivreAAcheterDTO> trouverListeCoursesEbook(Utilisateur utilisateur) {
+        return trouverListeCourses(FormatLivre.EBOOK, 10, utilisateur);
     }
 
     // Modifier le nom d'une série
-    public Serie modifierNomSerie(int id, String nouveauNom) {
-        Serie serie = serieRepository.findById(id).orElseThrow(() -> new BusinessException("Série non trouvée."));
+    public Serie modifierNomSerie(int id, String nouveauNom, Utilisateur utilisateur) {
+        Serie serie = trouverSerieParId(id, utilisateur);
 
         boolean nomPrisParAutreSerie = serieRepository.findByNom(nouveauNom)
                 .filter(s -> s.getIdSerie() != id)
@@ -440,30 +443,30 @@ public class SerieService {
     }
 
     // Calculer le temps de lecture d'une série
-    public double calculerTempsLectureSerie(int id) {
-        Serie serie = trouverSerieParId(id);
+    public double calculerTempsLectureSerie(int id, Utilisateur utilisateur) {
+        Serie serie = trouverSerieParId(id, utilisateur);
         return calculerDifferenceDatePremiereEtDerniereLecture(serie);
     }
 
     // Calculer le nombre de séries commencées dans l'année en cours
-    public long compterSeriesCommenceesPourAnnee() {
+    public long compterSeriesCommenceesPourAnnee(Utilisateur utilisateur) {
         LocalDate[] dates = calculerDatesAnnee();
-        return livreRepository.countByNumeroDansLaSerieAndStatutLivreAndDateLectureBetween(1, StatutLivre.LU, dates[0], dates[1]);
+        return livreRepository.countByNumeroDansLaSerieAndStatutLivreAndDateLectureBetweenAndSerieUtilisateur(1, StatutLivre.LU, dates[0], dates[1], utilisateur);
     }
 
     // Compter les séries commencées et finies dans l'année en cours
-    public long compterSeriesCommenceesEtFinieMemeAnnee(LocalDate dateDebut, LocalDate dateFin) {
-        return livreRepository.compterSeriesCommenceesEtFiniesMemeAnnee(dateDebut, dateFin);
+    public long compterSeriesCommenceesEtFinieMemeAnnee(LocalDate dateDebut, LocalDate dateFin, Utilisateur utilisateur) {
+        return livreRepository.compterSeriesCommenceesEtFiniesMemeAnnee(dateDebut, dateFin, utilisateur);
     }
 
     // Calculer le ratio des séries commencées et finies dans l'année en cours
-    public double calculerRatioSeriesCommenceesEtFinieMemeAnnee() {
+    public double calculerRatioSeriesCommenceesEtFinieMemeAnnee(Utilisateur utilisateur) {
         LocalDate[] dates = calculerDatesAnnee();
 
-        if(compterSeriesCommenceesPourAnnee() == 0) {
+        if(compterSeriesCommenceesPourAnnee(utilisateur) == 0) {
             return 0;
         } else {
-            return (double) compterSeriesCommenceesEtFinieMemeAnnee(dates[0], dates[1]) / compterSeriesCommenceesPourAnnee();
+            return (double) compterSeriesCommenceesEtFinieMemeAnnee(dates[0], dates[1], utilisateur) / compterSeriesCommenceesPourAnnee(utilisateur);
         }
     }
 
@@ -484,17 +487,17 @@ public class SerieService {
     }
 
     // Compter le nombre de séries avec que le tome 1 lu dans l'année
-    public long compterSeriesAvecSeulTomeUnLuDansAnnee() {
+    public long compterSeriesAvecSeulTomeUnLuDansAnnee(Utilisateur utilisateur) {
         LocalDate[] dates = calculerDatesAnnee();
-        List<Serie> series = serieRepository.trouverSeriesAvecTome1LuDansAnnee(dates[0], dates[1]);
+        List<Serie> series = serieRepository.trouverSeriesAvecTome1LuDansAnnee(dates[0], dates[1], utilisateur);
         return series.stream()
                 .filter(this::seulTomeUnLu)
                 .count();
     }
 
     // Calculer la série en cours avec le temps de lecture le plus long et le plus court
-    public SeriesTermineesPlusLonguePlusCourteDTO trouverSeriesTermineesPlusLonguePlusCourte(){
-        List<Serie> series = serieRepository.findByStatutSerie(StatutSerie.TERMINEE);
+    public SeriesTermineesPlusLonguePlusCourteDTO trouverSeriesTermineesPlusLonguePlusCourte(Utilisateur utilisateur) {
+        List<Serie> series = serieRepository.findByStatutSerieAndUtilisateur(StatutSerie.TERMINEE, utilisateur);
 
         List<Serie> seriesAvecLecture = series.stream()
                 .filter(s -> calculerDifferenceDatePremiereEtDerniereLecture(s) > 0)
@@ -522,32 +525,32 @@ public class SerieService {
     }
 
     // Trouver les séries qui ne sont pas commencées
-    public List<Serie> trouverSeriesJamaisCommencees() {
-        return serieRepository.trouverSeriesJamaisCommencees();
+    public List<Serie> trouverSeriesJamaisCommencees(Utilisateur utilisateur) {
+        return serieRepository.trouverSeriesJamaisCommencees(utilisateur);
     }
 
     // Modifier la série si elle est lu en anglais
-    public Serie modifierLireEnAnglais(int id, boolean lireEnAnglais) {
-        Serie serie = trouverSerieParId(id);
+    public Serie modifierLireEnAnglais(int id, boolean lireEnAnglais, Utilisateur utilisateur) {
+        Serie serie = trouverSerieParId(id, utilisateur);
         serie.setLireEnAnglais(lireEnAnglais);
         return serieRepository.save(serie);
     }
 
     // Trouver les séries qui sont à lire en anglais
-    public List<Serie> trouverSeriesALireEnAnglais() {
-        return serieRepository.findByLireEnAnglaisAndStatutSerie(true, StatutSerie.EN_COURS);
+    public List<Serie> trouverSeriesALireEnAnglais(Utilisateur utilisateur) {
+        return serieRepository.findByLireEnAnglaisAndStatutSerie(true, StatutSerie.EN_COURS, utilisateur);
     }
 
     // Modifier la nature (roman, BD, manga, comics...) de la série
-    public Serie modifierNatureSerie(int id, NatureSerie natureSerie) {
-        Serie serie = trouverSerieParId(id);
+    public Serie modifierNatureSerie(int id, NatureSerie natureSerie, Utilisateur utilisateur) {
+        Serie serie = trouverSerieParId(id, utilisateur);
         serie.setNatureSerie(natureSerie);
         return serieRepository.save(serie);
     }
 
     // Modifier le genre d'une série
-    public Serie modifierGenreSerie(int idSerie, int idGenre) {
-        Serie serie = trouverSerieParId(idSerie);
+    public Serie modifierGenreSerie(int idSerie, int idGenre, Utilisateur utilisateur) {
+        Serie serie = trouverSerieParId(idSerie, utilisateur);
         Genre genre = genreService.trouverGenreParId(idGenre);
         serie.setGenre(genre);
         return serieRepository.save(serie);

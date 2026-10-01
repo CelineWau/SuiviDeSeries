@@ -3,6 +3,7 @@ package fr.celine.suivideseries.repository;
 import fr.celine.suivideseries.dto.AuteursSeriesEnCoursDTO;
 import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
+import fr.celine.suivideseries.entity.Utilisateur;
 import fr.celine.suivideseries.enums.FormatLivre;
 import fr.celine.suivideseries.enums.StatutLivre;
 import org.springframework.data.domain.Pageable;
@@ -30,9 +31,9 @@ public interface LivreRepository extends JpaRepository<Livre, Integer> {
 
     List<Livre> findByStatutLivre(StatutLivre statutLivre);
 
-    long countByNumeroDansLaSerieAndStatutLivreAndDateLectureBetween(int numeroDansLaSerie, StatutLivre statutLivre, LocalDate dateDebut, LocalDate dateFin);
+    long countByNumeroDansLaSerieAndStatutLivreAndDateLectureBetweenAndSerieUtilisateur(int numeroDansLaSerie, StatutLivre statutLivre, LocalDate dateDebut, LocalDate dateFin, Utilisateur utilisateur);
 
     @Query("SELECT COUNT(l) FROM Livre l WHERE l.numeroDansLaSerie = 1 AND l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.LU AND l.dateLecture BETWEEN ?1 AND ?2 AND l.serie.dateFin " +
-            "BETWEEN ?1 AND ?2")
-    long compterSeriesCommenceesEtFiniesMemeAnnee(LocalDate dateDebut, LocalDate dateFin);
+            "BETWEEN ?1 AND ?2 AND l.serie.utilisateur = ?3")
+    long compterSeriesCommenceesEtFiniesMemeAnnee(LocalDate dateDebut, LocalDate dateFin, Utilisateur utilisateur);
 }
