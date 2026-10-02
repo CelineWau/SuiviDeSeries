@@ -20,16 +20,16 @@ public interface LivreRepository extends JpaRepository<Livre, Integer> {
 
     Optional<Livre> findByNumeroDansLaSerieAndSerie(int numeroDansLaSerie, Serie serie);
 
-    @Query("SELECT DISTINCT l.auteur FROM Livre l ORDER BY l.auteur ASC")
-    List<String> trouverAuteurParOrdreAlphabetique();
+    @Query("SELECT DISTINCT l.auteur FROM Livre l WHERE l.serie.utilisateur = ?1 ORDER BY l.auteur ASC")
+    List<String> trouverAuteurParOrdreAlphabetique(Utilisateur utilisateur);
 
-    long countByStatutLivreAndFormatLivre(StatutLivre statutLivre, FormatLivre formatLivre);
+    long countByStatutLivreAndFormatLivreAndSerieUtilisateur(StatutLivre statutLivre, FormatLivre formatLivre, Utilisateur utilisateur);
 
     @Query("SELECT new fr.celine.suivideseries.dto.AuteursSeriesEnCoursDTO(l.auteur, COUNT(DISTINCT l.serie)) FROM Livre l WHERE l.serie.statutSerie = fr.celine.suivideseries.enums.StatutSerie.EN_COURS " +
-            "GROUP BY l.auteur ORDER BY COUNT(DISTINCT l.serie) DESC, l.auteur ASC" )
-    List<AuteursSeriesEnCoursDTO> trouverAuteursParNombreSerieEnCours(Pageable pageable);
+            "AND l.serie.utilisateur = ?1 GROUP BY l.auteur ORDER BY COUNT(DISTINCT l.serie) DESC, l.auteur ASC" )
+    List<AuteursSeriesEnCoursDTO> trouverAuteursParNombreSerieEnCours(Utilisateur utilisateur, Pageable pageable);
 
-    List<Livre> findByStatutLivre(StatutLivre statutLivre);
+    List<Livre> findByStatutLivreAndSerieUtilisateur(StatutLivre statutLivre, Utilisateur utilisateur);
 
     long countByNumeroDansLaSerieAndStatutLivreAndDateLectureBetweenAndSerieUtilisateur(int numeroDansLaSerie, StatutLivre statutLivre, LocalDate dateDebut, LocalDate dateFin, Utilisateur utilisateur);
 

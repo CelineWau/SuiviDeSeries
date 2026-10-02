@@ -5,6 +5,7 @@ import fr.celine.suivideseries.dto.ModifierLivreDTO;
 import fr.celine.suivideseries.dto.RepartitionFormatDTO;
 import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
+import fr.celine.suivideseries.entity.Utilisateur;
 import fr.celine.suivideseries.enums.FormatLivre;
 import fr.celine.suivideseries.enums.StatutLivre;
 import fr.celine.suivideseries.enums.StatutPublication;
@@ -76,8 +77,8 @@ public class LivreService {
     }
 
     // Modifier le statut d'un livre
-    public Livre modifierStatutLivre(int id, StatutLivre nouveauStatut) {
-        Livre livre = livreRepository.findById(id).orElseThrow(() -> new BusinessException("Livre non trouvé."));
+    public Livre modifierStatutLivre(int id, StatutLivre nouveauStatut, Utilisateur utilisateur) {
+        Livre livre = trouverLivreParId(id, utilisateur);
         StatutLivre ancienStatut = livre.getStatutLivre();
         livre.setStatutLivre(nouveauStatut);
 
@@ -87,29 +88,29 @@ public class LivreService {
         boolean toutEstLu = serie.getLivres().stream().allMatch(l -> l.getStatutLivre() == StatutLivre.LU);
         boolean nombreComplet = serie.getLivres().size() == serie.getNombreLivreTotal();
         if(toutEstLu && nombreComplet && serie.getStatutPublication() == StatutPublication.TERMINEE) {
-            serieService.modifierStatutSerie(serie.getIdSerie(), StatutSerie.TERMINEE);
+            serieService.modifierStatutSerie(serie.getIdSerie(), StatutSerie.TERMINEE, utilisateur);
         }
         return livreRepository.save(livre);
     }
 
     // Modifier le format du livre
-    public Livre modifierFormatLivre(int id, FormatLivre nouveauFormat) {
-        Livre livre = livreRepository.findById(id).orElseThrow(() -> new BusinessException("Livre non trouvé."));
+    public Livre modifierFormatLivre(int id, FormatLivre nouveauFormat, Utilisateur utilisateur) {
+        Livre livre = trouverLivreParId(id, utilisateur);
         livre.setFormatLivre(nouveauFormat);
         return livreRepository.save(livre);
     }
 
     // Trouver la liste des auteurs
-    public List<String> trouverAuteurs() {
-        return livreRepository.trouverAuteurParOrdreAlphabetique();
+    public List<String> trouverAuteurs(Utilisateur utilisateur) {
+        return livreRepository.trouverAuteurParOrdreAlphabetique(utilisateur);
     }
 
     // Calculer la répartition entre les Ebooks et les livres papier dans la PAL et LU
-    public RepartitionFormatDTO calculerRepartitionFormatDansPalEtLu() {
-        long luEbook = livreRepository.countByStatutLivreAndFormatLivre(StatutLivre.LU, FormatLivre.EBOOK);
-        long luPapier = livreRepository.countByStatutLivreAndFormatLivre(StatutLivre.LU, FormatLivre.PAPIER);
-        long palEbook = livreRepository.countByStatutLivreAndFormatLivre(StatutLivre.DANS_PAL, FormatLivre.EBOOK);
-        long palPapier = livreRepository.countByStatutLivreAndFormatLivre(StatutLivre.DANS_PAL, FormatLivre.PAPIER);
+    public RepartitionFormatDTO calculerRepartitionFormatDansPalEtLu(Utilisateur utilisateur) {
+        long luEbook = livreRepository.countByStatutLivreAndFormatLivreAndSerieUtilisateur(StatutLivre.LU, FormatLivre.EBOOK, utilisateur);
+        long luPapier = livreRepository.countByStatutLivreAndFormatLivreAndSerieUtilisateur(StatutLivre.LU, FormatLivre.PAPIER, utilisateur);
+        long palEbook = livreRepository.countByStatutLivreAndFormatLivreAndSerieUtilisateur(StatutLivre.DANS_PAL, FormatLivre.EBOOK, utilisateur);
+        long palPapier = livreRepository.countByStatutLivreAndFormatLivreAndSerieUtilisateur(StatutLivre.DANS_PAL, FormatLivre.PAPIER, utilisateur);
 
         return  new RepartitionFormatDTO(luEbook, luPapier, palEbook, palPapier);
     }
@@ -125,19 +126,20 @@ public class LivreService {
     }
 
     // Trouver les 5 auteurs avec le plus de séries en cours
-    public List<AuteursSeriesEnCoursDTO> trouverAuteursAvecSerieEnCours() {
+    public List<AuteursSeriesEnCoursDTO> trouverAuteursAvecSerieEnCours(Utilisateur utilisateur) {
         Pageable pageable = PageRequest.of(0, 5);
-        return livreRepository.trouverAuteursParNombreSerieEnCours(pageable);
+        return livreRepository.trouverAuteursParNombreSerieEnCours(utilisateur, pageable);
     }
 
     // Supprimer un livre
-    public void supprimerLivre(int id) {
+    public void supprimerLivre(int id, Utilisateur utilisateur) {
+        trouverLivreParId(id, utilisateur);
         livreRepository.deleteById(id);
     }
 
     // Modifier un livre
-    public Livre modifierLivre(int id, String titre, String auteur, String isbn, int numeroDansLaSerie) {
-        Livre livre = livreRepository.findById(id).orElseThrow(() -> new BusinessException("Livre non trouvé."));
+    public Livre modifierLivre(int id, String titre, String auteur, String isbn, int numeroDansLaSerie, Utilisateur utilisateur) {
+        Livre livre = trouverLivreParId(id, utilisateur);
 
         boolean isbnPrisParAutreLivre = livreRepository.findByIsbn(isbn)
                 .filter(l -> l.getIdLivre() != id)
@@ -163,8 +165,12 @@ public class LivreService {
     }
 
     // Trouver un livre avec son ID
-    public Livre trouverLivreParId(int id) {
-        return livreRepository.findById(id).orElseThrow(() -> new BusinessException("Livre non trouvé."));
+    public Livre trouverLivreParId(int id, Utilisateur utilisateur) {
+        Livre livre = livreRepository.findById(id).orElseThrow(() -> new BusinessException("Livre non trouvé."));
+        if (livre.getSerie().getUtilisateur().getIdUser() != utilisateur.getIdUser()) {
+            throw new BusinessException("Livre non trouvé.");
+        }
+        return livre;
     }
 
     // Calculer la différence entre la date d'acquisition et la date de lecture
@@ -180,8 +186,8 @@ public class LivreService {
     }
 
     // Calculer le temps moyen des livres dans la PAL
-    public double calculerTempsMoyenPal() {
-        List<Livre> livres = livreRepository.findByStatutLivre(StatutLivre.LU);
+    public double calculerTempsMoyenPal(Utilisateur utilisateur) {
+        List<Livre> livres = livreRepository.findByStatutLivreAndSerieUtilisateur(StatutLivre.LU, utilisateur);
 
         return livres.stream()
                 .mapToDouble(this::calculerDifferenceDateAcquisitionEtDateLecture)
