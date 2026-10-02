@@ -2,6 +2,8 @@ package fr.celine.suivideseries.config;
 
 import fr.celine.suivideseries.service.JwtService;
 import java.io.IOException;
+
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,17 +39,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String token = enTeteAuthorization.substring(7);
-        String username = jwtService.extraireUsername(token);
 
-        if(username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails utilisateur = userDetailsService.loadUserByUsername(username);
+        try {
+            String username = jwtService.extraireUsername(token);
 
-            if(jwtService.tokenValide(token, utilisateur)) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(utilisateur, null, utilisateur.getAuthorities());
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+            if(username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails utilisateur = userDetailsService.loadUserByUsername(username);
+
+                if(jwtService.tokenValide(token, utilisateur)) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(utilisateur, null, utilisateur.getAuthorities());
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
+        } catch (JwtException e) {
+            SecurityContextHolder.clearContext();
         }
+
 
         filterChain.doFilter(request, response);
     }

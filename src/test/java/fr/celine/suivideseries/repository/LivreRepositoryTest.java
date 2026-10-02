@@ -19,6 +19,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Transactional
 @DataJpaTest
-public class LivreRepositoryTest {
+class LivreRepositoryTest {
 
     @Autowired
     private LivreRepository livreRepository;
@@ -36,17 +37,20 @@ public class LivreRepositoryTest {
     private TestEntityManager entityManager;
 
     private Utilisateur utilisateur;
+    private Utilisateur autreUtilisateur;
     private Serie serie;
-    private Livre livre;
 
     @BeforeEach
     void setup(){
         utilisateur = new Utilisateur("Waucheul", "Céline", "Kitsune", "monemail@email.fr");
         utilisateur.setMdp("Azerty123");
+        autreUtilisateur = new Utilisateur("Waucheul", "Céline", "Amaterasu", "monemail@email.fr");
+        autreUtilisateur.setMdp("Azerty123");
         serie = new Serie("Le puits des mémoires", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 3);
-        livre = new Livre("Gabriel Katz", "La traque", "1234567891234", 1, StatutLivre.LU, FormatLivre.PAPIER, null, null, serie);
+        Livre livre = new Livre("Gabriel Katz", "La traque", "1234567891234", 1, StatutLivre.LU, FormatLivre.PAPIER, null, null, serie);
 
         entityManager.persist(utilisateur);
+        entityManager.persist(autreUtilisateur);
         entityManager.persist(serie);
         entityManager.persist(livre);
         entityManager.flush();
@@ -78,14 +82,21 @@ public class LivreRepositoryTest {
                 null,serie);
         Livre livre3 = new Livre("Alison Germain", "Le Souffle de Midas", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null, null,
                 serie);
+
+        // Auteur chez autreUtilisateur qui s'intercalerait entre Alison et Gabriel si le filtre ne marchait pas
+        Serie serieAutreUtilisateur = new Serie("Riyria", autreUtilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 1);
+        Livre livreAutreUtilisateur = new Livre("Christelle Dabos", "Les fiancés de l'hiver", "2222222222222", 1, StatutLivre.LU, FormatLivre.EBOOK,
+                null, null, serieAutreUtilisateur);
+
         entityManager.persist(livre2);
         entityManager.persist(livre3);
+        entityManager.persist(serieAutreUtilisateur);
+        entityManager.persist(livreAutreUtilisateur);
         entityManager.flush();
 
-        List<String> resultat = livreRepository.trouverAuteurParOrdreAlphabetique();
+        List<String> resultat = livreRepository.trouverAuteurParOrdreAlphabetique(utilisateur);
 
-        assertThat(resultat).isNotNull();
-        assertThat(resultat).containsExactly("Alison Germain", "Gabriel Katz");
+        assertThat(resultat).isNotNull().containsExactly("Alison Germain", "Gabriel Katz");
     }
 
     @Test
@@ -93,11 +104,19 @@ public class LivreRepositoryTest {
     void countByStatutLivreAndFormatLivre_returnsBonCompte(){
         Livre livre2 = new Livre("Gabriel Katz", "Le fils de la lune", "9876543219876", 2, StatutLivre.LU, FormatLivre.EBOOK, null, null,serie);
         Livre livre3 = new Livre("Gabriel Katz", "La traque 3", "9876543219877", 3, StatutLivre.LU, FormatLivre.EBOOK, null, null, serie);
+
+        // Livre identique (statut/format) chez autreUtilisateur : ne doit pas être compté
+        Serie serieAutreUtilisateur = new Serie("Riyria", autreUtilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 1);
+        Livre livreAutreUtilisateur = new Livre("Michael J. Sullivan", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null, null,
+                serieAutreUtilisateur);
+
         entityManager.persist(livre2);
         entityManager.persist(livre3);
+        entityManager.persist(serieAutreUtilisateur);
+        entityManager.persist(livreAutreUtilisateur);
         entityManager.flush();
 
-        long resultat = livreRepository.countByStatutLivreAndFormatLivre(StatutLivre.LU, FormatLivre.EBOOK);
+        long resultat = livreRepository.countByStatutLivreAndFormatLivreAndSerieUtilisateur(StatutLivre.LU, FormatLivre.EBOOK, utilisateur);
 
         assertThat(resultat).isEqualTo(2);
     }
@@ -114,17 +133,33 @@ public class LivreRepositoryTest {
         Serie serieAlison = new Serie("Le Souffle de Midas", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 1);
         Livre livreAlison = new Livre("Alison Germain", "Tome 1", "8888888888888", 1, StatutLivre.LU, FormatLivre.EBOOK, null, null, serieAlison);
 
+        // Auteur chez autreUtilisateur avec 3 séries EN_COURS : passerait en tête si le filtre ne marchait pas
+        Serie serieAutreUtilisateur1 = new Serie("Riyria", autreUtilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 1);
+        Livre livreAutreUtilisateur1 = new Livre("Michael J. Sullivan", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null, null,
+                serieAutreUtilisateur1);
+        Serie serieAutreUtilisateur2 = new Serie("Les Royaumes disparus", autreUtilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 1);
+        Livre livreAutreUtilisateur2 = new Livre("Michael J. Sullivan", "Tome 1", "2222222222222", 1, StatutLivre.LU, FormatLivre.EBOOK, null, null,
+                serieAutreUtilisateur2);
+        Serie serieAutreUtilisateur3 = new Serie("Legends of the First Empire", autreUtilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 1);
+        Livre livreAutreUtilisateur3 = new Livre("Michael J. Sullivan", "Tome 1", "3333333333333", 1, StatutLivre.LU, FormatLivre.EBOOK, null, null,
+                serieAutreUtilisateur3);
+
         entityManager.persist(serieBis);
         entityManager.persist(livreGabrielBis);
         entityManager.persist(serieAlison);
         entityManager.persist(livreAlison);
+        entityManager.persist(serieAutreUtilisateur1);
+        entityManager.persist(livreAutreUtilisateur1);
+        entityManager.persist(serieAutreUtilisateur2);
+        entityManager.persist(livreAutreUtilisateur2);
+        entityManager.persist(serieAutreUtilisateur3);
+        entityManager.persist(livreAutreUtilisateur3);
         entityManager.flush();
 
         Pageable pageable = PageRequest.of(0, 5);
-        List<AuteursSeriesEnCoursDTO> resultat = livreRepository.trouverAuteursParNombreSerieEnCours(pageable);
+        List<AuteursSeriesEnCoursDTO> resultat = livreRepository.trouverAuteursParNombreSerieEnCours(utilisateur, pageable);
 
-        assertThat(resultat).isNotNull();
-        assertThat(resultat).hasSize(2);
+        assertThat(resultat).isNotNull().hasSize(2);
         assertThat(resultat.get(0).getAuteur()).isEqualTo("Gabriel Katz");
         assertThat(resultat.get(0).getNombreSeries()).isEqualTo(2);
         assertThat(resultat.get(1).getAuteur()).isEqualTo("Alison Germain");
@@ -144,7 +179,7 @@ public class LivreRepositoryTest {
         entityManager.flush();
 
         Pageable pageable = PageRequest.of(0, 5);
-        List<AuteursSeriesEnCoursDTO> resultat = livreRepository.trouverAuteursParNombreSerieEnCours(pageable);
+        List<AuteursSeriesEnCoursDTO> resultat = livreRepository.trouverAuteursParNombreSerieEnCours(utilisateur, pageable);
 
         assertThat(resultat).hasSize(1);
         assertThat(resultat.getFirst().getAuteur()).isEqualTo("Gabriel Katz");
@@ -162,7 +197,7 @@ public class LivreRepositoryTest {
         entityManager.flush();
 
         Pageable pageable = PageRequest.of(0, 1);
-        List<AuteursSeriesEnCoursDTO> resultat = livreRepository.trouverAuteursParNombreSerieEnCours(pageable);
+        List<AuteursSeriesEnCoursDTO> resultat = livreRepository.trouverAuteursParNombreSerieEnCours(utilisateur, pageable);
 
         assertThat(resultat).hasSize(1);
     }
@@ -171,15 +206,23 @@ public class LivreRepositoryTest {
     @DisplayName("Doit compter les livres tome 1 lus et série finie dans la même période")
     void compterSeriesCommenceesEtFiniesMemeAnnee_livreEtSerieDansLaPeriode_returnsUn(){
         Serie serieCommenceeEtFinie = new Serie("Alpha & Omega", utilisateur, StatutSerie.TERMINEE, StatutPublication.TERMINEE, 1);
-        serieCommenceeEtFinie.setDateFin(LocalDate.of(2026, 6, 15));
+        serieCommenceeEtFinie.setDateFin(LocalDate.of(2026, Month.JUNE, 15));
         Livre tome1 = new Livre("Patricia Briggs", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null,
-                LocalDate.of(2026, 3, 1), serieCommenceeEtFinie);
+                LocalDate.of(2026, Month.MARCH, 1), serieCommenceeEtFinie);
+
+        // Même scénario chez autreUtilisateur : ne doit pas être compté
+        Serie serieAutreUtilisateur = new Serie("Riyria", autreUtilisateur, StatutSerie.TERMINEE, StatutPublication.TERMINEE, 1);
+        serieAutreUtilisateur.setDateFin(LocalDate.of(2026, Month.JUNE, 15));
+        Livre tome1AutreUtilisateur = new Livre("Michael J. Sullivan", "Tome 1", "2222222222222", 1, StatutLivre.LU, FormatLivre.EBOOK, null,
+                LocalDate.of(2026, Month.MARCH, 1), serieAutreUtilisateur);
 
         entityManager.persist(serieCommenceeEtFinie);
         entityManager.persist(tome1);
+        entityManager.persist(serieAutreUtilisateur);
+        entityManager.persist(tome1AutreUtilisateur);
         entityManager.flush();
 
-        long resultat = livreRepository.compterSeriesCommenceesEtFiniesMemeAnnee(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31));
+        long resultat = livreRepository.compterSeriesCommenceesEtFiniesMemeAnnee(LocalDate.of(2026, Month.JANUARY, 1), LocalDate.of(2026, Month.DECEMBER, 31), utilisateur);
 
         assertThat(resultat).isEqualTo(1);
     }
@@ -188,17 +231,17 @@ public class LivreRepositoryTest {
     @DisplayName("Ne doit pas compter une série finie dans la période mais commencée une autre année")
     void compterSeriesCommenceesEtFiniesMemeAnnee_commenceeAvant_excludesSerie(){
         Serie serieCommenceeAvant = new Serie("Alpha & Omega", utilisateur, StatutSerie.TERMINEE, StatutPublication.TERMINEE, 1);
-        serieCommenceeAvant.setDateFin(LocalDate.of(2026, 6, 15));
+        serieCommenceeAvant.setDateFin(LocalDate.of(2026, Month.JUNE, 15));
         Livre tome1 = new Livre("Patricia Briggs", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null,
-                LocalDate.of(2022, 3, 1), serieCommenceeAvant);
+                LocalDate.of(2022, Month.MARCH, 1), serieCommenceeAvant);
 
         entityManager.persist(serieCommenceeAvant);
         entityManager.persist(tome1);
         entityManager.flush();
 
-        long resultat = livreRepository.compterSeriesCommenceesEtFiniesMemeAnnee(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31));
+        long resultat = livreRepository.compterSeriesCommenceesEtFiniesMemeAnnee(LocalDate.of(2026, Month.JANUARY, 1), LocalDate.of(2026, Month.DECEMBER, 31), utilisateur);
 
-        assertThat(resultat).isEqualTo(0);
+        assertThat(resultat).isZero();
     }
 
     @Test
@@ -206,15 +249,15 @@ public class LivreRepositoryTest {
     void compterSeriesCommenceesEtFiniesMemeAnnee_pasEncoreFinie_excludesSerie(){
         Serie serieEnCours = new Serie("Alpha & Omega", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 3);
         Livre tome1 = new Livre("Patricia Briggs", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null,
-                LocalDate.of(2026, 3, 1), serieEnCours);
+                LocalDate.of(2026, Month.MARCH, 1), serieEnCours);
 
         entityManager.persist(serieEnCours);
         entityManager.persist(tome1);
         entityManager.flush();
 
-        long resultat = livreRepository.compterSeriesCommenceesEtFiniesMemeAnnee(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31));
+        long resultat = livreRepository.compterSeriesCommenceesEtFiniesMemeAnnee(LocalDate.of(2026, Month.JANUARY, 1), LocalDate.of(2026, Month.DECEMBER, 31), utilisateur);
 
-        assertThat(resultat).isEqualTo(0);
+        assertThat(resultat).isZero();
     }
 
 }

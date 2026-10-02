@@ -75,18 +75,6 @@ public class SerieService {
         return serieSauvegardee;
     }
 
-    // Trouver les séries avec un nombre de livres manquants
-    public List<Serie> trouverSerieAvecNombreLivresManquants(int livreManquant) {
-
-        // Validation métier
-        if(livreManquant <= 0) {
-            throw new BusinessException("Le nombre de livre manquant ne peut pas être négatif ou égal à zéro.");
-        }
-
-        List<Integer> ids = serieRepository.trouverIdsSeriesParNombreLivresManquants(livreManquant);
-        return serieRepository.trouverSeriesAvecDetailsParIds(ids);
-    }
-
     // Trouver les séries avec un nombre de livres manquants dans la PAL
     public List<Serie> trouverSeriesPresqueFiniesDansLaPal(int livreManquant, Utilisateur utilisateur) {
 
