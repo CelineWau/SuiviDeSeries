@@ -94,7 +94,7 @@ public class SerieService {
 
     // Trouver une série par Id
     public Serie trouverSerieParId(int id, Utilisateur utilisateur) {
-        Serie serie = serieRepository.findById(id).orElseThrow(() -> new BusinessException("Serie non trouvé."));
+        Serie serie = serieRepository.findById(id).orElseThrow(() -> new BusinessException("Série non trouvée."));
         if (serie.getUtilisateur().getIdUser() != utilisateur.getIdUser()) {
             throw new BusinessException("Série non trouvée.");
         }

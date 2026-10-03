@@ -44,7 +44,7 @@ class SerieRepositoryTest {
         utilisateur.setMdp("Azerty123");
         autreUtilisateur = new Utilisateur("Waucheul", "Céline", "Amaterasu", "monemail@email.fr");
         autreUtilisateur.setMdp("Azerty123");
-        // Série avec 2 livres LU et 1 en PAL : correspond au cas "presque finie dans la PAL"
+        // Série avec 2 livres LU et 1 en PAL : correspond au cas "presque fini dans la PAL"
         serie = new Serie("Le Seigneur des anneaux", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 3);
         Livre livre1 = new Livre("J. R. R. Tolkien", "La fraternité de l'anneau", "1234567891234", 1, StatutLivre.LU, FormatLivre.EBOOK, null,
                 null, serie);
@@ -687,7 +687,7 @@ class SerieRepositoryTest {
         Livre tome2 = new Livre("Anonyme", "Tome 2", "4444444444444", 2, StatutLivre.LU, FormatLivre.EBOOK, null,
                 LocalDate.of(2026, Month.JANUARY, 15), bourbonKid);
 
-        // Seuls 2 tomes sur les 11 sont enregistrés, tous les deux LU — le bug faisait ressortir cette série à tort.
+        // Seuls 2 tomes sur les 11 sont enregistrés, tous les deux LUS — le bug faisait ressortir cette série à tort.
         Serie serieAJour = new Serie("Alpha & Omega", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 2);
         Livre tome1AJour = new Livre("Patricia Briggs", "Tome 1", "5555555555555", 1, StatutLivre.LU, FormatLivre.EBOOK, null,
                 LocalDate.of(2026, Month.JANUARY, 1), serieAJour);
@@ -770,7 +770,7 @@ class SerieRepositoryTest {
         Serie serieBitLit = new Serie("Alpha & Omega", utilisateur, StatutSerie.EN_COURS, StatutPublication.EN_COURS, 1);
         serieBitLit.setGenre(fantasy);
         Livre tome1 = new Livre("Patricia Briggs", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK, null,
-                LocalDate.of(2026, Month.JANUARY, 1), serie);
+                LocalDate.of(2026, Month.JANUARY, 1), serieBitLit);
 
         entityManager.persist(fantasy);
         entityManager.persist(serieBitLit);
@@ -778,7 +778,7 @@ class SerieRepositoryTest {
         entityManager.flush();
         entityManager.clear();
 
-        List<Serie> resultat = serieRepository.trouverSeriesAvecDetailsParIds(List.of(serie.getIdSerie()));
+        List<Serie> resultat = serieRepository.trouverSeriesAvecDetailsParIds(List.of(serieBitLit.getIdSerie()));
 
         assertThat(resultat).hasSize(1);
         assertThat(resultat.getFirst().getLivres()).containsExactly(tome1);

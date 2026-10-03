@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,7 +31,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class LivreServiceTest {
+class LivreServiceTest {
 
     @Mock
     private LivreRepository livreRepository;
@@ -158,13 +159,12 @@ public class LivreServiceTest {
     @Test
     @DisplayName("Doit retourner la liste des auteurs")
     void trouverAuteurs_returnListeAuteurs(){
-        when(livreRepository.trouverAuteurParOrdreAlphabetique()).thenReturn(List.of("Alison Germain", "Gabriel Katz"));
+        when(livreRepository.trouverAuteurParOrdreAlphabetique(utilisateur)).thenReturn(List.of("Alison Germain", "Gabriel Katz"));
 
-        List<String> resultat = livreService.trouverAuteurs();
+        List<String> resultat = livreService.trouverAuteurs(utilisateur);
 
-        assertThat(resultat).isNotNull();
-        assertThat(resultat).containsExactly("Alison Germain", "Gabriel Katz");
-        verify(livreRepository, times(1)).trouverAuteurParOrdreAlphabetique();
+        assertThat(resultat).isNotNull().containsExactly("Alison Germain", "Gabriel Katz");
+        verify(livreRepository, times(1)).trouverAuteurParOrdreAlphabetique(utilisateur);
     }
 
     @Test
@@ -172,7 +172,7 @@ public class LivreServiceTest {
     void modifierStatutLivre_livreNonTrouve_leveBusinessException(){
         when(livreRepository.findById(99)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> livreService.modifierStatutLivre(99, StatutLivre.LU))
+        assertThatThrownBy(() -> livreService.modifierStatutLivre(99, StatutLivre.LU, utilisateur))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Livre non trouvé.");
     }
@@ -189,10 +189,10 @@ public class LivreServiceTest {
         when(livreRepository.findById(1)).thenReturn(Optional.of(livre));
         when(livreRepository.save(any(Livre.class))).thenReturn(livre);
 
-        Livre resultat = livreService.modifierStatutLivre(1, StatutLivre.LU);
+        Livre resultat = livreService.modifierStatutLivre(1, StatutLivre.LU, utilisateur);
 
         assertThat(resultat.getStatutLivre()).isEqualTo(StatutLivre.LU);
-        verify(serieService, never()).modifierStatutSerie(anyInt(), any(StatutSerie.class));
+        verify(serieService, never()).modifierStatutSerie(anyInt(), any(StatutSerie.class), any(Utilisateur.class));
     }
 
     @Test
@@ -207,9 +207,9 @@ public class LivreServiceTest {
         when(livreRepository.findById(3)).thenReturn(Optional.of(livre3));
         when(livreRepository.save(any(Livre.class))).thenReturn(livre3);
 
-        livreService.modifierStatutLivre(3, StatutLivre.LU);
+        livreService.modifierStatutLivre(3, StatutLivre.LU, utilisateur);
 
-        verify(serieService, times(1)).modifierStatutSerie(serie.getIdSerie(), StatutSerie.TERMINEE);
+        verify(serieService, times(1)).modifierStatutSerie(serie.getIdSerie(), StatutSerie.TERMINEE, utilisateur);
     }
 
     @Test
@@ -217,7 +217,7 @@ public class LivreServiceTest {
     void modifierFormatLivre_livreNonTrouve_leveBusinessException(){
         when(livreRepository.findById(99)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> livreService.modifierFormatLivre(99, FormatLivre.EBOOK))
+        assertThatThrownBy(() -> livreService.modifierFormatLivre(99, FormatLivre.EBOOK, utilisateur))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Livre non trouvé.");
     }
@@ -228,7 +228,7 @@ public class LivreServiceTest {
         when(livreRepository.findById(1)).thenReturn(Optional.of(livre));
         when(livreRepository.save(any(Livre.class))).thenReturn(livre);
 
-        Livre resultat = livreService.modifierFormatLivre(1, FormatLivre.EBOOK);
+        Livre resultat = livreService.modifierFormatLivre(1, FormatLivre.EBOOK, utilisateur);
 
         assertThat(resultat.getFormatLivre()).isEqualTo(FormatLivre.EBOOK);
         verify(livreRepository, times(1)).save(livre);
@@ -237,12 +237,12 @@ public class LivreServiceTest {
     @Test
     @DisplayName("Doit calculer la répartition ebook/papier pour les livres LU et DANS_PAL")
     void calculerRepartionFormatDansPalEtLu_returnsRepartitionCorrecte(){
-        when(livreRepository.countByStatutLivreAndFormatLivre(StatutLivre.LU, FormatLivre.EBOOK)).thenReturn(10L);
-        when(livreRepository.countByStatutLivreAndFormatLivre(StatutLivre.LU, FormatLivre.PAPIER)).thenReturn(5L);
-        when(livreRepository.countByStatutLivreAndFormatLivre(StatutLivre.DANS_PAL, FormatLivre.EBOOK)).thenReturn(3L);
-        when(livreRepository.countByStatutLivreAndFormatLivre(StatutLivre.DANS_PAL, FormatLivre.PAPIER)).thenReturn(2L);
+        when(livreRepository.countByStatutLivreAndFormatLivreAndSerieUtilisateur(StatutLivre.LU, FormatLivre.EBOOK, utilisateur)).thenReturn(10L);
+        when(livreRepository.countByStatutLivreAndFormatLivreAndSerieUtilisateur(StatutLivre.LU, FormatLivre.PAPIER, utilisateur)).thenReturn(5L);
+        when(livreRepository.countByStatutLivreAndFormatLivreAndSerieUtilisateur(StatutLivre.DANS_PAL, FormatLivre.EBOOK, utilisateur)).thenReturn(3L);
+        when(livreRepository.countByStatutLivreAndFormatLivreAndSerieUtilisateur(StatutLivre.DANS_PAL, FormatLivre.PAPIER, utilisateur)).thenReturn(2L);
 
-        RepartitionFormatDTO resultat = livreService.calculerRepartitionFormatDansPalEtLu();
+        RepartitionFormatDTO resultat = livreService.calculerRepartitionFormatDansPalEtLu(utilisateur);
 
         assertThat(resultat.getLuEbook()).isEqualTo(10L);
         assertThat(resultat.getLuPapier()).isEqualTo(5L);
@@ -257,7 +257,7 @@ public class LivreServiceTest {
         when(livreRepository.findById(1)).thenReturn(Optional.of(livre));
         when(livreRepository.save(any(Livre.class))).thenReturn(livre);
 
-        Livre resultat = livreService.modifierStatutLivre(1, StatutLivre.DANS_PAL);
+        Livre resultat = livreService.modifierStatutLivre(1, StatutLivre.DANS_PAL, utilisateur);
 
         assertThat(resultat.getDateAcquisition()).isEqualTo(LocalDate.now());
     }
@@ -269,7 +269,7 @@ public class LivreServiceTest {
         when(livreRepository.findById(1)).thenReturn(Optional.of(livre));
         when(livreRepository.save(any(Livre.class))).thenReturn(livre);
 
-        Livre resultat = livreService.modifierStatutLivre(1, StatutLivre.LU);
+        Livre resultat = livreService.modifierStatutLivre(1, StatutLivre.LU, utilisateur);
 
         assertThat(resultat.getDateAcquisition()).isNull();
     }
@@ -281,7 +281,7 @@ public class LivreServiceTest {
         when(livreRepository.findById(1)).thenReturn(Optional.of(livre));
         when(livreRepository.save(any(Livre.class))).thenReturn(livre);
 
-        Livre resultat = livreService.modifierStatutLivre(1, StatutLivre.LU);
+        Livre resultat = livreService.modifierStatutLivre(1, StatutLivre.LU, utilisateur);
 
         assertThat(resultat.getDateLecture()).isEqualTo(LocalDate.now());
     }
@@ -293,7 +293,7 @@ public class LivreServiceTest {
         when(livreRepository.findById(1)).thenReturn(Optional.of(livre));
         when(livreRepository.save(any(Livre.class))).thenReturn(livre);
 
-        Livre resultat = livreService.modifierStatutLivre(1, StatutLivre.DANS_PAL);
+        Livre resultat = livreService.modifierStatutLivre(1, StatutLivre.DANS_PAL, utilisateur);
 
         assertThat(resultat.getDateLecture()).isNull();
     }
@@ -302,26 +302,24 @@ public class LivreServiceTest {
     @DisplayName("Doit retourner les auteurs avec le plus de séries en cours")
     void trouverAuteursAvecSerieEnCours_donneesValides_returnsListeDeDTO(){
         AuteursSeriesEnCoursDTO dto = new AuteursSeriesEnCoursDTO("Tolkien", 3);
-        when(livreRepository.trouverAuteursParNombreSerieEnCours(any(Pageable.class))).thenReturn(List.of(dto));
+        when(livreRepository.trouverAuteursParNombreSerieEnCours(eq(utilisateur), any(Pageable.class))).thenReturn(List.of(dto));
 
-        List<AuteursSeriesEnCoursDTO> resultat = livreService.trouverAuteursAvecSerieEnCours();
+        List<AuteursSeriesEnCoursDTO> resultat = livreService.trouverAuteursAvecSerieEnCours(utilisateur);
 
-        assertThat(resultat).isNotNull();
-        assertThat(resultat).hasSize(1);
+        assertThat(resultat).isNotNull().hasSize(1);
         assertThat(resultat.getFirst().getAuteur()).isEqualTo("Tolkien");
         assertThat(resultat.getFirst().getNombreSeries()).isEqualTo(3);
-        verify(livreRepository, times(1)).trouverAuteursParNombreSerieEnCours(any(Pageable.class));
+        verify(livreRepository, times(1)).trouverAuteursParNombreSerieEnCours(eq(utilisateur), any(Pageable.class));
     }
 
     @Test
     @DisplayName("Doit retourner une liste vide si aucun auteur n'a de série en cours")
     void trouverAuteursAvecSerieEnCours_aucunAuteur_returnsListeVide(){
-        when(livreRepository.trouverAuteursParNombreSerieEnCours(any(Pageable.class))).thenReturn(List.of());
+        when(livreRepository.trouverAuteursParNombreSerieEnCours(eq(utilisateur), any(Pageable.class))).thenReturn(List.of());
 
-        List<AuteursSeriesEnCoursDTO> resultat = livreService.trouverAuteursAvecSerieEnCours();
+        List<AuteursSeriesEnCoursDTO> resultat = livreService.trouverAuteursAvecSerieEnCours(utilisateur);
 
-        assertThat(resultat).isNotNull();
-        assertThat(resultat).isEmpty();
+        assertThat(resultat).isNotNull().isEmpty();
     }
 
     @Test
@@ -329,7 +327,7 @@ public class LivreServiceTest {
     void modifierLivre_livreNonTrouve_leveBusinessException(){
         when(livreRepository.findById(99)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> livreService.modifierLivre(99, "Nouveau titre", "Nouvel auteur", "1234567891234", 1))
+        assertThatThrownBy(() -> livreService.modifierLivre(99, "Nouveau titre", "Nouvel auteur", "1234567891234", 1, utilisateur))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Livre non trouvé.");
     }
@@ -343,7 +341,7 @@ public class LivreServiceTest {
         when(livreRepository.findByNumeroDansLaSerieAndSerie(1, serie)).thenReturn(Optional.of(livre));
         when(livreRepository.save(any(Livre.class))).thenReturn(livre);
 
-        Livre resultat = livreService.modifierLivre(1, "Nouveau titre", "Nouvel auteur", "1234567891234", 1);
+        Livre resultat = livreService.modifierLivre(1, "Nouveau titre", "Nouvel auteur", "1234567891234", 1, utilisateur);
 
         assertThat(resultat.getTitre()).isEqualTo("Nouveau titre");
         assertThat(resultat.getAuteur()).isEqualTo("Nouvel auteur");
@@ -358,7 +356,7 @@ public class LivreServiceTest {
         when(livreRepository.findById(1)).thenReturn(Optional.of(livre));
         when(livreRepository.findByIsbn("9999999999999")).thenReturn(Optional.of(autreLivre));
 
-        assertThatThrownBy(() -> livreService.modifierLivre(1, "Nouveau titre", "Nouvel auteur", "9999999999999", 1))
+        assertThatThrownBy(() -> livreService.modifierLivre(1, "Nouveau titre", "Nouvel auteur", "9999999999999", 1, utilisateur))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Un livre existe déjà avec cet ISBN.");
     }
@@ -373,7 +371,7 @@ public class LivreServiceTest {
         when(livreRepository.findByIsbn("1234567891234")).thenReturn(Optional.of(livre));
         when(livreRepository.findByNumeroDansLaSerieAndSerie(2, serie)).thenReturn(Optional.of(autreLivre));
 
-        assertThatThrownBy(() -> livreService.modifierLivre(1, "Nouveau titre", "Nouvel auteur", "1234567891234", 2))
+        assertThatThrownBy(() -> livreService.modifierLivre(1, "Nouveau titre", "Nouvel auteur", "1234567891234", 2, utilisateur))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Un livre avec ce numéro existe déjà dans cette série.");
     }
@@ -381,7 +379,9 @@ public class LivreServiceTest {
     @Test
     @DisplayName("Doit supprimer un livre par son id")
     void supprimerLivre_appelleDeleteById(){
-        livreService.supprimerLivre(1);
+        when(livreRepository.findById(1)).thenReturn(Optional.of(livre));
+
+        livreService.supprimerLivre(1, utilisateur);
 
         verify(livreRepository, times(1)).deleteById(1);
     }
@@ -390,7 +390,7 @@ public class LivreServiceTest {
     void trouverLivreParId_livreExistant_returnsLivre(){
         when(livreRepository.findById(1)).thenReturn(Optional.of(livre));
 
-        Livre resultat = livreService.trouverLivreParId(1);
+        Livre resultat = livreService.trouverLivreParId(1, utilisateur);
 
         assertThat(resultat).isEqualTo(livre);
     }
@@ -400,7 +400,7 @@ public class LivreServiceTest {
     void trouverLivreParId_livreInexistant_leveBusinessException(){
         when(livreRepository.findById(99)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> livreService.trouverLivreParId(99))
+        assertThatThrownBy(() -> livreService.trouverLivreParId(99, utilisateur))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Livre non trouvé.");
     }
@@ -409,7 +409,7 @@ public class LivreServiceTest {
     @DisplayName("Doit calculer la différence entre acquisition et lecture pour un livre")
     void calculerDifferenceDateAcquisitionEtDateLecture_datesPresentes_returnsDifferenceEnJours(){
         Livre livreAvecDates = new Livre("Tolkien", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK,
-                LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 11), serie);
+                LocalDate.of(2026, Month.JANUARY, 1), LocalDate.of(2026, Month.JANUARY, 11), serie);
 
         double resultat = livreService.calculerDifferenceDateAcquisitionEtDateLecture(livreAvecDates);
 
@@ -430,13 +430,13 @@ public class LivreServiceTest {
     @DisplayName("Doit calculer le temps moyen des livres dans la PAL")
     void calculerTempsMoyenPal_livresLus_returnsMoyenneCorrecte(){
         Livre livre1 = new Livre("Tolkien", "Tome 1", "1111111111111", 1, StatutLivre.LU, FormatLivre.EBOOK,
-                LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 11), serie);
+                LocalDate.of(2026, Month.JANUARY, 1), LocalDate.of(2026, Month.JANUARY, 11), serie);
         Livre livre2 = new Livre("Tolkien", "Tome 2", "2222222222222", 2, StatutLivre.LU, FormatLivre.PAPIER,
-                LocalDate.of(2026, 2, 1), LocalDate.of(2026, 2, 21), serie);
+                LocalDate.of(2026, Month.FEBRUARY, 1), LocalDate.of(2026, Month.FEBRUARY, 21), serie);
 
-        when(livreRepository.findByStatutLivre(StatutLivre.LU)).thenReturn(List.of(livre1, livre2));
+        when(livreRepository.findByStatutLivreAndSerieUtilisateur(StatutLivre.LU, utilisateur)).thenReturn(List.of(livre1, livre2));
 
-        double resultat = livreService.calculerTempsMoyenPal();
+        double resultat = livreService.calculerTempsMoyenPal(utilisateur);
 
         assertThat(resultat).isEqualTo(15.0);
     }
@@ -444,9 +444,9 @@ public class LivreServiceTest {
     @Test
     @DisplayName("Doit retourner zéro si aucun livre n'est LU")
     void calculerTempsMoyenPal_aucunLivreLu_returnsZero(){
-        when(livreRepository.findByStatutLivre(StatutLivre.LU)).thenReturn(List.of());
+        when(livreRepository.findByStatutLivreAndSerieUtilisateur(StatutLivre.LU, utilisateur)).thenReturn(List.of());
 
-        double resultat = livreService.calculerTempsMoyenPal();
+        double resultat = livreService.calculerTempsMoyenPal(utilisateur);
 
         assertThat(resultat).isEqualTo(0.0);
     }
