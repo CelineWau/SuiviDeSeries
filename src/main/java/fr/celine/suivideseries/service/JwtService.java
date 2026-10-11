@@ -22,12 +22,16 @@ public class JwtService {
     @Value("${jwt.expiration}")
     private long expiration;
 
-    public String genererToken(UserDetails utilisateur) {
+    @Value("${jwt.expiration-longue}")
+    private long expirationLongue;
+
+    public String genererToken(UserDetails utilisateur, boolean resterConnecte) {
+        long dureeValidite = resterConnecte ? expirationLongue : expiration;
         Instant maintenant =  Instant.now();
         return Jwts.builder()
                 .subject(utilisateur.getUsername())
                 .issuedAt(Date.from(maintenant))
-                .expiration(Date.from(maintenant.plusMillis(expiration)))
+                .expiration(Date.from(maintenant.plusMillis(dureeValidite)))
                 .signWith(cleDeSignature())
                 .compact();
     }

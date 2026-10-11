@@ -44,7 +44,7 @@ public class UtilisateurService {
         utilisateur.setMdp(passwordEncoder.encode(requete.getMdp()));
         utilisateurRepository.save(utilisateur);
 
-        return new AuthResponseDTO(jwtService.genererToken(utilisateur));
+        return new AuthResponseDTO(jwtService.genererToken(utilisateur, false));
     }
 
     // Connecter un utilisateur existant
@@ -54,7 +54,8 @@ public class UtilisateurService {
         );
 
         UserDetails utilisateur = utilisateurRepository.findByPseudo(requete.getPseudo()).orElseThrow();
+        boolean resterConnecte = requete.isResterConnecte();
 
-        return new AuthResponseDTO(jwtService.genererToken(utilisateur));
+        return new AuthResponseDTO(jwtService.genererToken(utilisateur, resterConnecte));
     }
 }
