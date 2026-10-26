@@ -1,9 +1,6 @@
 package fr.celine.suivideseries.service;
 
-import fr.celine.suivideseries.dto.AuthResponseDTO;
-import fr.celine.suivideseries.dto.LoginRequestDTO;
-import fr.celine.suivideseries.dto.RegisterRequestDTO;
-import fr.celine.suivideseries.dto.SerieCreationDTO;
+import fr.celine.suivideseries.dto.*;
 import fr.celine.suivideseries.entity.Utilisateur;
 import fr.celine.suivideseries.exception.BusinessException;
 import fr.celine.suivideseries.repository.UtilisateurRepository;
@@ -52,5 +49,10 @@ public class UtilisateurService {
         boolean resterConnecte = requete.isResterConnecte();
 
         return new AuthResponseDTO(jwtService.genererToken(utilisateur, resterConnecte));
+    }
+
+    // Convertir un utilisateur en DTO
+    public ProfilDTO convertirUtilisateurEnDTO(Utilisateur utilisateur){
+        return new ProfilDTO(utilisateur.getNom(), utilisateur.getPrenom(), utilisateur.getPseudo(), utilisateur.getEmail());
     }
 }
