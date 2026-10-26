@@ -9,4 +9,4 @@ spring.jpa.show-sql=true
 
 jwt.secret=une-chaine-aleatoire
 jwt.expiration=86400000
-jwy.expiration-longue=2592000000
+jwt.expiration-longue=2592000000

@@ -4,6 +4,7 @@ import fr.celine.suivideseries.dto.AuthResponseDTO;
 import fr.celine.suivideseries.dto.LoginRequestDTO;
 import fr.celine.suivideseries.dto.RegisterRequestDTO;
 import fr.celine.suivideseries.service.UtilisateurService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +19,7 @@ public class UtilisateurController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponseDTO> inscrireUtilisateur(@RequestBody RegisterRequestDTO requete) {
+    public ResponseEntity<AuthResponseDTO> inscrireUtilisateur(@Valid @RequestBody RegisterRequestDTO requete) {
         return ResponseEntity.ok(utilisateurService.inscrireUtilisateur(requete));
     }
 

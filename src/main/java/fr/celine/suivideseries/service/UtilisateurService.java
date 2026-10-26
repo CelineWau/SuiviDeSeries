@@ -29,11 +29,6 @@ public class UtilisateurService {
         this.jwtService = jwtService;
     }
 
-    // Trouver un utilisateur par id
-    public Utilisateur trouverUtilisateurParId(int id){
-        return utilisateurRepository.findById(id).orElseThrow();
-    }
-
     // Inscrire un nouvel utilisateur
     public AuthResponseDTO inscrireUtilisateur(RegisterRequestDTO requete) {
         if(utilisateurRepository.findByPseudo(requete.getPseudo()).isPresent()){
