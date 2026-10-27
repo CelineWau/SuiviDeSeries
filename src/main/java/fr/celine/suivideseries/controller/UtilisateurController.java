@@ -2,13 +2,10 @@ package fr.celine.suivideseries.controller;
 
 import fr.celine.suivideseries.dto.AuthResponseDTO;
 import fr.celine.suivideseries.dto.LoginRequestDTO;
-import fr.celine.suivideseries.dto.ProfilDTO;
 import fr.celine.suivideseries.dto.RegisterRequestDTO;
-import fr.celine.suivideseries.entity.Utilisateur;
 import fr.celine.suivideseries.service.UtilisateurService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

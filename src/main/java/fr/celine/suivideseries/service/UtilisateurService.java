@@ -7,9 +7,10 @@ import fr.celine.suivideseries.repository.UtilisateurRepository;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class UtilisateurService {
@@ -29,7 +30,11 @@ public class UtilisateurService {
     // Inscrire un nouvel utilisateur
     public AuthResponseDTO inscrireUtilisateur(RegisterRequestDTO requete) {
         if(utilisateurRepository.findByPseudo(requete.getPseudo()).isPresent()){
-            throw new BusinessException("Ce pseudo existe déjà");
+            throw new BusinessException("Ce pseudo existe déjà.");
+        }
+
+        if (utilisateurRepository.findByEmailIgnoreCase(requete.getEmail()).isPresent()) {
+            throw new BusinessException("Cet email est déjà utilisé.");
         }
 
         Utilisateur utilisateur = new Utilisateur(requete.getNom(), requete.getPrenom(), requete.getPseudo(), requete.getEmail());
@@ -54,5 +59,19 @@ public class UtilisateurService {
     // Convertir un utilisateur en DTO
     public ProfilDTO convertirUtilisateurEnDTO(Utilisateur utilisateur){
         return new ProfilDTO(utilisateur.getNom(), utilisateur.getPrenom(), utilisateur.getPseudo(), utilisateur.getEmail());
+    }
+
+    // Modification d'un email
+    public ProfilDTO modifierEmail(Utilisateur utilisateur, ModificationEmailDTO requete){
+        Optional<Utilisateur> existant = utilisateurRepository.findByEmailIgnoreCase(requete.getEmail());
+
+        if(existant.isPresent() && existant.get().getIdUser() !=  utilisateur.getIdUser()){
+            throw new BusinessException("Cet email est déjà utilisé.");
+        }
+
+        utilisateur.setEmail(requete.getEmail());
+        utilisateurRepository.save(utilisateur);
+
+        return convertirUtilisateurEnDTO(utilisateur);
     }
 }

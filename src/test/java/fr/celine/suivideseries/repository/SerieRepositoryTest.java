@@ -42,7 +42,7 @@ class SerieRepositoryTest {
     void setup() {
         utilisateur = new Utilisateur("Waucheul", "Céline", "Kitsune", "monemail@email.fr");
         utilisateur.setMdp("Azerty123");
-        autreUtilisateur = new Utilisateur("Waucheul", "Céline", "Amaterasu", "monemail@email.fr");
+        autreUtilisateur = new Utilisateur("Waucheul", "Céline", "Amaterasu", "autreemail@email.fr");
         autreUtilisateur.setMdp("Azerty123");
         // Série avec 2 livres LU et 1 en PAL : correspond au cas "presque fini dans la PAL"
         serie = new Serie("Le Seigneur des anneaux", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 3);

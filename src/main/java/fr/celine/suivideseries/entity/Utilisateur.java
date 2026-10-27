@@ -45,7 +45,7 @@ public class Utilisateur implements UserDetails {
 
     @NotNull(message = "L'email est obligatoire")
     @Email(message = "L'email n'est pas valide")
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
 
     @OneToMany(mappedBy = "utilisateur")

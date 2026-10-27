@@ -44,7 +44,7 @@ class LivreRepositoryTest {
     void setup(){
         utilisateur = new Utilisateur("Waucheul", "Céline", "Kitsune", "monemail@email.fr");
         utilisateur.setMdp("Azerty123");
-        autreUtilisateur = new Utilisateur("Waucheul", "Céline", "Amaterasu", "monemail@email.fr");
+        autreUtilisateur = new Utilisateur("Waucheul", "Céline", "Amaterasu", "autreemail@email.fr");
         autreUtilisateur.setMdp("Azerty123");
         serie = new Serie("Le puits des mémoires", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 3);
         Livre livre = new Livre("Gabriel Katz", "La traque", "1234567891234", 1, StatutLivre.LU, FormatLivre.PAPIER, null, null, serie);
