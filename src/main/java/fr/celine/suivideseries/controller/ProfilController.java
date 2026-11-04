@@ -1,6 +1,7 @@
 package fr.celine.suivideseries.controller;
 
 import fr.celine.suivideseries.dto.ModificationEmailDTO;
+import fr.celine.suivideseries.dto.ModificationMdpDTO;
 import fr.celine.suivideseries.dto.ProfilDTO;
 import fr.celine.suivideseries.entity.Utilisateur;
 import fr.celine.suivideseries.service.UtilisateurService;
@@ -26,5 +27,11 @@ public class ProfilController {
     @PatchMapping("/email")
     public ResponseEntity<ProfilDTO> modifierEmail(@Valid @RequestBody ModificationEmailDTO dto, @AuthenticationPrincipal Utilisateur utilisateurConnecte) {
         return ResponseEntity.ok(utilisateurService.modifierEmail(utilisateurConnecte, dto));
+    }
+
+    @PatchMapping("/mot-de-passe")
+    public ResponseEntity<Void> modifierMdp(@Valid @RequestBody ModificationMdpDTO dto, @AuthenticationPrincipal Utilisateur utilisateurConnecte) {
+        utilisateurService.modifierMdp(utilisateurConnecte, dto);
+        return ResponseEntity.noContent().build();
     }
 }

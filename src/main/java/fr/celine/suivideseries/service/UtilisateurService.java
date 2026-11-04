@@ -74,4 +74,14 @@ public class UtilisateurService {
 
         return convertirUtilisateurEnDTO(utilisateur);
     }
+
+    // Modification d'un mot de passe
+    public void modifierMdp(Utilisateur utilisateur, ModificationMdpDTO requete){
+        if(!passwordEncoder.matches(requete.getAncienMdp(), utilisateur.getPassword())) {
+            throw new BusinessException("L'ancien mot de passe est incorrect.");
+        }
+
+        utilisateur.setMdp(passwordEncoder.encode(requete.getNouveauMdp()));
+        utilisateurRepository.save(utilisateur);
+    }
 }
