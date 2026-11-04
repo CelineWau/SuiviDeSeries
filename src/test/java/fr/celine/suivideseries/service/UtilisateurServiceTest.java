@@ -1,6 +1,7 @@
 package fr.celine.suivideseries.service;
 
 import fr.celine.suivideseries.dto.ModificationEmailDTO;
+import fr.celine.suivideseries.dto.ModificationMdpDTO;
 import fr.celine.suivideseries.dto.ProfilDTO;
 import fr.celine.suivideseries.dto.RegisterRequestDTO;
 import fr.celine.suivideseries.entity.Utilisateur;
@@ -97,6 +98,31 @@ public class UtilisateurServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Cet email est déjà utilisé.");
 
+        verify(utilisateurRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Doit modifier le mot de passe quand l'ancien est correct")
+    void modifierMdp_ancienCorrect_encodeEtSauvegarde() {
+        when(passwordEncoder.matches("Azerty123", utilisateur.getPassword())).thenReturn(true);
+        when(passwordEncoder.encode("NouveauMdp123")).thenReturn("nouveauMdpChiffre");
+
+        utilisateurService.modifierMdp(utilisateur, new ModificationMdpDTO("Azerty123", "NouveauMdp123"));
+
+        assertThat(utilisateur.getPassword()).isEqualTo("nouveauMdpChiffre");
+        verify(utilisateurRepository, times(1)).save(utilisateur);
+    }
+
+    @Test
+    @DisplayName("Doit lever une exception si l'ancien mot de passe est incorrect")
+    void modifierMdp_ancienIncorrect_leveBusinessException() {
+        when(passwordEncoder.matches("faux", utilisateur.getPassword())).thenReturn(false);
+
+        assertThatThrownBy(() -> utilisateurService.modifierMdp(utilisateur, new ModificationMdpDTO("faux", "NouveauMdp123")))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("L'ancien mot de passe est incorrect.");
+
+        verify(passwordEncoder, never()).encode(any());
         verify(utilisateurRepository, never()).save(any());
     }
 }
