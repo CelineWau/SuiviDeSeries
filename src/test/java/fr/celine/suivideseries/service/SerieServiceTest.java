@@ -1079,5 +1079,4 @@ class SerieServiceTest {
         verify(serieRepository, times(1)).trouverIdsSeriesDelaissees(any(LocalDate.class), eq(utilisateur), any(Pageable.class));
         verify(serieRepository, times(1)).trouverSeriesAvecDetailsParIds(ids);
     }
-
 }

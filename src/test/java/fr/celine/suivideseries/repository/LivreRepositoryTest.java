@@ -1,6 +1,7 @@
 package fr.celine.suivideseries.repository;
 
 import fr.celine.suivideseries.dto.AuteursSeriesEnCoursDTO;
+import fr.celine.suivideseries.dto.LivreParAnneeDTO;
 import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.entity.Utilisateur;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
 
 @Transactional
@@ -35,7 +37,7 @@ class LivreRepositoryTest {
 
     @Autowired
     private TestEntityManager entityManager;
-
+    private Livre livre;
     private Utilisateur utilisateur;
     private Utilisateur autreUtilisateur;
     private Serie serie;
@@ -47,7 +49,7 @@ class LivreRepositoryTest {
         autreUtilisateur = new Utilisateur("Waucheul", "Céline", "Amaterasu", "autreemail@email.fr");
         autreUtilisateur.setMdp("Azerty123");
         serie = new Serie("Le puits des mémoires", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 3);
-        Livre livre = new Livre("Gabriel Katz", "La traque", "1234567891234", 1, StatutLivre.LU, FormatLivre.PAPIER, null, null, serie);
+        livre = new Livre("Gabriel Katz", "La traque", "1234567891234", 1, StatutLivre.LU, FormatLivre.PAPIER, null, null, serie);
 
         entityManager.persist(utilisateur);
         entityManager.persist(autreUtilisateur);
@@ -260,4 +262,35 @@ class LivreRepositoryTest {
         assertThat(resultat).isZero();
     }
 
+    @Test
+    @DisplayName("Doit compter les livres par année en excluant les non lu et les dates de lecture absentes")
+    void compterLivresParAnnee_donneesVariees_returnsRepatitionCorrectes(){
+        Serie serie1 = new Serie("Cosmere", utilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 20);
+        Serie serieAutreUtilisateur = new Serie("Kushiel", autreUtilisateur, StatutSerie.EN_COURS, StatutPublication.TERMINEE, 9);
+        Livre livreA = new Livre("Brandon Sanderson", "L'Empire ultime", "1111111111111", 1, StatutLivre.LU, FormatLivre.PAPIER, null, LocalDate.of(2025, Month.APRIL, 5), serie1);
+        Livre livreB = new Livre("Brandon Sanderson", "Le Puits de l'ascension", "2222222222222", 2, StatutLivre.LU, FormatLivre.PAPIER, null, LocalDate.of(2025, Month.MAY, 5), serie1);
+        Livre livreC = new Livre("Brandon Sanderson", "Elantris", "3333333333333", 4, StatutLivre.LU, FormatLivre.PAPIER, null, LocalDate.of(2024, Month.APRIL, 22), serie1);
+        Livre livreD = new Livre("Brandon Sanderson", "Le Héros des siècles", "4444444444444", 3, StatutLivre.DANS_PAL, FormatLivre.PAPIER, null, null, serie1);
+        Livre livreE = new Livre("Brandon Sanderson", "Warbreaker", "5555555555555", 6, StatutLivre.LU, FormatLivre.PAPIER, null, null, serie1);
+        Livre livreF = new Livre("Jacqueline Carey", "La Marque", "6666666666666", 1, StatutLivre.LU, FormatLivre.PAPIER, null, LocalDate.of(2025, Month.APRIL, 5), serieAutreUtilisateur);
+
+        entityManager.persist(serie1);
+        entityManager.persist(serieAutreUtilisateur);
+        entityManager.persist(livreA);
+        entityManager.persist(livreB);
+        entityManager.persist(livreC);
+        entityManager.persist(livreD);
+        entityManager.persist(livreE);
+        entityManager.persist(livreF);
+        entityManager.flush();
+
+        List<LivreParAnneeDTO> resultat = livreRepository.compterLivresParAnnee(utilisateur);
+
+        assertThat(resultat)
+                .extracting(LivreParAnneeDTO::getAnnee, LivreParAnneeDTO::getNombre)
+                .containsExactly(
+                        tuple(2025, 2L),
+                        tuple(2024, 1L)
+                );
+    }
 }

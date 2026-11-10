@@ -77,4 +77,9 @@ public class LivreController {
     public ResponseEntity<Double> afficherDureeMoyenneDansPal(@AuthenticationPrincipal Utilisateur utilisateurConnecte) {
         return ResponseEntity.ok(livreService.calculerTempsMoyenPal(utilisateurConnecte));
     }
+
+    @GetMapping("/compteurLivreParAnnee")
+    public ResponseEntity<List<LivreParAnneeDTO>> compterLivreParAnnee(@AuthenticationPrincipal Utilisateur utilisateurConnecte) {
+        return ResponseEntity.ok(livreService.compterLivresParAnnee(utilisateurConnecte));
+    }
 }

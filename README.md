@@ -6,7 +6,7 @@ Projet personnel réalisé après ma certification Concepteur Développeur d'App
 
 ![Page d'accueil](screenshots/accueil.png)
 ![Fiche d'une série](screenshots/fiche-serie.png)
-![Pade de statistique](screenshots/page-statistique.png)
+![Pade de statistiques](screenshots/page-statistique.png)
 ![Page de profil](screenshots/page-profil.png)
 
 

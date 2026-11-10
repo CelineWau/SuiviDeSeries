@@ -1,6 +1,7 @@
 package fr.celine.suivideseries.service;
 
 import fr.celine.suivideseries.dto.AuteursSeriesEnCoursDTO;
+import fr.celine.suivideseries.dto.LivreParAnneeDTO;
 import fr.celine.suivideseries.dto.ModifierLivreDTO;
 import fr.celine.suivideseries.dto.RepartitionFormatDTO;
 import fr.celine.suivideseries.entity.Livre;
@@ -17,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -193,5 +195,10 @@ public class LivreService {
                 .mapToDouble(this::calculerDifferenceDateAcquisitionEtDateLecture)
                 .average()
                 .orElse(0);
+    }
+
+    // Compter les livres par année
+    public List<LivreParAnneeDTO> compterLivresParAnnee(Utilisateur utilisateur) {
+        return livreRepository.compterLivresParAnnee(utilisateur);
     }
 }

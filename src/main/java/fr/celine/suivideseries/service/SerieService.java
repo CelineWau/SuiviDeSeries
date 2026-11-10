@@ -14,6 +14,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.Month;
+import java.time.Month;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.Function;
@@ -461,8 +463,8 @@ public class SerieService {
     // Calculer l'année en cours
     private LocalDate[] calculerDatesAnnee() {
         int annee = LocalDate.now().getYear();
-        LocalDate dateDebut = LocalDate.of(annee, 1, 1);
-        LocalDate dateFin = LocalDate.of(annee, 12, 31);
+        LocalDate dateDebut = LocalDate.of(annee, Month.JANUARY, 1);
+        LocalDate dateFin = LocalDate.of(annee, Month.DECEMBER, 31);
         return new LocalDate[]{dateDebut, dateFin};
     }
 
