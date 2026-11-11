@@ -1,7 +1,7 @@
 package fr.celine.suivideseries.service;
 
 import fr.celine.suivideseries.dto.AuteursSeriesEnCoursDTO;
-import fr.celine.suivideseries.dto.LivreParAnneeDTO;
+import fr.celine.suivideseries.dto.NombreParAnneeDTO;
 import fr.celine.suivideseries.dto.RepartitionFormatDTO;
 import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
@@ -455,13 +455,13 @@ class LivreServiceTest {
     @Test
     @DisplayName("Doit renvoyer les livres lus par année pour l’utilisateur")
     void compterLivresParAnnee_utilisateurValide_retourneListeDuRepository() {
-        List<LivreParAnneeDTO> attendu = List.of(
-                new LivreParAnneeDTO(2L, 2025),
-                new LivreParAnneeDTO(1L, 2024)
+        List<NombreParAnneeDTO> attendu = List.of(
+                new NombreParAnneeDTO(2L, 2025),
+                new NombreParAnneeDTO(1L, 2024)
         );
         when(livreRepository.compterLivresParAnnee(utilisateur)).thenReturn(attendu);
 
-        List<LivreParAnneeDTO> resultat = livreService.compterLivresParAnnee(utilisateur);
+        List<NombreParAnneeDTO> resultat = livreService.compterLivresParAnnee(utilisateur);
 
         assertThat(resultat).isEqualTo(attendu).hasSize(2);
         verify(livreRepository, times(1)).compterLivresParAnnee(utilisateur);

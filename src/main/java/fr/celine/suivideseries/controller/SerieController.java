@@ -151,6 +151,11 @@ public class SerieController {
         return ResponseEntity.ok(serieService.compterSeriesParNature(utilisateurConnecte));
     }
 
+    @GetMapping("/seriesCommenceesParAnnee")
+    public ResponseEntity<List<NombreParAnneeDTO>> afficherSeriesCommenceesParAnnee(@AuthenticationPrincipal Utilisateur utilisateurConnecte) {
+        return ResponseEntity.ok(serieService.compterSeriesCommenceesParAnnee(utilisateurConnecte));
+    }
+
     @PostMapping
     public ResponseEntity<Serie> creerSerie(@RequestBody SerieCreationDTO dto, @AuthenticationPrincipal Utilisateur utilisateurConnecte) {
         return ResponseEntity.status(HttpStatus.CREATED).body(serieService.creerSerie(dto.getNom(), utilisateurConnecte, dto.getStatutSerie(), dto.getStatutPublication(), dto.getNombreLivreTotal(),

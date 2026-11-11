@@ -1,5 +1,6 @@
 package fr.celine.suivideseries.repository;
 
+import fr.celine.suivideseries.dto.NombreParAnneeDTO;
 import fr.celine.suivideseries.dto.RepartitionCategorieDTO;
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.entity.Utilisateur;

@@ -555,4 +555,9 @@ public class SerieService {
     public List<RepartitionCategorieDTO> compterSeriesParNature(Utilisateur utilisateur) {
         return serieRepository.compterSeriesParNature(utilisateur);
     }
+
+    // Compter les séries commencées par année
+    public List<NombreParAnneeDTO> compterSeriesCommenceesParAnnee(Utilisateur utilisateur) {
+        return livreRepository.compterSeriesCommenceesParAnnee(utilisateur);
+    }
 }

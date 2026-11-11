@@ -1,7 +1,7 @@
 package fr.celine.suivideseries.repository;
 
 import fr.celine.suivideseries.dto.AuteursSeriesEnCoursDTO;
-import fr.celine.suivideseries.dto.LivreParAnneeDTO;
+import fr.celine.suivideseries.dto.NombreParAnneeDTO;
 import fr.celine.suivideseries.entity.Livre;
 import fr.celine.suivideseries.entity.Serie;
 import fr.celine.suivideseries.entity.Utilisateur;
@@ -38,7 +38,11 @@ public interface LivreRepository extends JpaRepository<Livre, Integer> {
             "BETWEEN ?1 AND ?2 AND l.serie.utilisateur = ?3")
     long compterSeriesCommenceesEtFiniesMemeAnnee(LocalDate dateDebut, LocalDate dateFin, Utilisateur utilisateur);
 
-    @Query("SELECT NEW fr.celine.suivideseries.dto.LivreParAnneeDTO(COUNT(l), Year(l.dateLecture)) FROM Livre l WHERE l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.LU AND " +
+    @Query("SELECT NEW fr.celine.suivideseries.dto.NombreParAnneeDTO(COUNT(l), Year(l.dateLecture)) FROM Livre l WHERE l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.LU AND " +
             " l.dateLecture IS NOT NULL AND l.serie.utilisateur = ?1 GROUP BY YEAR(l.dateLecture) ORDER BY YEAR(l.dateLecture) DESC")
-    List<LivreParAnneeDTO> compterLivresParAnnee(Utilisateur utilisateur);
+    List<NombreParAnneeDTO> compterLivresParAnnee(Utilisateur utilisateur);
+
+    @Query("SELECT NEW fr.celine.suivideseries.dto.NombreParAnneeDTO(COUNT(l), YEAR(l.dateLecture)) FROM Livre l WHERE l.statutLivre = fr.celine.suivideseries.enums.StatutLivre.LU " +
+            "AND l.numeroDansLaSerie = 1 AND l.dateLecture IS NOT NULL AND l.serie.utilisateur = ?1 GROUP BY YEAR(l.dateLecture) ORDER BY YEAR(l.dateLecture) DESC")
+    List<NombreParAnneeDTO> compterSeriesCommenceesParAnnee(Utilisateur utilisateur);
 }

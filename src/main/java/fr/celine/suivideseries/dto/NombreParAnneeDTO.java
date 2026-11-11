@@ -1,10 +1,10 @@
 package fr.celine.suivideseries.dto;
 
-public class LivreParAnneeDTO {
+public class NombreParAnneeDTO {
     private long nombre;
     private int annee;
 
-    public LivreParAnneeDTO(long nombre, int annee) {
+    public NombreParAnneeDTO(long nombre, int annee) {
         this.nombre = nombre;
         this.annee = annee;
     }

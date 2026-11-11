@@ -79,7 +79,7 @@ public class LivreController {
     }
 
     @GetMapping("/compteurLivreParAnnee")
-    public ResponseEntity<List<LivreParAnneeDTO>> compterLivreParAnnee(@AuthenticationPrincipal Utilisateur utilisateurConnecte) {
+    public ResponseEntity<List<NombreParAnneeDTO>> compterLivreParAnnee(@AuthenticationPrincipal Utilisateur utilisateurConnecte) {
         return ResponseEntity.ok(livreService.compterLivresParAnnee(utilisateurConnecte));
     }
 }
